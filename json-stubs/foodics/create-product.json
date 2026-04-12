@@ -1,0 +1,37 @@
+{
+    "sku": "P001",
+    "barcode": null,
+    "name": "Burger",
+    "name_localized": null,
+    "description": "...",
+    "description_localized": "...",
+    "image": "https://path-to-image/",
+    "is_active": true,
+    "is_stock_product": false,
+    "pricing_method": 1,
+    "selling_method": 2,
+    "costing_method": 1,
+    "preparation_time": 90,
+    "price": 742,
+    "cost": 608,
+    "calories": 624,
+    "walking_minutes_to_burn_calories": 40,
+    "is_high_salt": true,
+    "tax_group_id": "8d207fc3",
+    "category_id": "8d207fc3",
+    "tags": [
+        {
+            "id": "8d207fc3"
+        }
+    ],
+    "discounts": [
+        {
+            "id": "8d207fc3"
+        }
+    ],
+    "timed_events": [
+        {
+            "id": "8d207fc3"
+        }
+    ]
+}

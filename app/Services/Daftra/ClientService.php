@@ -4,5 +4,27 @@ namespace App\Services\Daftra;
 
 class ClientService
 {
-    // TODO: Implement client synchronization logic with Daftra
+    public function __construct(DaftraApiClient $daftraClient)
+    {
+    }
+
+    public function getClient()
+    {
+
+    }
+
+    public function createClient()
+    {
+
+    }
+
+    public function updateClient()
+    {
+
+    }
+
+    public function deleteClient()
+    {
+
+    }
 }

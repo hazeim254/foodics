@@ -1,0 +1,796 @@
+{
+  "data": [
+    {
+      "order": {
+        "branch": {
+          "id": "8d82ff0c",
+          "name": "Branch 01",
+          "name_localized": null,
+          "type": 1,
+          "latitude": null,
+          "longitude": null,
+          "phone": null,
+          "opening_from": "08:00",
+          "opening_to": "00:00",
+          "inventory_end_of_day_time": "00:00",
+          "receipt_header": null,
+          "receipt_footer": null,
+          "created_at": "2019-04-22 12:54:02",
+          "updated_at": "2019-10-28 15:42:50",
+          "deleted_at": null,
+          "reference": "B06"
+        },
+        "promotion": {
+          "id": "8da3050d",
+          "name": "Weekend promotion",
+          "name_localized": null,
+          "type": 1,
+          "from_date": "2019-05-07",
+          "to_date": "2019-12-03",
+          "from_time": 0,
+          "to_time": 23,
+          "is_sat": true,
+          "is_sun": true,
+          "is_mon": true,
+          "is_tue": true,
+          "is_wed": true,
+          "is_thu": true,
+          "is_fri": true,
+          "is_active": true,
+          "include_modifiers": true,
+          "target_quantity": 2,
+          "reward_type": 1,
+          "reward_quantity": 3,
+          "reward_amount": 3,
+          "maximum_discount_amount": 30,
+          "created_at": "2019-05-08 10:57:19",
+          "updated_at": "2019-11-19 09:20:49",
+          "deleted_at": "2019-11-19 09:20:49",
+          "condition_type": null,
+          "priority": null,
+          "order_types": [1, 2, 3]
+        },
+        "original_order": null,
+        "table": null,
+        "creator": {
+          "pin": "*****",
+          "is_owner": true,
+          "id": "8d82ff0c",
+          "name": "Cashier",
+          "number": null,
+          "email": "cashier@Restaurant.com",
+          "phone": "0",
+          "lang": "en",
+          "display_localized_names": false,
+          "email_verified": false,
+          "last_console_login_at": "2019-11-28 09:06:22",
+          "created_at": "2019-04-22 12:54:02",
+          "updated_at": "2019-11-28 09:06:22",
+          "deleted_at": null,
+          "last_cashier_login_at": null
+        },
+        "closer": {
+          "pin": "*****",
+          "is_owner": true,
+          "id": "8d82ff0c",
+          "name": "Cashier",
+          "number": null,
+          "email": "cashier@Restaurant.com",
+          "phone": "0",
+          "lang": "en",
+          "display_localized_names": false,
+          "email_verified": false,
+          "last_console_login_at": "2019-11-28 09:06:22",
+          "created_at": "2019-04-22 12:54:02",
+          "updated_at": "2019-11-28 09:06:22",
+          "deleted_at": null,
+          "last_cashier_login_at": null
+        },
+        "driver": null,
+        "customer": {
+          "id": "8d831d65",
+          "name": "Alin Mado",
+          "dial_code": 966,
+          "phone": "542325489",
+          "email": "m.steuber@ecs.net",
+          "gender": 1,
+          "birth_date": "1986-09-17",
+          "is_blacklisted": false,
+          "is_house_account_enabled": true,
+          "house_account_limit": 1000,
+          "is_loyalty_enabled": 1,
+          "created_at": "2019-04-22 14:18:54",
+          "updated_at": "2019-11-28 10:23:21",
+          "deleted_at": null,
+          "last_order_at": "2019-11-28 06:05:00",
+          "order_count": 79
+        },
+        "customer_address": {
+          "delivery_zone": {
+            "id": "8d86ac81",
+            "name": "District Naz",
+            "name_localized": null,
+            "coordinates": [52.2156, 31.0214, 10.5646, 45.5455, 45.5565],
+            "created_at": "2019-04-24 08:46:33",
+            "updated_at": "2019-10-30 12:30:15",
+            "deleted_at": null,
+            "reference": null
+          },
+          "id": "8d92cc27",
+          "name": "Work",
+          "description": "15688 Kohler Ceceliaville, RI 90603",
+          "latitude": "-26.295234",
+          "longitude": "4.076668",
+          "created_at": "2019-04-30 09:24:58",
+          "updated_at": "2019-05-28 09:35:02",
+          "deleted_at": null
+        },
+        "discount": null,
+        "tags": [],
+        "coupon": null,
+        "revenue_center": {
+          "id": "995495e0-736d-449a-8a65-bdd6e30c1b54",
+          "name": "Revenue Center Tag",
+          "name_localized": null,
+          "type": 9,
+          "created_at": "2019-02-11 07:28:29",
+          "updated_at": "2019-02-11 07:28:29",
+          "deleted_at": null
+        },
+        "gift_card": null,
+        "charges": [
+          {
+            "charge": {
+              "id": "8e296c3d",
+              "name": "Service Charge",
+              "name_localized": null,
+              "type": 2,
+              "is_auto_applied": false,
+              "value": 10,
+              "created_at": "2019-07-14 06:26:47",
+              "updated_at": "2019-10-30 12:23:28",
+              "deleted_at": null,
+              "order_types": [1, 3, 2]
+            },
+            "taxes": [
+              {
+                "pivot": {
+                  "amount": 0.4,
+                  "rate": 5,
+                  "tax_exclusive_discount_amount": null
+                },
+                "id": "8d84bebc",
+                "name": "VAT",
+                "name_localized": null,
+                "rate": 5,
+                "created_at": "2019-04-23 09:45:52",
+                "updated_at": "2019-04-23 09:45:52",
+                "deleted_at": null
+              }
+            ],
+            "amount": 8,
+            "tax_exclusive_amount": 8
+          }
+        ],
+        "payments": [
+          {
+            "user": {
+              "pin": "*****",
+              "is_owner": true,
+              "id": "8d82ff0c",
+              "name": "Cashier",
+              "number": null,
+              "email": "cashier@Restaurant.com",
+              "phone": "0",
+              "lang": "en",
+              "display_localized_names": false,
+              "email_verified": false,
+              "last_console_login_at": "2019-11-28 09:06:22",
+              "created_at": "2019-04-22 12:54:02",
+              "updated_at": "2019-11-28 09:06:22",
+              "deleted_at": null,
+              "last_cashier_login_at": null
+            },
+            "payment_method": {
+              "id": "8df57bde",
+              "name": "Card",
+              "name_localized": null,
+              "type": 2,
+              "code": "Card",
+              "auto_open_drawer": true,
+              "is_active": true,
+              "created_at": "2019-06-18 10:47:26",
+              "updated_at": "2019-10-08 15:03:25",
+              "deleted_at": null
+            },
+            "meta": {
+              "data": {
+                "AC": "F1033D7B8245A61E",
+                "AID": "A0000000034510",
+                "CID": "80",
+                "MID": "200000014431",
+                "TID": "90044562",
+                "TSI": "0000",
+                "TVR": "0000000000",
+                "cvm": "NONE",
+                "rrn": "000000008753",
+                "type": "pushPaymentSale",
+                "Label": "Visa DEBIT",
+                "amount": "24.15",
+                "result": "success",
+                "offline": false,
+                "success": true,
+                "authCode": "267024",
+                "cardType": "VISA",
+                "cashback": "0",
+                "complete": true,
+                "currency": "0784",
+                "declined": false,
+                "sourceid": "023ED45000D0738",
+                "ReceiptNo": "008753",
+                "panMasked": "4337 63** **** 0381",
+                "ExpiryDate": "3112",
+                "dccOffered": false,
+                "inProgress": false,
+                "resultCode": "00",
+                "custReceipt": [],
+                "dccAccepted": false,
+                "displayText": "TRANSACTION COMPLETE",
+                "cardInserted": false,
+                "cardReadMode": "CTLS",
+                "merchReceipt": [],
+                "eposCheckCard": false,
+                "TransactionDate": "27/01/2025",
+                "TransactionTime": "15:50",
+                "tokenTransaction": false,
+                "signatureRequired": false,
+                "ApplicationVersion": "0105",
+                "currencyDecimalPlaces": "2",
+                "resultCodeDescription": "00 - Approved"
+              },
+              "type": "payment_terminal"
+            },
+            "amount": 24.15,
+            "tendered": 25,
+            "tips": 0,
+            "business_date": "2019-11-28",
+            "added_at": "2019-11-28 06:07:00"
+          }
+        ],
+        "products": [
+          {
+            "product": {
+              "category": {
+                "id": "8d90b7a1",
+                "name": "Sandwiches",
+                "name_localized": null,
+                "created_at": "2019-04-29 08:35:55",
+                "updated_at": "2019-04-29 08:35:55",
+                "deleted_at": null,
+                "reference": null
+              },
+              "id": "8d90b8d1",
+              "sku": "P002",
+              "barcode": "1561630164",
+              "name": "Tuna Sandwich",
+              "name_localized": null,
+              "description": "Desc",
+              "description_localized": null,
+              "image": "https://alwans-dev.s3.amazonaws.com/q5pk2aglz.jpg",
+              "is_active": true,
+              "is_stock_product": false,
+              "is_non_revenue": true,
+              "is_ready": true,
+              "pricing_method": 2,
+              "selling_method": 2,
+              "costing_method": 2,
+              "preparation_time": 6,
+              "price": 10,
+              "cost": null,
+              "calories": null,
+              "created_at": "2019-04-29 08:39:15",
+              "updated_at": "2019-11-27 07:28:27",
+              "deleted_at": null
+            },
+            "promotion": null,
+            "discount": {
+              "id": "8e2a01a0",
+              "name": "Sprint Discount",
+              "name_localized": null,
+              "qualification": 3,
+              "amount": 10,
+              "minimum_product_price": 10,
+              "minimum_order_price": 20,
+              "maximum_amount": 900,
+              "is_percentage": true,
+              "is_taxable": false,
+              "created_at": "2019-07-14 13:24:30",
+              "updated_at": "2019-10-22 12:23:18",
+              "deleted_at": null,
+              "reference": null,
+              "order_types": [1, 2]
+            },
+            "options": [
+              {
+                "modifier_option": {
+                  "id": "8d90d06e",
+                  "name": "Cheese Slice",
+                  "name_localized": null,
+                  "sku": "M002",
+                  "is_active": true,
+                  "costing_method": 2,
+                  "created_at": "2019-04-29 09:45:17",
+                  "updated_at": "2019-11-27 11:37:12",
+                  "deleted_at": null,
+                  "price": 4,
+                  "cost": null,
+                  "calories": null
+                },
+                "taxes": [
+                  {
+                    "pivot": {
+                      "amount": 0.225,
+                      "rate": 5,
+                      "tax_exclusive_discount_amount": null
+                    },
+                    "id": "8d84bebc",
+                    "name": "VAT",
+                    "name_localized": null,
+                    "rate": 5,
+                    "created_at": "2019-04-23 09:45:52",
+                    "updated_at": "2019-04-23 09:45:52",
+                    "deleted_at": null
+                  }
+                ],
+                "quantity": 2,
+                "partition": 1,
+                "unit_price": 3,
+                "total_price": 12,
+                "total_cost": 0.362,
+                "tax_exclusive_unit_price": 3,
+                "tax_exclusive_total_price": 12,
+                "added_at": "2019-11-28 06:05:03",
+                "tax_exclusive_discount_amount": 6
+              }
+            ],
+            "taxes": [
+              {
+                "pivot": {
+                  "amount": 0.525,
+                  "rate": 5,
+                  "tax_exclusive_discount_amount": null
+                },
+                "id": "8d84bebc",
+                "name": "VAT",
+                "name_localized": null,
+                "rate": 5,
+                "created_at": "2019-04-23 09:45:52",
+                "updated_at": "2019-04-23 09:45:52",
+                "deleted_at": null
+              }
+            ],
+            "timed_events": [
+              {
+                "id": "8df3cf21",
+                "name": "Always",
+                "name_localized": null,
+                "type": 1,
+                "value": 4,
+                "from_date": "2019-04-17",
+                "to_date": "2019-12-20",
+                "from_time": 0,
+                "to_time": 23,
+                "is_sat": true,
+                "is_sun": true,
+                "is_mon": true,
+                "is_tue": true,
+                "is_wed": true,
+                "is_thu": true,
+                "is_fri": true,
+                "is_active": true,
+                "created_at": "2019-06-17 14:48:36",
+                "updated_at": "2019-11-18 09:01:59",
+                "deleted_at": null,
+                "priority": 7,
+                "order_types": [3]
+              }
+            ],
+            "void_reason": null,
+            "creator": {
+              "pin": "*****",
+              "is_owner": true,
+              "id": "8d82ff0c",
+              "name": "Cashier",
+              "number": null,
+              "email": "Cashier@Restaurant.com",
+              "phone": "0",
+              "lang": "en",
+              "display_localized_names": false,
+              "email_verified": false,
+              "last_console_login_at": "2019-11-28 09:06:22",
+              "created_at": "2019-04-22 12:54:02",
+              "updated_at": "2019-11-28 09:06:22",
+              "deleted_at": null,
+              "last_cashier_login_at": null
+            },
+            "voider": null,
+            "discount_type": 1,
+            "quantity": 2,
+            "unit_price": 14,
+            "discount_amount": 20,
+            "total_price": 20,
+            "total_cost": 1.932,
+            "tax_exclusive_discount_amount": 20,
+            "tax_exclusive_unit_price": 14,
+            "tax_exclusive_total_price": 20,
+            "status": 4,
+            "is_ingredients_wasted": 0,
+            "is_ingredients_returned": 0,
+            "delay_in_seconds": null,
+            "kitchen_notes": "Some Product Kitchen Notes 72725",
+            "added_at": "2019-11-28 06:05:00",
+            "closed_at": "2019-11-28 06:07:00",
+            "meta": null
+          }
+        ],
+        "combos": [
+          {
+            "combo_size": {
+              "combo": {
+                "id": "8ed2588f",
+                "sku": "sk-0014",
+                "barcode": null,
+                "name": "Lunch Combo",
+                "name_localized": null,
+                "description": null,
+                "description_localized": null,
+                "image": null,
+                "is_active": true,
+                "is_ready": true,
+                "created_at": "2019-10-06 05:46:40",
+                "updated_at": "2019-11-27 06:56:53",
+                "deleted_at": null
+              },
+              "id": "8ed25ce1-2368-4bf2-9232-a45b2e2021cd",
+              "name": "Small",
+              "name_localized": null,
+              "created_at": "2019-10-06 05:58:45",
+              "updated_at": "2019-10-06 05:58:45",
+              "deleted_at": null
+            },
+            "products": [
+              {
+                "product": {
+                  "category": {
+                    "id": "8d90b7a1",
+                    "name": "Sandwiches",
+                    "name_localized": null,
+                    "created_at": "2019-04-29 08:35:55",
+                    "updated_at": "2019-04-29 08:35:55",
+                    "deleted_at": null,
+                    "reference": null
+                  },
+                  "id": "8d90b7dd",
+                  "sku": "P001",
+                  "barcode": null,
+                  "name": "Burger",
+                  "name_localized": null,
+                  "description": null,
+                  "description_localized": null,
+                  "image": "https://image.com/q5pk2aglz.jpg",
+                  "is_active": true,
+                  "is_non_revenue": false,
+                  "is_stock_product": false,
+                  "is_ready": true,
+                  "pricing_method": 2,
+                  "selling_method": 1,
+                  "costing_method": 1,
+                  "preparation_time": 0,
+                  "price": null,
+                  "cost": 4,
+                  "calories": null,
+                  "created_at": "2019-04-29 08:36:35",
+                  "updated_at": "2019-11-18 07:26:09",
+                  "deleted_at": null
+                },
+                "promotion": null,
+                "discount": null,
+                "options": [
+                  {
+                    "modifier_option": {
+                      "id": "8d90cd87",
+                      "name": "Sugar",
+                      "name_localized": null,
+                      "sku": "M001",
+                      "is_active": true,
+                      "costing_method": 2,
+                      "created_at": "2019-04-29 09:37:09",
+                      "updated_at": "2019-11-18 07:24:21",
+                      "deleted_at": null,
+                      "price": 2,
+                      "cost": null,
+                      "calories": null
+                    },
+                    "taxes": [
+                      {
+                        "pivot": {
+                          "amount": 0,
+                          "rate": 5,
+                          "tax_exclusive_discount_amount": null
+                        },
+                        "id": "8d84bebc",
+                        "name": "VAT",
+                        "name_localized": null,
+                        "rate": 5,
+                        "created_at": "2019-04-23 09:45:52",
+                        "updated_at": "2019-04-23 09:45:52",
+                        "deleted_at": null
+                      }
+                    ],
+                    "quantity": 2,
+                    "partition": 1,
+                    "unit_price": 0,
+                    "total_price": 0,
+                    "total_cost": 0,
+                    "tax_exclusive_unit_price": null,
+                    "tax_exclusive_total_price": null,
+                    "added_at": null,
+                    "tax_exclusive_discount_amount": null
+                  }
+                ],
+                "taxes": [
+                  {
+                    "pivot": {
+                      "amount": 0,
+                      "rate": 5,
+                      "tax_exclusive_discount_amount": null
+                    },
+                    "id": "8d84bebc",
+                    "name": "VAT",
+                    "name_localized": null,
+                    "rate": 5,
+                    "created_at": "2019-04-23 09:45:52",
+                    "updated_at": "2019-04-23 09:45:52",
+                    "deleted_at": null
+                  }
+                ],
+                "timed_events": [],
+                "void_reason": null,
+                "creator": null,
+                "voider": null,
+                "discount_type": null,
+                "quantity": 2,
+                "unit_price": 0,
+                "discount_amount": 0,
+                "total_price": 0,
+                "total_cost": 8,
+                "tax_exclusive_discount_amount": null,
+                "tax_exclusive_unit_price": null,
+                "tax_exclusive_total_price": null,
+                "status": 4,
+                "is_ingredients_wasted": 0,
+                "is_ingredients_returned": 0,
+                "delay_in_seconds": null,
+                "kitchen_notes": "well done",
+                "added_at": null,
+                "closed_at": null,
+                "meta": {
+                  "external_additional_product_info": "some info"
+                },
+                "combo_option": {
+                  "id": "8ed25e2a",
+                  "combo_item_id": "8ed25cff",
+                  "name": "Burger",
+                  "name_localized": null,
+                  "hid": null,
+                  "created_at": "2019-10-06 06:02:21",
+                  "updated_at": "2019-10-06 06:02:21",
+                  "deleted_at": null
+                },
+                "combo_size": {
+                  "id": "8ed25ce1",
+                  "combo_id": "8ed2588f",
+                  "name": "Small",
+                  "name_localized": null,
+                  "hid": null,
+                  "created_at": "2019-10-06 05:58:45",
+                  "updated_at": "2019-10-06 05:58:45",
+                  "deleted_at": null
+                }
+              },
+              {
+                "product": {
+                  "category": {
+                    "id": "8d9ce58b",
+                    "name": "Salad",
+                    "name_localized": null,
+                    "created_at": "2019-05-05 09:54:15",
+                    "updated_at": "2019-05-06 11:34:50",
+                    "deleted_at": null,
+                    "reference": null
+                  },
+                  "id": "9ca37d4e-cbba-4d73-bdd9-ea4f2fb85d79",
+                  "sku": "P003",
+                  "barcode": null,
+                  "name": "Salad",
+                  "name_localized": null,
+                  "description": null,
+                  "description_localized": null,
+                  "image": "https://image.com/q5pk2aglz.jpg",
+                  "is_active": true,
+                  "is_stock_product": false,
+                  "is_ready": true,
+                  "pricing_method": 1,
+                  "selling_method": 1,
+                  "costing_method": 1,
+                  "preparation_time": null,
+                  "price": 8,
+                  "cost": 2.2,
+                  "calories": null,
+                  "created_at": "2019-07-14 06:31:53",
+                  "updated_at": "2019-11-05 09:27:36",
+                  "deleted_at": null
+                },
+                "promotion": null,
+                "discount": null,
+                "options": [
+                  {
+                    "modifier_option": {
+                      "id": "8d90d06e",
+                      "name": "Cheese Slice",
+                      "name_localized": null,
+                      "sku": "M002",
+                      "is_active": true,
+                      "costing_method": 2,
+                      "created_at": "2019-04-29 09:45:17",
+                      "updated_at": "2019-11-27 11:37:12",
+                      "deleted_at": null,
+                      "price": 4,
+                      "cost": null,
+                      "calories": null
+                    },
+                    "taxes": [
+                      {
+                        "pivot": {
+                          "amount": 0,
+                          "rate": 5,
+                          "tax_exclusive_discount_amount": null
+                        },
+                        "id": "8d84bebc",
+                        "name": "VAT",
+                        "name_localized": null,
+                        "rate": 5,
+                        "created_at": "2019-04-23 09:45:52",
+                        "updated_at": "2019-04-23 09:45:52",
+                        "deleted_at": null
+                      }
+                    ],
+                    "quantity": 2,
+                    "partition": 1,
+                    "unit_price": 0,
+                    "total_price": 0,
+                    "total_cost": 0.362,
+                    "tax_exclusive_unit_price": null,
+                    "tax_exclusive_total_price": null,
+                    "added_at": null,
+                    "tax_exclusive_discount_amount": null
+                  }
+                ],
+                "taxes": [
+                  {
+                    "pivot": {
+                      "amount": 0,
+                      "rate": 5,
+                      "tax_exclusive_discount_amount": null
+                    },
+                    "id": "8d84bebc",
+                    "name": "VAT",
+                    "name_localized": null,
+                    "rate": 5,
+                    "created_at": "2019-04-23 09:45:52",
+                    "updated_at": "2019-04-23 09:45:52",
+                    "deleted_at": null
+                  }
+                ],
+                "timed_events": [],
+                "void_reason": null,
+                "creator": null,
+                "voider": null,
+                "discount_type": null,
+                "quantity": 2,
+                "unit_price": 0,
+                "discount_amount": 0,
+                "total_price": 0,
+                "total_cost": 4.4,
+                "tax_exclusive_discount_amount": null,
+                "tax_exclusive_unit_price": null,
+                "tax_exclusive_total_price": null,
+                "status": 4,
+                "is_ingredients_wasted": 0,
+                "is_ingredients_returned": 0,
+                "delay_in_seconds": null,
+                "kitchen_notes": "well done",
+                "added_at": null,
+                "closed_at": null,
+                "meta": {
+                  "external_additional_product_info": "some info"
+                },
+                "combo_option": {
+                  "id": "8ed4ca7d",
+                  "combo_item_id": "8ed25d07",
+                  "name": "Side Dish",
+                  "name_localized": null,
+                  "hid": null,
+                  "created_at": "2019-10-07 10:56:54",
+                  "updated_at": "2019-11-27 06:34:48",
+                  "deleted_at": null
+                },
+                "combo_size": {
+                  "id": "8ed25ce1",
+                  "combo_id": "8ed2588f",
+                  "name": "Small",
+                  "name_localized": null,
+                  "hid": null,
+                  "created_at": "2019-10-06 05:58:45",
+                  "updated_at": "2019-10-06 05:58:45",
+                  "deleted_at": null
+                }
+              }
+            ],
+            "discount_type": null,
+            "quantity": 2,
+            "returned_quantity": 0,
+            "discount_amount": 0
+          }
+        ],
+        "id": "ebf8baa4-c847-41ad-8f04-198f2ee74dc0",
+        "promotion_id": "8da3050d",
+        "discount_type": 1,
+        "reference": "00292",
+        "number": 1,
+        "type": 3,
+        "source": 1,
+        "status": 4,
+        "delivery_status": null,
+        "guests": 1,
+        "kitchen_notes": "Some Kitchen Notes 73664",
+        "customer_notes": "Some Customer Notes 83083",
+        "business_date": "2019-11-28",
+        "subtotal_price": 20,
+        "discount_amount": 5,
+        "rounding_amount": 0,
+        "total_price": 24.15,
+        "tax_exclusive_discount_amount": 5,
+        "delay_in_seconds": null,
+        "meta": {
+          "foodics": {
+            "device_id": "9097982a-93bc-4808-b7cf-b7bef375be89",
+            "kitchen_done_at": "2019-11-28 20:51:48",
+            "kitchen_received_at": "2019-11-28-06 20:49:22",
+            "decline_at": "2019-11-28 22:10:12",
+            "joined_orders": ["90ef30db-ae09-4a15-8ad2-24520c52209b"],
+            "uuid": "1e0ebfd3-aac4-430d-8215-29fce9023a19",
+            "non_revenue_products": [
+              {
+                "status": 3,
+                "quantity": 1,
+                "product_id": "9ca37d4e-cbba-4d73-bdd9-ea4f2fb85d79",
+                "order_product_id": "c0a349a0-c3a8-4c6a-bc37-4cb17a7ff5ea"
+              }
+            ]
+          }
+        },
+        "opened_at": "2019-11-28 06:05:00",
+        "accepted_at": null,
+        "due_at": "2019-11-28 06:30:00",
+        "driver_assigned_at": null,
+        "dispatched_at": null,
+        "driver_collected_at": null,
+        "delivered_at": null,
+        "closed_at": "2019-11-28 06:07:00",
+        "created_at": "2019-11-28 10:23:21",
+        "updated_at": "2019-11-28 10:23:21"
+      }
+    }
+  ]
+}

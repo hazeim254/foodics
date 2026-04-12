@@ -34,6 +34,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function getDaftraToken(): ?ProviderToken
+    {
+        return $this->providerTokens->firstWhere('provider', 'daftra');
+    }
+
     /**
      * Get the attributes that should be cast.
      *

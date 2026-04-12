@@ -1,0 +1,310 @@
+{
+    "data": {
+        "category": {
+            "id": "9cc34717-44e5-4829-8bc5-31371f06bf18",
+            "name": "Burger",
+            "name_localized": null,
+            "reference": null,
+            "image": null,
+            "created_at": "2024-08-14 08:47:32",
+            "updated_at": "2024-08-14 14:11:31",
+            "deleted_at": null
+        },
+        "tax_group": {
+            "id": "9cc3b74c-b305-49a6-bc46-6668d723e623",
+            "name": "Menu Taxes",
+            "name_localized": null,
+            "reference": "taxes15",
+            "created_at": "2024-08-14 14:01:18",
+            "updated_at": "2024-08-14 14:02:01",
+            "deleted_at": null
+        },
+        "tags": [
+            {
+                "id": "9cc3b8aa-20a3-4776-88df-2888c19f9f3b",
+                "type": 7,
+                "name": "Fast Food",
+                "name_localized": null,
+                "created_at": "2024-08-14 14:05:07",
+                "updated_at": "2024-08-14 14:05:07",
+                "deleted_at": null,
+                "pivot": {
+                    "product_id": "9cc34751-fd7f-41a3-a37b-80d0a85c1103",
+                    "tag_id": "9cc3b8aa-20a3-4776-88df-2888c19f9f3b"
+                }
+            }
+        ],
+        "groups": [
+            {
+                "pivot": {
+                    "is_active": true
+                },
+                "id": "9cc34cb7-94ef-4594-ad2b-f4cc70f803e4",
+                "name": "KeeTa",
+                "name_localized": null,
+                "image": null,
+                "items_index": null,
+                "created_at": "2024-08-14 09:03:16",
+                "updated_at": "2024-08-14 10:14:57",
+                "deleted_at": null
+            }
+        ],
+        "branches": [
+            {
+                "pivot": {
+                    "price": 30,
+                    "is_active": false,
+                    "is_in_stock": false
+                },
+                "id": "9cc1b4c5-406d-4519-9424-a21a77da9aef",
+                "name": "Branch 1",
+                "name_localized": null,
+                "reference": "B01",
+                "type": 1,
+                "latitude": null,
+                "longitude": null,
+                "phone": null,
+                "opening_from": "00:00",
+                "opening_to": "00:00",
+                "inventory_end_of_day_time": "00:00",
+                "receipt_header": null,
+                "receipt_footer": null,
+                "settings": null,
+                "created_at": "2024-08-13 14:02:34",
+                "updated_at": "2024-08-13 14:02:34",
+                "deleted_at": null,
+                "receives_online_orders": true,
+                "accepts_reservations": false,
+                "reservation_duration": 30,
+                "reservation_times": null,
+                "address": null
+            }
+        ],
+        "modifiers": [
+            {
+                "options": [
+                    {
+                        "branches": [],
+                        "id": "9cc34770-aea5-4ebc-b2d2-b7ae20461b8d",
+                        "name": "BBQ Sauce",
+                        "name_localized": null,
+                        "sku": "sk-0002",
+                        "is_active": true,
+                        "costing_method": 2,
+                        "price": 2,
+                        "cost": null,
+                        "calories": null,
+                        "created_at": "2024-08-14 08:48:31",
+                        "updated_at": "2024-08-14 08:48:31",
+                        "deleted_at": null,
+                        "index": 0
+                    },
+                    {
+                        "branches": [],
+                        "id": "9cc3479d-0d27-43ab-bec0-ce8c93a3f0ff",
+                        "name": "Ranch Sauce",
+                        "name_localized": null,
+                        "sku": "GDs62",
+                        "is_active": true,
+                        "costing_method": 2,
+                        "price": 3,
+                        "cost": null,
+                        "calories": null,
+                        "created_at": "2024-08-14 08:49:00",
+                        "updated_at": "2024-08-14 08:49:00",
+                        "deleted_at": null,
+                        "index": 0
+                    },
+                    {
+                        "branches": [],
+                        "id": "9cc347c1-476f-4add-9dad-c8ff552d0b51",
+                        "name": "Tomato Sauch",
+                        "name_localized": null,
+                        "sku": "sk-0003",
+                        "is_active": true,
+                        "costing_method": 2,
+                        "price": 4,
+                        "cost": null,
+                        "calories": null,
+                        "created_at": "2024-08-14 08:49:24",
+                        "updated_at": "2024-08-14 08:49:24",
+                        "deleted_at": null,
+                        "index": 0
+                    },
+                    {
+                        "branches": [],
+                        "id": "9cc347cf-b262-49c0-a2f0-8abe7a452486",
+                        "name": "Default Sauce",
+                        "name_localized": null,
+                        "sku": "sk-0004",
+                        "is_active": true,
+                        "costing_method": 2,
+                        "price": 5,
+                        "cost": null,
+                        "calories": null,
+                        "created_at": "2024-08-14 08:49:33",
+                        "updated_at": "2024-08-14 08:49:33",
+                        "deleted_at": null,
+                        "index": 0
+                    }
+                ],
+                "pivot": {
+                    "is_splittable_in_half": false,
+                    "unique_options": false,
+                    "minimum_options": 2,
+                    "maximum_options": 4,
+                    "free_options": 0,
+                    "default_options_ids": [],
+                    "excluded_options_ids": [
+                        "9cc347cf-b262-49c0-a2f0-8abe7a452486"
+                    ],
+                    "index": 0
+                },
+                "id": "9cc3475f-8fab-4a46-b7c7-76d1d22d46fe",
+                "name": "Sauce1",
+                "name_localized": null,
+                "is_ready": true,
+                "reference": null,
+                "created_at": "2024-08-14 08:48:20",
+                "updated_at": "2024-08-14 14:16:20",
+                "deleted_at": null
+            }
+        ],
+        "ingredients": [
+            {
+                "pivot": {
+                    "quantity": 250,
+                    "inactive_in_order_types": []
+                },
+                "excluded_combos": [],
+                "id": "9cc3b94f-4405-48a3-b3c7-6b2e631bf4b7",
+                "name": "Meat",
+                "name_localized": null,
+                "sku": "sk-0001",
+                "barcode": null,
+                "cost": null,
+                "minimum_level": null,
+                "maximum_level": null,
+                "par_level": null,
+                "storage_unit": "KG",
+                "ingredient_unit": "Gram",
+                "storage_to_ingredient_factor": 1000,
+                "costing_method": 2,
+                "created_at": "2024-08-14 14:06:55",
+                "updated_at": "2024-08-14 14:06:55",
+                "deleted_at": null,
+                "is_product": false,
+                "products_ingredients_excluded_combos": []
+            }
+        ],
+        "id": "9cc34751-fd7f-41a3-a37b-80d0a85c1103",
+        "sku": "sk-0001",
+        "barcode": "62483223",
+        "name": "Beef Burger",
+        "name_localized": null,
+        "description": "Beef Burger Sandwich",
+        "description_localized": null,
+        "image": "https://foodics-console-sandbox.s3.eu-west-1.amazonaws.com/images/690517_1723645120_9cc3bd82-c562-480d-a3c9-9316b770daf5.jpeg",
+        "is_active": true,
+        "is_stock_product": false,
+        "is_non_revenue": false,
+        "is_ready": true,
+        "pricing_method": 1,
+        "selling_method": 1,
+        "costing_method": 2,
+        "preparation_time": 15,
+        "price": 50,
+        "cost": null,
+        "calories": 800,
+        "walking_minutes_to_burn_calories": 40,
+        "is_high_salt": true,
+        "created_at": "2024-08-14 08:48:11",
+        "updated_at": "2024-08-14 14:18:43",
+        "deleted_at": null,
+        "meta": null,
+        "price_tags": [
+            {
+                "id": "9cc3b9b1-44ce-44d5-a117-6897e66bedaf",
+                "name": "Online Menu",
+                "name_localized": null,
+                "order_tag_id": null,
+                "associate_to_all_branches": true,
+                "created_at": "2024-08-14 14:07:59",
+                "updated_at": "2024-08-14 14:08:08",
+                "deleted_at": null,
+                "pivot": {
+                    "product_id": "9cc34751-fd7f-41a3-a37b-80d0a85c1103",
+                    "price_tag_id": "9cc3b9b1-44ce-44d5-a117-6897e66bedaf",
+                    "price": 50
+                }
+            }
+        ],
+        "discounts": [
+            {
+                "id": "9cc3bbe2-152f-4023-a270-b9931fcd0ac8",
+                "name": "Menu Discount",
+                "name_localized": null,
+                "qualification": 3,
+                "amount": 10,
+                "minimum_product_price": null,
+                "minimum_order_price": null,
+                "maximum_amount": 25,
+                "is_percentage": true,
+                "is_taxable": true,
+                "order_types": [
+                    1,
+                    2,
+                    3,
+                    4
+                ],
+                "reference": null,
+                "associate_to_all_branches": false,
+                "include_modifiers": false,
+                "created_at": "2024-08-14 14:14:07",
+                "updated_at": "2024-08-14 14:14:18",
+                "deleted_at": null,
+                "pivot": {
+                    "product_id": "9cc34751-fd7f-41a3-a37b-80d0a85c1103",
+                    "discount_id": "9cc3bbe2-152f-4023-a270-b9931fcd0ac8"
+                }
+            }
+        ],
+        "timed_events": [
+            {
+                "id": "9cc3bc3f-02e4-496b-a318-a265b8282787",
+                "name": "Lunch Time",
+                "name_localized": null,
+                "type": 1,
+                "associate_to_all_branches": false,
+                "value": 50,
+                "priority": null,
+                "order_types": [
+                    1,
+                    2,
+                    3,
+                    4
+                ],
+                "from_date": "2024-08-01",
+                "to_date": "2024-08-31",
+                "from_time": 0,
+                "to_time": 0,
+                "is_sat": true,
+                "is_sun": true,
+                "is_mon": true,
+                "is_tue": true,
+                "is_wed": true,
+                "is_thu": true,
+                "is_fri": true,
+                "is_active": true,
+                "created_at": "2024-08-14 14:15:08",
+                "updated_at": "2024-08-14 14:15:08",
+                "deleted_at": null,
+                "price_tag_id": null,
+                "pivot": {
+                    "product_id": "9cc34751-fd7f-41a3-a37b-80d0a85c1103",
+                    "timed_event_id": "9cc3bc3f-02e4-496b-a318-a265b8282787"
+                }
+            }
+        ]
+    }
+}

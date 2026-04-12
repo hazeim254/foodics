@@ -4,5 +4,27 @@ namespace App\Services\Daftra;
 
 class ProductService
 {
-    // TODO: Implement product synchronization logic with Daftra
+    public function __construct(protected DaftraApiClient $daftraClient)
+    {
+    }
+
+    public function getProduct()
+    {
+
+    }
+
+    public function createProduct()
+    {
+
+    }
+
+    public function updateProduct()
+    {
+
+    }
+
+    public function deleteProduct()
+    {
+
+    }
 }
