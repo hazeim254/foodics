@@ -6,14 +6,24 @@ use App\Models\Invoice;
 
 class InvoiceService
 {
-    public function __construct(protected DaftraApiClient $daftraClient)
+    public function __construct(protected DaftraApiClient $daftraClient) {}
+
+    public function getInvoice(string $foodicsId): ?array
     {
+        $response = $this->daftraClient->get('/api2/invoices', [
+            'filter' => ['po_number' => $foodicsId],
+        ]);
+
+        if ($response->failed()) {
+            return null;
+        }
+
+        return $response->json('data.0.Invoice');
     }
 
     public function doesFoodicsInvoiceExistInDaftra(int $id): bool
     {
-        return false;
-        //        return $this->daftraClient->get("/api2/invoices/$id")->json();
+        return $this->getInvoice((string) $id) !== null;
     }
 
     public function createInvoice(array $data)
