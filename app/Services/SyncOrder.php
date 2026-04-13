@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Services\Daftra\ClientService;
 use App\Services\Daftra\InvoiceService;
 use App\Services\Daftra\ProductService;
+use App\Services\Daftra\TaxService;
 
 class SyncOrder
 {
@@ -13,7 +14,11 @@ class SyncOrder
         protected InvoiceService $invoiceService,
         protected ProductService $productService,
         protected ClientService $clientService,
+        protected TaxService $taxService,
     ) {}
+
+    /** @var array<string, int> */
+    protected array $taxMap = [];
 
     /**
      * A sample of the array structure of foodics order
@@ -30,16 +35,23 @@ class SyncOrder
             return;
         }
 
-        // 1. Build invoice line items by resolving Daftra product IDs
+        // 1. Resolve all unique taxes from the order
+        $this->taxMap = [];
+        $this->resolveUniqueTaxes($order);
+
+        // 2. Build invoice line items by resolving Daftra product IDs
         $invoiceItems = $this->getInvoiceItems($order['products']);
 
-        // 2. Resolve Daftra client ID from the order customer
+        // 3. Add charges as invoice items
+        $invoiceItems = $this->addChargeInvoiceItems($invoiceItems, $order['charges'] ?? []);
+
+        // 4. Resolve Daftra client ID from the order customer
         $clientId = null;
         if (! empty($order['customer'])) {
             $clientId = $this->clientService->getClientUsingFoodicsData($order['customer']);
         }
 
-        // 3. Build the Daftra invoice payload
+        // 5. Build the Daftra invoice payload
         //    po_number stores the Foodics order ID for later filtering
         $invoiceData = [
             'Invoice' => [
@@ -52,10 +64,10 @@ class SyncOrder
             'InvoiceItem' => $invoiceItems,
         ];
 
-        // 4. Create the invoice on Daftra
+        // 6. Create the invoice on Daftra
         $daftraInvoiceId = $this->invoiceService->createInvoice($invoiceData);
 
-        // 5. Save the mapping between Foodics order ID and Daftra invoice ID
+        // 7. Save the mapping between Foodics order ID and Daftra invoice ID
         $this->invoiceService->saveMapping($order['id'], $daftraInvoiceId);
         $this->syncPayment($order['payments'], $daftraInvoiceId);
     }
@@ -66,6 +78,14 @@ class SyncOrder
         foreach ($products as $orderProduct) {
             $daftraProductId = $this->productService->getProductByFoodicsData($orderProduct['product']);
 
+            $taxes = $orderProduct['taxes'] ?? [];
+            $daftraTaxIds = collect($taxes)
+                ->pluck('id')
+                ->map(fn ($foodicsId) => $this->taxMap[$foodicsId] ?? null)
+                ->filter()
+                ->values()
+                ->take(2);
+
             $invoiceItems[] = [
                 'product_id' => $daftraProductId,
                 'item' => $orderProduct['product']['name'],
@@ -73,10 +93,65 @@ class SyncOrder
                 'unit_price' => $orderProduct['unit_price'],
                 'discount' => $orderProduct['discount_amount'] ?? 0,
                 'discount_type' => $orderProduct['discount_type'] ?? 2,
+                'tax1' => $daftraTaxIds->get(0),
+                'tax2' => $daftraTaxIds->get(1),
             ];
         }
 
         return $invoiceItems;
+    }
+
+    public function addChargeInvoiceItems(array $invoiceItems, array $charges): array
+    {
+        foreach ($charges as $charge) {
+            $taxes = $charge['taxes'] ?? [];
+            $daftraTaxIds = collect($taxes)
+                ->pluck('id')
+                ->map(fn ($foodicsId) => $this->taxMap[$foodicsId] ?? null)
+                ->filter()
+                ->values()
+                ->take(2);
+
+            $invoiceItems[] = [
+                'item' => $charge['charge']['name'],
+                'quantity' => 1,
+                'unit_price' => $charge['amount'],
+                'discount' => 0,
+                'discount_type' => 2,
+                'tax1' => $daftraTaxIds->get(0),
+                'tax2' => $daftraTaxIds->get(1),
+            ];
+        }
+
+        return $invoiceItems;
+    }
+
+    protected function resolveUniqueTaxes(array $order): void
+    {
+        $allTaxes = collect();
+
+        // Collect product-level taxes
+        foreach ($order['products'] ?? [] as $product) {
+            $allTaxes = $allTaxes->merge($product['taxes'] ?? []);
+            // Collect modifier option taxes
+            foreach ($product['options'] ?? [] as $option) {
+                $allTaxes = $allTaxes->merge($option['taxes'] ?? []);
+            }
+        }
+
+        // Collect charge taxes
+        foreach ($order['charges'] ?? [] as $charge) {
+            $allTaxes = $allTaxes->merge($charge['taxes'] ?? []);
+        }
+
+        // Deduplicate by Foodics tax ID and resolve each
+        $uniqueTaxes = $allTaxes->unique('id');
+        foreach ($uniqueTaxes as $tax) {
+            $foodicsId = (string) $tax['id'];
+            if (! isset($this->taxMap[$foodicsId])) {
+                $this->taxMap[$foodicsId] = $this->taxService->resolveTaxId($tax);
+            }
+        }
     }
 
     public function syncPayment($payments, mixed $daftraInvoiceId): void

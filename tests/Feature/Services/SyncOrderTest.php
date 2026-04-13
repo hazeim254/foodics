@@ -51,6 +51,20 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->once()
         ->andReturn($clientCreateResponse);
 
+    // Tax lookup - VAT tax (8d84bebc) not cached
+    $taxNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/taxes.json', Mockery::on(fn (array $args) => isset($args['filter']['name'])))
+        ->once()
+        ->andReturn($taxNotFoundResponse);
+
+    // Tax creation
+    $taxCreateResponse = mockHttpResponse(successful: true, status: 202, json: ['id' => 54321]);
+    $mockClient->shouldReceive('post')
+        ->with('/api2/taxes.json', Mockery::any())
+        ->once()
+        ->andReturn($taxCreateResponse);
+
     $invoiceCreateResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => ['id' => 12345]]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
@@ -61,7 +75,8 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
             expect($payload['Invoice']['discount_amount'])->toBe(5);
             expect($payload['Invoice']['notes'])->toBe('Some Kitchen Notes 73664');
             expect($payload)->toHaveKey('InvoiceItem');
-            expect($payload['InvoiceItem'])->toHaveCount(1);
+            // Now expects 2 items: 1 product + 1 charge
+            expect($payload['InvoiceItem'])->toHaveCount(2);
             expect($payload['InvoiceItem'][0])->toBe([
                 'product_id' => 67890,
                 'item' => 'Tuna Sandwich',
@@ -69,7 +84,15 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
                 'unit_price' => 14,
                 'discount' => 20,
                 'discount_type' => 1,
+                'tax1' => 54321,
+                'tax2' => null,
             ]);
+            // Second item is the Service Charge
+            expect($payload['InvoiceItem'][1]['item'])->toBe('Service Charge');
+            expect($payload['InvoiceItem'][1]['quantity'])->toBe(1);
+            expect($payload['InvoiceItem'][1]['unit_price'])->toBe(8);
+            expect($payload['InvoiceItem'][1]['tax1'])->toBe(54321);
+            expect($payload['InvoiceItem'][1]['tax2'])->toBeNull();
 
             return true;
         }))
