@@ -178,8 +178,11 @@ class SyncOrder
     {
         // 6. Sync payments against the newly created Daftra invoice
         foreach ($payments as $payment) {
+            $foodicsPaymentMethodId = (string) ($payment['payment_method']['id'] ?? '');
+            $daftraPaymentMethodId = $this->paymentMethodMap[$foodicsPaymentMethodId] ?? null;
+
             $this->invoiceService->createPayment($daftraInvoiceId, [
-                'payment_method' => $payment['payment_method']['name'],
+                'payment_method' => $daftraPaymentMethodId,
                 'amount' => $payment['amount'],
                 'date' => $payment['added_at'],
             ]);

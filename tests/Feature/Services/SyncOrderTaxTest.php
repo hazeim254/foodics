@@ -96,10 +96,28 @@ it('syncs an order with taxes end-to-end', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
+    // Payment method lookup - Card (8df57bde) not cached
+    $paymentMethodNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/site_payment_gateway/list/1.json')
+        ->once()
+        ->andReturn($paymentMethodNotFoundResponse);
+
+    // Payment method creation
+    $paymentMethodCreateResponse = createMockHttpResponse(successful: true, status: 201, json: ['id' => 99999]);
+    $mockClient->shouldReceive('post')
+        ->with('/api2/site_payment_gateway.json', Mockery::any())
+        ->once()
+        ->andReturn($paymentMethodCreateResponse);
+
     // Payment
     $paymentResponse = createMockHttpResponse(successful: true, status: 200, json: []);
     $mockClient->shouldReceive('post')
-        ->with('/api2/invoices/12345/payments', Mockery::any())
+        ->with('/api2/invoices/12345/payments', [
+            'payment_method' => 99999,
+            'amount' => 24.15,
+            'date' => '2019-11-28 06:07:00',
+        ])
         ->once()
         ->andReturn($paymentResponse);
 
@@ -157,6 +175,20 @@ it('uses cached tax mapping when available', function () {
     $mockClient->shouldNotReceive('get')
         ->with('/api2/taxes.json', Mockery::any());
 
+    // Payment method lookup - Card (8df57bde) not cached
+    $paymentMethodNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/site_payment_gateway/list/1.json')
+        ->once()
+        ->andReturn($paymentMethodNotFoundResponse);
+
+    // Payment method creation
+    $paymentMethodCreateResponse = createMockHttpResponse(successful: true, status: 201, json: ['id' => 88888]);
+    $mockClient->shouldReceive('post')
+        ->with('/api2/site_payment_gateway.json', Mockery::any())
+        ->once()
+        ->andReturn($paymentMethodCreateResponse);
+
     $invoiceCreateResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => ['id' => 12345]]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
@@ -170,7 +202,11 @@ it('uses cached tax mapping when available', function () {
 
     $paymentResponse = createMockHttpResponse(successful: true, status: 200, json: []);
     $mockClient->shouldReceive('post')
-        ->with('/api2/invoices/12345/payments', Mockery::any())
+        ->with('/api2/invoices/12345/payments', [
+            'payment_method' => 88888,
+            'amount' => 24.15,
+            'date' => '2019-11-28 06:07:00',
+        ])
         ->once()
         ->andReturn($paymentResponse);
 

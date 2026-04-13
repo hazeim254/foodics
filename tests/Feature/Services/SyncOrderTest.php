@@ -99,10 +99,24 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
+    // Payment method lookup - Card (8df57bde) not cached
+    $paymentMethodNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/site_payment_gateway/list/1.json')
+        ->once()
+        ->andReturn($paymentMethodNotFoundResponse);
+
+    // Payment method creation
+    $paymentMethodCreateResponse = mockHttpResponse(successful: true, status: 201, json: ['id' => 99999]);
+    $mockClient->shouldReceive('post')
+        ->with('/api2/site_payment_gateway.json', Mockery::any())
+        ->once()
+        ->andReturn($paymentMethodCreateResponse);
+
     $paymentResponse = mockHttpResponse(successful: true, status: 200, json: []);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices/12345/payments', [
-            'payment_method' => 'Card',
+            'payment_method' => 99999,
             'amount' => 24.15,
             'date' => '2019-11-28 06:07:00',
         ])
