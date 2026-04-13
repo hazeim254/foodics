@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
@@ -9,7 +10,7 @@ class AuthController
 {
     public function daftraCallback(Request $request)
     {
-        if (!$request->user()->foodics_id) {
+        if (! $request->user()->foodics_id) {
             return $this->foodicsRedirect($request);
         }
     }
@@ -29,7 +30,7 @@ class AuthController
                     'client_id' => config('services.foodics.client_id'),
                     'client_secret' => config('services.foodics.client_secret'),
                     'code' => $request->input('code'),
-                    'redirect_uri' => config('services.foodics.redirect_uri')
+                    'redirect_uri' => config('services.foodics.redirect_uri'),
                 ])->json();
 
             $user = $request->user();
@@ -40,7 +41,7 @@ class AuthController
             ], [
                 'token' => $result['access_token'],
                 'refresh_token' => $result['refresh_token'],
-                'expires_at' => now()->addSeconds($result['expires_in'])
+                'expires_at' => now()->addSeconds($result['expires_in']),
             ]);
 
             $foodicsRef = \Http::asJson()
@@ -55,20 +56,15 @@ class AuthController
         }
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function foodicsRedirect(Request $request): \Illuminate\Http\RedirectResponse
+    public function foodicsRedirect(Request $request): RedirectResponse
     {
         $foodicsState = \Str::uuid()->toString();
         $request->session()->put('foodics_state', $foodicsState);
-        $url = 'https://console-sandbox.foodics.com/authorize?' . http_build_query([
-                'client_id' => config('services.foodics.client_id'),
-                'state' => $foodicsState
-            ]);
+        $url = 'https://console-sandbox.foodics.com/authorize?'.http_build_query([
+            'client_id' => config('services.foodics.client_id'),
+            'state' => $foodicsState,
+        ]);
+
         return redirect()->away($url);
     }
 }
-
-

@@ -13,19 +13,17 @@ class WebhookLogService
     /**
      * Log a webhook request to the database and dispatch processing job.
      *
-     * @param Request $request
-     * @return WebhookLog
      * @throws \Exception
      */
     public function log(Request $request): WebhookLog
     {
         $payload = $request->all();
 
-        if (!isset($payload['event'])) {
+        if (! isset($payload['event'])) {
             throw new \Exception('Missing required field: event');
         }
 
-        if (!isset($payload['timestamp'])) {
+        if (! isset($payload['timestamp'])) {
             throw new \Exception('Missing required field: timestamp');
         }
 

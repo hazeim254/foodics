@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
 
 /**
- * @mixin \Illuminate\Http\Client\PendingRequest
+ * @mixin PendingRequest
  */
 class DaftraApiClient
 {
@@ -22,7 +22,7 @@ class DaftraApiClient
 
     public function __call($name, $arguments)
     {
-        if (!in_array($name, ['get', 'post', 'put', 'patch', 'delete'])) {
+        if (! in_array($name, ['get', 'post', 'put', 'patch', 'delete'])) {
             return $this->client->$name(...$arguments);
         }
 
@@ -46,7 +46,7 @@ class DaftraApiClient
         ]);
 
         if ($response->failed()) {
-            throw new \Exception('Failed to refresh Daftra token for user: ' . $this->user->id);
+            throw new \Exception('Failed to refresh Daftra token for user: '.$this->user->id);
         }
 
         $result = $response->json();

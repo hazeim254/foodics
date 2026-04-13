@@ -30,9 +30,10 @@ class ProcessWebhookLogJob implements ShouldQueue
 
     public int $maxExceptions = 3;
 
-//    public $afterCommit = true;
+    //    public $afterCommit = true;
 
-    public function __construct(public int $webhookLogId) {
+    public function __construct(public int $webhookLogId)
+    {
         $this->onQueue('webhooks');
     }
 
@@ -43,10 +44,11 @@ class ProcessWebhookLogJob implements ShouldQueue
                 ->lockForUpdate()
                 ->find($this->webhookLogId);
 
-            if (!$webhookLog) {
+            if (! $webhookLog) {
                 Log::warning('WebhookLog not found, job may have been processed already', [
                     'webhook_log_id' => $this->webhookLogId,
                 ]);
+
                 return;
             }
 
@@ -55,6 +57,7 @@ class ProcessWebhookLogJob implements ShouldQueue
                     'webhook_log_id' => $this->webhookLogId,
                     'processed_at' => $webhookLog->processed_at,
                 ]);
+
                 return;
             }
 
@@ -64,6 +67,7 @@ class ProcessWebhookLogJob implements ShouldQueue
                     'webhook_log_id' => $this->webhookLogId,
                     'attempts' => $this->attempts(),
                 ]);
+
                 return;
             }
 
@@ -113,10 +117,11 @@ class ProcessWebhookLogJob implements ShouldQueue
                 ->lockForUpdate()
                 ->find($this->webhookLogId);
 
-            if (!$webhookLog) {
+            if (! $webhookLog) {
                 Log::error('WebhookLog not found in failed() method', [
                     'webhook_log_id' => $this->webhookLogId,
                 ]);
+
                 return;
             }
 

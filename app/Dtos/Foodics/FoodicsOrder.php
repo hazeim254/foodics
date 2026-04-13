@@ -2,9 +2,9 @@
 
 namespace App\Dtos\Foodics;
 
-class FoodicsOrder extends \Spatie\LaravelData\Data
+use Spatie\LaravelData\Data;
+
+class FoodicsOrder extends Data
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 }

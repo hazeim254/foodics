@@ -15,7 +15,7 @@ class WebhooksController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to log webhook', [
                 'error' => $e->getMessage(),
-                'payload' => $request->all()
+                'payload' => $request->all(),
             ]);
         }
 

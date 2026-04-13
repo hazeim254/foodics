@@ -148,7 +148,7 @@ class ProductService
             'product_code' => $productCode,
             'barcode' => (string) ($foodicsProduct['barcode'] ?? ''),
             'type' => 1,
-            'status' => (bool) ($foodicsProduct['is_active'] ?? true)? 0 : 1,
+            'status' => (bool) ($foodicsProduct['is_active'] ?? true) ? 0 : 1,
         ];
 
         if ($product['buy_price'] === null) {
