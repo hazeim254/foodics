@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Services\Daftra\ClientService;
 use App\Services\Daftra\InvoiceService;
+use App\Services\Daftra\PaymentMethodService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
 
@@ -15,10 +16,14 @@ class SyncOrder
         protected ProductService $productService,
         protected ClientService $clientService,
         protected TaxService $taxService,
+        protected PaymentMethodService $paymentMethodService,
     ) {}
 
     /** @var array<string, int> */
     protected array $taxMap = [];
+
+    /** @var array<string, int> */
+    protected array $paymentMethodMap = [];
 
     /**
      * A sample of the array structure of foodics order
@@ -38,6 +43,10 @@ class SyncOrder
         // 1. Resolve all unique taxes from the order
         $this->taxMap = [];
         $this->resolveUniqueTaxes($order);
+
+        // 2. Resolve all unique payment methods from the order
+        $this->paymentMethodMap = [];
+        $this->resolveUniquePaymentMethods($order);
 
         // 2. Build invoice line items by resolving Daftra product IDs
         $invoiceItems = $this->getInvoiceItems($order['products']);
@@ -150,6 +159,17 @@ class SyncOrder
             $foodicsId = (string) $tax['id'];
             if (! isset($this->taxMap[$foodicsId])) {
                 $this->taxMap[$foodicsId] = $this->taxService->resolveTaxId($tax);
+            }
+        }
+    }
+
+    protected function resolveUniquePaymentMethods(array $order): void
+    {
+        foreach ($order['payments'] ?? [] as $payment) {
+            $foodicsPaymentMethod = $payment['payment_method'] ?? [];
+            $foodicsId = (string) ($foodicsPaymentMethod['id'] ?? '');
+            if ($foodicsId !== '' && ! isset($this->paymentMethodMap[$foodicsId])) {
+                $this->paymentMethodMap[$foodicsId] = $this->paymentMethodService->resolvePaymentMethod($foodicsPaymentMethod);
             }
         }
     }
