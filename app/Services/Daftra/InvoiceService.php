@@ -21,7 +21,7 @@ class InvoiceService
         return $response->json('data.0.Invoice');
     }
 
-    public function doesFoodicsInvoiceExistInDaftra(int $id): bool
+    public function doesFoodicsInvoiceExistInDaftra(string $id): bool
     {
         return $this->getInvoice((string) $id) !== null;
     }
@@ -51,6 +51,7 @@ class InvoiceService
             'user_id' => \Context::get('user')->id,
             'foodics_id' => $foodicsId,
             'daftra_id' => $daftraId,
+            'status' => 'synced',
         ]);
     }
 

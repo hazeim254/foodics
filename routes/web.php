@@ -6,7 +6,9 @@ use App\Http\Middleware\FoodicsWebhook;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
-Auth::loginUsingId(1);
+if (app()->environment('local') && ! app()->runningUnitTests()) {
+    Auth::loginUsingId(1);
+}
 
 Route::get('/', function () {
     return view('welcome');
