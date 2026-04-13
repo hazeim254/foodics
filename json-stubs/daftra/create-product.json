@@ -1,0 +1,33 @@
+{
+    "Product": {
+        "staff_id": 0,
+        "name": "string",
+        "description": "string",
+        "unit_price": 0,
+        "tax1": 0,
+        "tax2": 0,
+        "supplier_id": 0,
+        "brand": "string",
+        "category": "string",
+        "tags": "string",
+        "buy_price": 0,
+        "product_code": "string",
+        "track_stock": true,
+        "stock_balance": 0,
+        "low_stock_thershold": 0,
+        "barcode": "string",
+        "notes": "string",
+        "status": 0,
+        "follow_up_status": null,
+        "updated_price": true,
+        "average_price": 0,
+        "type": null,
+        "minimum_price": null,
+        "profit_margin": null,
+        "discount": null,
+        "discount_type": null,
+        "duration_minutes": 0,
+        "availabe_online": 0,
+        "raw_store_id": null
+    }
+}
