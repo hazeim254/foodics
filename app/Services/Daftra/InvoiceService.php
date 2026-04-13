@@ -14,9 +14,10 @@ class InvoiceService
         $this->daftraClient = new DaftraApiClient(\Context::get('user'));
     }
 
-    public function getInvoice(int $id): array
+    public function getInvoiceByFoodicsId(int $id): array
     {
-        return $this->daftraClient->get("/api2/invoices/$id")->json();
+        return false;
+//        return $this->daftraClient->get("/api2/invoices/$id")->json();
     }
 
     public function createInvoice(array $data)

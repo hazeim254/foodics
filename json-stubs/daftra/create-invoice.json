@@ -1,0 +1,97 @@
+{
+    "Invoice": {
+        "staff_id": 0,
+        "subscription_id": 26,
+        "store_id": 0,
+        "no": "0700000AAAAA0001",
+        "po_number": "26",
+        "name": "Darrel Gusikowski-Koch",
+        "client_id": 15,
+        "is_offline": true,
+        "currency_code": "USD",
+        "client_business_name": "Example Client",
+        "client_first_name": "Example",
+        "client_last_name": "Client",
+        "client_email": "client@example.com",
+        "client_address1": "Florida West Damionworth Warren County 19902 Schmitt Wells Suite 780",
+        "client_address2": "West Virginia South Sandrine Union County 681 Huels Branch Apt. 308",
+        "client_postal_code": "29515-2869",
+        "client_city": "Santiagocester",
+        "client_state": "Vermont",
+        "client_country_code": "EG",
+        "date": "2018-11-07",
+        "draft": false,
+        "discount": 0,
+        "discount_amount": 0,
+        "deposit": 0,
+        "deposit_type": 0,
+        "notes": "fugiat Ut",
+        "html_notes": "voluptate nulla",
+        "invoice_layout_id": 1,
+        "estimate_id": 0,
+        "shipping_options": 2,
+        "shipping_amount": null,
+        "client_active_secondary_address": false,
+        "client_secondary_name": "Steven Zulauf",
+        "client_secondary_address1": "Wyoming Lake Leilani Franklin County 39823 Jefferson Street Suite 706",
+        "client_secondary_address2": "Oregon Dibbertbury Hamilton County 8594 Clark Street Suite 780",
+        "client_secondary_city": "North Shyanne",
+        "client_secondary_state": "Florida",
+        "client_secondary_postal_code": "00967",
+        "client_secondary_country_code": "CC",
+        "follow_up_status": null,
+        "work_order_id": null,
+        "requisition_delivery_status": 2,
+        "pos_shift_id": null,
+        "qr_code_url": "https://yoursite.daftra.com/qr/?d64=QVE1TmIyaGhiV1ZrSUVGemFISmhaZ0lJTVRFMU16WTJRMUlERkRJd01qSXRNVEF0TWpoVU1EQTZNREU2TVRWYUJBRXdCUUV3",
+        "invoice_html_url": "https://yoursite.daftra.com/invoices/preview/2621?hash=c06543fe13bd4850b521733687c53259",
+        "invoice_pdf_url": "https://yoursite.daftra.com/invoices/view/2621.pdf?hash=c06543fe13bd4850b521733687c53259"
+    },
+    "InvoiceItem": [
+        {
+            "item": "occaecat",
+            "description": "Arto vesco sumptus cinis laudantium subito spoliatio admoveo. Vulticulus cruciamentum eveniet denuo tabgo. Usitas ultio vinum alius teres adfectus confero utilis.",
+            "unit_price": 77.59,
+            "quantity": 1,
+            "tax1": null,
+            "tax2": null,
+            "product_id": 12,
+            "col_3": null,
+            "col_4": null,
+            "col_5": null,
+            "discount": 0,
+            "discount_type": 2,
+            "store_id": 0,
+            "lot": [
+                586865858
+            ],
+            "expiry_date": [
+                "2024-09-29"
+            ],
+            "serials": []
+        }
+    ],
+    "Payment": [
+        {
+            "payment_method": "ad elit Ut dolor adipisicing",
+            "amount": 561.89,
+            "transaction_id": "payment",
+            "treasury_id": -16127808,
+            "date": "2025-03-24 21:22:32",
+            "staff_id": -86060770
+        },
+        {
+            "payment_method": "ad elit Ut dolor adipisicing",
+            "amount": 561.89,
+            "transaction_id": "payment",
+            "treasury_id": -16127808,
+            "date": "2025-03-24 21:22:32",
+            "staff_id": -86060770
+        }
+    ],
+    "InvoiceCustomField": {},
+    "Deposit": {},
+    "InvoiceReminder": {},
+    "Document": {},
+    "DocumentTitle": {}
+}

@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->string('foodics_id');
+            $table->foreignId('user_id')->constrained();
+            $table->string('foodics_id')->index();
             $table->integer('daftra_id');
             $table->string('status');
             $table->timestamps();
