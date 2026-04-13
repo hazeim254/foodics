@@ -24,8 +24,6 @@ class SyncOrder
      */
     public function handle(array $order): void
     {
-        // Skip if already synced locally
-
         try {
             $this->skipIfAlreadySyncedLocally($order['id']);
         } catch (\Throwable $e) {

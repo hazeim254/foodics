@@ -6,11 +6,8 @@ use App\Models\Invoice;
 
 class InvoiceService
 {
-    private DaftraApiClient $daftraClient;
-
-    public function __construct()
+    public function __construct(protected DaftraApiClient $daftraClient)
     {
-        $this->daftraClient = new DaftraApiClient(\Context::get('user'));
     }
 
     public function doesFoodicsInvoiceExistInDaftra(int $id): bool
