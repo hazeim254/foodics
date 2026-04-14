@@ -45,12 +45,13 @@ class InvoiceService
         return $result->successful();
     }
 
-    public function saveMapping(string $foodicsId, int $daftraId): void
+    public function saveMapping(string $foodicsId, int $daftraId, string $foodicsReference): void
     {
         Invoice::create([
             'user_id' => \Context::get('user')->id,
             'foodics_id' => $foodicsId,
             'daftra_id' => $daftraId,
+            'foodics_reference' => $foodicsReference,
             'status' => 'synced',
         ]);
     }

@@ -77,7 +77,7 @@ class SyncOrder
         $daftraInvoiceId = $this->invoiceService->createInvoice($invoiceData);
 
         // 7. Save the mapping between Foodics order ID and Daftra invoice ID
-        $this->invoiceService->saveMapping($order['id'], $daftraInvoiceId);
+        $this->invoiceService->saveMapping($order['id'], $daftraInvoiceId, $order['reference']);
         $this->syncPayment($order['payments'], $daftraInvoiceId);
     }
 

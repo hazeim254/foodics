@@ -13,6 +13,7 @@ class Invoice extends Model
         'user_id',
         'foodics_id',
         'daftra_id',
+        'foodics_reference',
         'status',
     ];
 }
