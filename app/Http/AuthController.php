@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,19 @@ class AuthController
         return redirect()->away($url);
     }
 
+    public function loginForm(): RedirectResponse|View
+    {
+        if (auth()->check()) {
+            return redirect()->route('home');
+        }
+
+        if (session()->has('daftra_account') && session()->has('foodics_account')) {
+            return redirect()->route('home');
+        }
+
+        return view('login');
+    }
+
     public function daftraCallback(Request $request): RedirectResponse
     {
         $response = Http::asForm()
@@ -61,7 +75,7 @@ class AuthController
         ]);
 
         if (! $request->session()->has('foodics_account')) {
-            return redirect()->route('foodics.auth');
+            return redirect()->route('login');
         }
 
         $this->loginOrCreateUser($request);
@@ -118,7 +132,7 @@ class AuthController
         ]);
 
         if (! $request->session()->has('daftra_account')) {
-            return redirect()->route('daftra.auth');
+            return redirect()->route('login');
         }
 
         $this->loginOrCreateUser($request);
