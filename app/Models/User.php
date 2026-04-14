@@ -23,6 +23,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'daftra_id',
+        'daftra_meta',
+        'foodics_ref',
+        'foodics_id',
+        'foodics_meta',
     ];
 
     /**
@@ -55,6 +60,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'daftra_meta' => 'array',
+            'foodics_meta' => 'array',
         ];
     }
 

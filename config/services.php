@@ -36,8 +36,11 @@ return [
     ],
 
     'daftra' => [
-        'app_id' => env('DAFTRA_APP_ID'),
-        'app_secret' => env('DAFTRA_APP_SECRET'),
+        'oauth_url' => env('DAFTRA_OAUTH_URL'),
+        'base_url' => env('DAFTRA_BASE_URL'),
+        'client_id' => env('DAFTRA_APP_ID'),
+        'client_secret' => env('DAFTRA_APP_SECRET'),
+        'redirect_uri' => env('DAFTRA_REDIRECT_URI'),
     ],
 
     'foodics' => [

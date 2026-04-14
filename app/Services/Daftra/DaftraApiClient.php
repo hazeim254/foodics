@@ -16,7 +16,7 @@ class DaftraApiClient
     {
         $this->client = \Http::asJson()
             ->acceptJson()
-            ->baseUrl(config('daftra.base_url'))
+            ->baseUrl(config('services.daftra.base_url'))
             ->withToken($user->getDaftraToken());
     }
 
@@ -41,8 +41,8 @@ class DaftraApiClient
         $response = $this->client->post('/oauth/token', [
             'refresh_token' => $this->user->getDaftraToken()->refresh_token,
             'grant_type' => 'refresh_token',
-            'client_id' => config('daftra.client_id'),
-            'client_secret' => config('daftra.client_secret'),
+            'client_id' => config('services.daftra.client_id'),
+            'client_secret' => config('services.daftra.client_secret'),
         ]);
 
         if ($response->failed()) {
