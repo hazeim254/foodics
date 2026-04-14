@@ -74,4 +74,18 @@ class OrderService
 
         return ['orders' => $orders, 'next_reference' => $nextReference];
     }
+
+    /**
+     * Fetch a single order by ID from the Foodics API.
+     */
+    public function getOrder(string $orderId): array
+    {
+        $response = $this->client->get("/orders/{$orderId}", [
+            'include' => 'payments,charges,customer,products',
+        ]);
+
+        $response->throw();
+
+        return $response->json('order');
+    }
 }

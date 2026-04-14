@@ -4,7 +4,9 @@ use App\Models\Invoice;
 use App\Models\User;
 use App\Services\Foodics\FoodicsApiClient;
 use App\Services\Foodics\OrderService;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Context;
 
 uses(RefreshDatabase::class);
@@ -109,6 +111,52 @@ it('returns empty array when API returns empty page', function () {
     expect($orders)->toBeEmpty();
 });
 
+it('fetches a single order by ID', function () {
+    $orderId = 'order-uuid-123';
+    $orderData = [
+        'order' => [
+            'id' => $orderId,
+            'reference' => '00420',
+            'business_date' => '2026-04-14',
+            'products' => [],
+            'payments' => [],
+            'charges' => [],
+            'customer' => null,
+        ],
+    ];
+
+    $mockClient = Mockery::mock(FoodicsApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with("/orders/{$orderId}", Mockery::on(fn ($p) => $p['include'] === 'payments,charges,customer,products'))
+        ->once()
+        ->andReturn(fakeResponse($orderData));
+
+    $this->app->instance(FoodicsApiClient::class, $mockClient);
+
+    $orderService = $this->app->make(OrderService::class);
+    $order = $orderService->getOrder($orderId);
+
+    expect($order['id'])->toBe($orderId);
+    expect($order['reference'])->toBe('00420');
+});
+
+it('throws exception when fetching a single order returns 404', function () {
+    $orderId = 'non-existent-order-id';
+
+    $mockClient = Mockery::mock(FoodicsApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with("/orders/{$orderId}", Mockery::any())
+        ->once()
+        ->andReturn(failedResponse(404));
+
+    $this->app->instance(FoodicsApiClient::class, $mockClient);
+
+    $orderService = $this->app->make(OrderService::class);
+
+    expect(fn () => $orderService->getOrder($orderId))
+        ->toThrow(RequestException::class);
+});
+
 function fakeResponse(array $json): object
 {
     return new class($json)
@@ -125,6 +173,11 @@ function fakeResponse(array $json): object
             return false;
         }
 
+        public function throw(): static
+        {
+            return $this;
+        }
+
         public function json($key = null, $default = null): mixed
         {
             if ($key === null) {
@@ -132,6 +185,38 @@ function fakeResponse(array $json): object
             }
 
             return data_get($this->json, $key, $default);
+        }
+    };
+}
+
+function failedResponse(int $status = 404): object
+{
+    return new class($status)
+    {
+        public function __construct(private int $status) {}
+
+        public function successful(): bool
+        {
+            return false;
+        }
+
+        public function failed(): bool
+        {
+            return true;
+        }
+
+        public function throw(): void
+        {
+            throw new RequestException(
+                new Illuminate\Http\Client\Response(
+                    new Response($this->status, [], json_encode(['error' => 'Not found']))
+                )
+            );
+        }
+
+        public function json($key = null, $default = null): mixed
+        {
+            return $default;
         }
     };
 }
