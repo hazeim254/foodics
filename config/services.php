@@ -42,6 +42,7 @@ return [
 
     'foodics' => [
         'oauth_url' => env('FOODICS_OAUTH_URL'),
+        'base_url' => env('FOODICS_BASE_URL'),
         'client_id' => env('FOODICS_CLIENT_ID'),
         'client_secret' => env('FOODICS_CLIENT_SECRET'),
         'redirect_uri' => env('FOODICS_REDIRECT_URI'),

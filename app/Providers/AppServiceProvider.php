@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Daftra\DaftraApiClient;
+use App\Services\Foodics\FoodicsApiClient;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,6 +28,15 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return new DaftraApiClient($user);
+        });
+
+        $this->app->bind(FoodicsApiClient::class, function ($app) {
+            $user = \Context::get('user');
+            if (! $user) {
+                throw new \Exception('User not found in context');
+            }
+
+            return new FoodicsApiClient($user);
         });
     }
 }

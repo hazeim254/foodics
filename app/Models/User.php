@@ -40,6 +40,11 @@ class User extends Authenticatable
         return $this->providerTokens->firstWhere('provider', 'daftra');
     }
 
+    public function getFoodicsToken(): ?ProviderToken
+    {
+        return $this->providerTokens->firstWhere('provider', 'foodics');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
