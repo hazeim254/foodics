@@ -51,7 +51,7 @@ class OrderService
     {
         $params = [
             'sort' => 'reference',
-            'include' => 'products,payments.payment_method,charges,customer',
+            'include' => 'products.product,payments.payment_method,charges,customer',
             'limit' => 50,
         ];
 
