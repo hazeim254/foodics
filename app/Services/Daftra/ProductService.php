@@ -51,24 +51,29 @@ class ProductService
     public function getProduct(array $foodicsProduct): ?int
     {
         $foodicsId = (string) $foodicsProduct['id'];
-        $productCode = $this->resolveProductCode($foodicsProduct, $foodicsId);
+        $sku = isset($foodicsProduct['sku']) ? trim((string) $foodicsProduct['sku']) : '';
+        $candidateCodes = $sku !== '' ? [$sku, $foodicsId] : [$foodicsId];
 
-        $listResponse = $this->daftraClient->get('/api2/products', [
-            'product_code' => $productCode,
-        ]);
+        foreach ($candidateCodes as $productCode) {
+            $listResponse = $this->daftraClient->get('/api2/products', [
+                'product_code' => $productCode,
+            ]);
 
-        if (! $listResponse->successful()) {
-            throw new \RuntimeException(
-                'Daftra product list request failed: HTTP '.$listResponse->status().' '.$listResponse->body()
-            );
+            if (! $listResponse->successful()) {
+                throw new \RuntimeException(
+                    'Daftra product list request failed: HTTP '.$listResponse->status().' '.$listResponse->body()
+                );
+            }
+
+            $rows = $listResponse->json('data') ?? [];
+            if ($rows === []) {
+                continue;
+            }
+
+            return $this->daftraProductIdFromListRow($rows[0]);
         }
 
-        $rows = $listResponse->json('data') ?? [];
-        if ($rows === []) {
-            return null;
-        }
-
-        return $this->daftraProductIdFromListRow($rows[0]);
+        return null;
     }
 
     /**

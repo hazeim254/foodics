@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
+use App\Services\Foodics\FoodicsApiClient;
 use App\Services\SyncOrder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Context;
@@ -24,20 +25,24 @@ it('syncs an order with taxes end-to-end', function () {
 
     $invoiceNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['filter']['po_number'])))
+        ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
         ->once()
         ->andReturn($invoiceNotFoundResponse);
 
     // Product lookup
     $productNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/products.json', Mockery::on(fn (array $args) => isset($args['filter']['product_code'])))
+        ->with('/api2/products', ['product_code' => 'P002-CANONICAL'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '8d90b8d1'])
         ->once()
         ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = createMockHttpResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
-        ->with('/api2/products.json', Mockery::any())
+        ->with('/api2/products', Mockery::any())
         ->once()
         ->andReturn($productCreateResponse);
 
@@ -71,7 +76,7 @@ it('syncs an order with taxes end-to-end', function () {
         ->andReturn($taxCreateResponse);
 
     // Invoice creation with tax data
-    $invoiceCreateResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => ['id' => 12345]]);
+    $invoiceCreateResponse = createMockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
             expect($payload)->toHaveKey('Invoice');
@@ -80,8 +85,8 @@ it('syncs an order with taxes end-to-end', function () {
             // Should have 2 invoice items: 1 product + 1 charge (Service Charge)
             expect($payload['InvoiceItem'])->toHaveCount(2);
 
-            // First item: Tuna Sandwich with tax
-            expect($payload['InvoiceItem'][0]['item'])->toBe('Tuna Sandwich');
+            // First item: canonical product name with tax
+            expect($payload['InvoiceItem'][0]['item'])->toBe('Canonical Tuna Sandwich');
             expect($payload['InvoiceItem'][0]['tax1'])->toBe(54321);
             expect($payload['InvoiceItem'][0]['tax2'])->toBeNull();
 
@@ -122,6 +127,19 @@ it('syncs an order with taxes end-to-end', function () {
         ->andReturn($paymentResponse);
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
+    $foodicsClient = Mockery::mock(FoodicsApiClient::class);
+    $foodicsClient->shouldReceive('get')
+        ->with('/products/8d90b8d1')
+        ->once()
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
+            'data' => [
+                'id' => '8d90b8d1',
+                'name' => 'Canonical Tuna Sandwich',
+                'sku' => 'P002-CANONICAL',
+                'description' => 'Canonical Product Description',
+            ],
+        ]));
+    $this->app->instance(FoodicsApiClient::class, $foodicsClient);
 
     $syncOrder = $this->app->make(SyncOrder::class);
     $syncOrder->handle($this->order);
@@ -149,13 +167,17 @@ it('uses cached tax mapping when available', function () {
 
     $productNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/products.json', Mockery::any())
+        ->with('/api2/products', ['product_code' => 'P002-CANONICAL'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '8d90b8d1'])
         ->once()
         ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = createMockHttpResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
-        ->with('/api2/products.json', Mockery::any())
+        ->with('/api2/products', Mockery::any())
         ->once()
         ->andReturn($productCreateResponse);
 
@@ -189,7 +211,7 @@ it('uses cached tax mapping when available', function () {
         ->once()
         ->andReturn($paymentMethodCreateResponse);
 
-    $invoiceCreateResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => ['id' => 12345]]);
+    $invoiceCreateResponse = createMockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
             // Should use cached tax ID 99999
@@ -211,6 +233,19 @@ it('uses cached tax mapping when available', function () {
         ->andReturn($paymentResponse);
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
+    $foodicsClient = Mockery::mock(FoodicsApiClient::class);
+    $foodicsClient->shouldReceive('get')
+        ->with('/products/8d90b8d1')
+        ->once()
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
+            'data' => [
+                'id' => '8d90b8d1',
+                'name' => 'Canonical Tuna Sandwich',
+                'sku' => 'P002-CANONICAL',
+                'description' => 'Canonical Product Description',
+            ],
+        ]));
+    $this->app->instance(FoodicsApiClient::class, $foodicsClient);
 
     $syncOrder = $this->app->make(SyncOrder::class);
     $syncOrder->handle($this->order);

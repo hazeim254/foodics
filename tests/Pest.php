@@ -77,6 +77,11 @@ function createMockHttpResponse(bool $successful, int $status, array $json): obj
             return data_get($this->json, $key, $default);
         }
 
+        public function throw(): static
+        {
+            return $this;
+        }
+
         public function body(): string
         {
             return json_encode($this->json);

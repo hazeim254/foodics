@@ -26,7 +26,7 @@ it('gets invoice by foodics ID from Daftra', function () {
     ]);
 
     $this->mockClient->shouldReceive('get')
-        ->with('/api2/invoices', ['filter[po_number]' => 'order-1'])
+        ->with('/api2/invoices', ['custom_field' => 'order-1', 'custom_field_label' => 'Foodics ID'])
         ->once()
         ->andReturn($response);
 
@@ -39,7 +39,7 @@ it('returns null when invoice not found on Daftra', function () {
     $response = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
 
     $this->mockClient->shouldReceive('get')
-        ->with('/api2/invoices', ['filter[po_number]' => 'order-1'])
+        ->with('/api2/invoices', ['custom_field' => 'order-1', 'custom_field_label' => 'Foodics ID'])
         ->once()
         ->andReturn($response);
 
@@ -50,7 +50,7 @@ it('throws on getInvoice API failure', function () {
     $response = createMockHttpResponse(successful: false, status: 500, json: []);
 
     $this->mockClient->shouldReceive('get')
-        ->with('/api2/invoices', ['filter[po_number]' => 'order-1'])
+        ->with('/api2/invoices', ['custom_field' => 'order-1', 'custom_field_label' => 'Foodics ID'])
         ->once()
         ->andReturn($response);
 
