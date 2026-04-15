@@ -16,7 +16,8 @@ class DaftraApiClient
     {
         $this->client = \Http::asJson()
             ->acceptJson()
-            ->baseUrl( 'https://' . $user->daftra_meta['subdomain'])
+//            ->baseUrl( 'https://' . $user->daftra_meta['subdomain'])
+            ->baseUrl(config('services.daftra.base_url'))
             ->withToken($user->getDaftraToken()->token)
             ->withHeaders([
                 'Site-Id' => $user->daftra_id,

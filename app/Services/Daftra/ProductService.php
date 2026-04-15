@@ -53,10 +53,8 @@ class ProductService
         $foodicsId = (string) $foodicsProduct['id'];
         $productCode = $this->resolveProductCode($foodicsProduct, $foodicsId);
 
-        $listResponse = $this->daftraClient->get('/api2/products.json', [
-            'filter' => [
-                'keyword' => $productCode,
-            ],
+        $listResponse = $this->daftraClient->get('/api2/products', [
+            'product_code' => $productCode,
         ]);
 
         if (! $listResponse->successful()) {
