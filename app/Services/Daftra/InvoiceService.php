@@ -2,7 +2,9 @@
 
 namespace App\Services\Daftra;
 
+use App\Exceptions\DaftraInvoiceCreationFailedException;
 use App\Models\Invoice;
+use Illuminate\Support\Facades\Context;
 
 class InvoiceService
 {
@@ -11,27 +13,49 @@ class InvoiceService
     public function getInvoice(string $foodicsId): ?array
     {
         $response = $this->daftraClient->get('/api2/invoices', [
-            'filter[po_number]' => $foodicsId,
+            'custom_field' => $foodicsId,
+            'custom_field_label' => 'Foodics ID',
         ]);
 
-        if ($response->failed()) {
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Daftra invoice list request failed: HTTP '.$response->status().' '.$response->body()
+            );
+        }
+
+        $rows = $response->json('data') ?? [];
+        if ($rows === []) {
             return null;
         }
 
-        return $response->json('data.0.Invoice');
+        return $rows[0]['Invoice'] ?? null;
     }
 
     public function doesFoodicsInvoiceExistInDaftra(string $id): bool
     {
-        return false;
-//        return $this->getInvoice($id) !== null;
+        return $this->getInvoice($id) !== null;
     }
 
-    public function createInvoice(array $data)
+    public function createInvoice(array $data): int
     {
         $response = $this->daftraClient->post('/api2/invoices', $data);
-        dd($response->json());
-        return $response['id'];
+
+        if ($response->failed()) {
+            throw new DaftraInvoiceCreationFailedException(
+                message: 'Daftra invoice creation failed: HTTP '.$response->status(),
+                responseBody: $response->body(),
+            );
+        }
+
+        $newId = $response->json('id');
+        if ($newId === null || $newId === '') {
+            throw new DaftraInvoiceCreationFailedException(
+                message: 'Daftra invoice creation response missing id.',
+                responseBody: $response->body(),
+            );
+        }
+
+        return (int) $newId;
     }
 
     public function updateInvoice(int $id, array $data): bool
@@ -50,8 +74,8 @@ class InvoiceService
 
     public function saveMapping(string $foodicsId, int $daftraId, string $foodicsReference): void
     {
-        Invoice::create([
-            'user_id' => \Context::get('user')->id,
+        Invoice::query()->create([
+            'user_id' => Context::get('user')->id,
             'foodics_id' => $foodicsId,
             'daftra_id' => $daftraId,
             'foodics_reference' => $foodicsReference,

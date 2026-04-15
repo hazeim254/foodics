@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\InvoiceAlreadyExistsException;
 use App\Models\Invoice;
 use App\Services\Daftra\ClientService;
 use App\Services\Daftra\InvoiceService;
@@ -36,9 +37,8 @@ class SyncOrder
     {
 
         try {
-            $this->skipIfAlreadySyncedLocally($order['id']);
-        } catch (\RuntimeException $e) {
-            dd($e);
+            $this->skipIfAlreadySynced($order['id']);
+        } catch (InvoiceAlreadyExistsException $e) {
             return;
         }
 
@@ -194,13 +194,13 @@ class SyncOrder
     /**
      * @throws \Throwable
      */
-    protected function skipIfAlreadySyncedLocally($id): void
+    protected function skipIfAlreadySynced($id): void
     {
         $orderAlreadyExists = Invoice::query()->where('foodics_id', $id)->exists();
-        throw_if($orderAlreadyExists, new \RuntimeException('Order already synced'));
+        throw_if($orderAlreadyExists, new InvoiceAlreadyExistsException('Order already synced locally'));
 
         // Skip if already exists on Daftra (e.g. synced by another process)
         $orderExistsOnDaftra = $this->invoiceService->doesFoodicsInvoiceExistInDaftra($id);
-        throw_if($orderExistsOnDaftra, new \RuntimeException('Order already synced'));
+        throw_if($orderExistsOnDaftra, new InvoiceAlreadyExistsException('Order already synced on Daftra'));
     }
 }

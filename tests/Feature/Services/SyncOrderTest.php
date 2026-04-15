@@ -15,7 +15,19 @@ beforeEach(function () {
     $this->user = User::factory()->create();
     Context::add('user', $this->user);
 
-    $this->order = json_decode(file_get_contents(base_path('json-stubs/foodics/get-order.json')), true)['order'];
+    $rawOrder = json_decode(file_get_contents(base_path('json-stubs/foodics/get-order.json')), true)['order'];
+
+    $rawOrder['products'] = collect($rawOrder['products'])->map(function (array $orderProduct) {
+        return array_merge($orderProduct['product'], [
+            'quantity' => $orderProduct['quantity'],
+            'unit_price' => $orderProduct['unit_price'],
+            'discount_amount' => $orderProduct['discount_amount'],
+            'discount_type' => $orderProduct['discount_type'],
+            'taxes' => $orderProduct['taxes'] ?? [],
+        ]);
+    })->toArray();
+
+    $this->order = $rawOrder;
 });
 
 it('syncs an order end-to-end with mocked Daftra API', function () {
@@ -23,19 +35,19 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
 
     $invoiceNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['filter']['po_number'])))
+        ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['filter[po_number]'])))
         ->once()
         ->andReturn($invoiceNotFoundResponse);
 
     $productNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/products.json', Mockery::on(fn (array $args) => isset($args['filter']['product_code'])))
+        ->with('/api2/products.json', Mockery::on(fn (array $args) => isset($args['filter']['keyword'])))
         ->once()
         ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = mockHttpResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
-        ->with('/api2/products.json', Mockery::any())
+        ->with('/api2/products', Mockery::any())
         ->once()
         ->andReturn($productCreateResponse);
 
@@ -65,7 +77,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
-    $invoiceCreateResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => ['id' => 12345]]);
+    $invoiceCreateResponse = mockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
             expect($payload)->toHaveKey('Invoice');
