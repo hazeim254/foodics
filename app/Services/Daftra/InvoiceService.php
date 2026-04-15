@@ -11,7 +11,7 @@ class InvoiceService
     public function getInvoice(string $foodicsId): ?array
     {
         $response = $this->daftraClient->get('/api2/invoices', [
-            'filter' => ['po_number' => $foodicsId],
+            'filter[po_number]' => $foodicsId,
         ]);
 
         if ($response->failed()) {
@@ -23,12 +23,15 @@ class InvoiceService
 
     public function doesFoodicsInvoiceExistInDaftra(string $id): bool
     {
-        return $this->getInvoice((string) $id) !== null;
+        return false;
+//        return $this->getInvoice($id) !== null;
     }
 
     public function createInvoice(array $data)
     {
-        return $this->daftraClient->post('/api2/invoices', $data)->json('data.id');
+        $response = $this->daftraClient->post('/api2/invoices', $data);
+        dd($response->json());
+        return $response['id'];
     }
 
     public function updateInvoice(int $id, array $data): bool

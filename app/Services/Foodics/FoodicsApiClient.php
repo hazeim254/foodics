@@ -16,8 +16,8 @@ class FoodicsApiClient
     {
         $this->client = \Http::asJson()
             ->acceptJson()
-            ->baseUrl(config('services.foodics.base_url'))
-            ->withToken($user->getFoodicsToken());
+            ->baseUrl(config('services.foodics.oauth_url'))
+            ->withToken($user->getFoodicsToken()->token);
     }
 
     public function __call($name, $arguments)

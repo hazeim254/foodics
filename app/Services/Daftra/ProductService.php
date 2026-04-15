@@ -55,7 +55,7 @@ class ProductService
 
         $listResponse = $this->daftraClient->get('/api2/products.json', [
             'filter' => [
-                'product_code' => $productCode,
+                'keyword' => $productCode,
             ],
         ]);
 
@@ -82,9 +82,9 @@ class ProductService
     {
         $foodicsId = (string) $foodicsProduct['id'];
         $payload = $this->buildCreatePayload($foodicsProduct, $foodicsId);
-        $createResponse = $this->daftraClient->post('/api2/products.json', $payload);
+        $createResponse = $this->daftraClient->post('/api2/products', $payload);
 
-        if ($createResponse->status() !== 202) {
+        if ($createResponse->failed()) {
             throw new DaftraProductCreationFailedException(
                 message: 'Daftra product creation failed: HTTP '.$createResponse->status(),
                 responseBody: $createResponse->body(),

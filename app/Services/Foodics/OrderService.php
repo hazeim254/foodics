@@ -59,11 +59,9 @@ class OrderService
             $params['filter[reference_after]'] = $referenceAfter;
         }
 
-        $response = $this->client->get('/orders', $params);
+        $response = $this->client->get('/v5/orders', $params);
 
-        $data = $response->json('data') ?? [];
-        // Each entry is { "order": { ... } }
-        $orders = array_map(fn ($entry) => $entry['order'], $data);
+        $orders = $response->json('data') ?? [];
 
         // Determine next reference from last order, if any
         $nextReference = null;

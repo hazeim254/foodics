@@ -165,7 +165,7 @@ class AuthController
             ]);
         }
 
-        $user->providerTokens()->firstOrCreate(
+        $user->providerTokens()->updateOrCreate(
             ['provider' => 'daftra'],
             [
                 'token' => $daftra['access_token'],
@@ -174,7 +174,7 @@ class AuthController
             ]
         );
 
-        $user->providerTokens()->firstOrCreate(
+        $user->providerTokens()->updateOrCreate(
             ['provider' => 'foodics'],
             [
                 'token' => $foodics['access_token'],

@@ -34,9 +34,11 @@ class SyncOrder
      */
     public function handle(array $order): void
     {
+
         try {
             $this->skipIfAlreadySyncedLocally($order['id']);
-        } catch (\Throwable $e) {
+        } catch (\RuntimeException $e) {
+            dd($e);
             return;
         }
 
@@ -85,7 +87,7 @@ class SyncOrder
     {
         $invoiceItems = [];
         foreach ($products as $orderProduct) {
-            $daftraProductId = $this->productService->getProductByFoodicsData($orderProduct['product']);
+            $daftraProductId = $this->productService->getProductByFoodicsData($orderProduct);
 
             $taxes = $orderProduct['taxes'] ?? [];
             $daftraTaxIds = collect($taxes)
@@ -97,7 +99,7 @@ class SyncOrder
 
             $invoiceItems[] = [
                 'product_id' => $daftraProductId,
-                'item' => $orderProduct['product']['name'],
+                'item' => $orderProduct['name'] ?? 'Foodics Product',
                 'quantity' => $orderProduct['quantity'],
                 'unit_price' => $orderProduct['unit_price'],
                 'discount' => $orderProduct['discount_amount'] ?? 0,

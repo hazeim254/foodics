@@ -54,7 +54,7 @@ class ClientService
         $payload = $this->buildCreatePayload($foodicsCustomer, $foodicsId);
         $createResponse = $this->daftraClient->post('/api2/clients.json', $payload);
 
-        if ($createResponse->status() !== 202) {
+        if ($createResponse->failed()) {
             throw new DaftraClientCreationFailedException(
                 message: 'Daftra client creation failed: HTTP '.$createResponse->status(),
                 responseBody: $createResponse->body(),
