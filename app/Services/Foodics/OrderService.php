@@ -30,6 +30,7 @@ class OrderService
         while ($hasMore) {
             $result = $this->fetchPage($referenceAfter);
             $orders = $result['orders'];
+            dd($orders);
 
             if (empty($orders)) {
                 $hasMore = false;

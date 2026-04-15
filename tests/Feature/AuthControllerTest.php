@@ -63,3 +63,25 @@ it('allows authenticated users to access home', function () {
         ->get('/')
         ->assertOk();
 });
+
+it('requests required scopes when redirecting to foodics oauth', function () {
+    $response = $this->get(route('foodics.auth'));
+
+    $response->assertRedirect();
+
+    $redirectUrl = $response->headers->get('Location');
+    $query = [];
+    parse_str((string) parse_url((string) $redirectUrl, PHP_URL_QUERY), $query);
+
+    expect($query)->toHaveKey('scope');
+
+    $requestedScopes = explode(' ', $query['scope']);
+
+    expect($requestedScopes)->toContain(
+        'orders.list',
+        'orders.get',
+        'general.read',
+        'customers.list',
+        'customers.get',
+    );
+});

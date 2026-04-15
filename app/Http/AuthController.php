@@ -25,11 +25,19 @@ class AuthController
     {
         $state = Str::uuid()->toString();
         $request->session()->put('foodics_state', $state);
+        $scopes = implode(' ', [
+            'orders.list',
+            'orders.get',
+            'general.read',
+            'customers.list',
+            'customers.get',
+        ]);
 
         $url = config('services.foodics.base_url').'/authorize?'.http_build_query([
             'client_id' => config('services.foodics.client_id'),
             'redirect_uri' => config('services.foodics.redirect_uri'),
             'state' => $state,
+            'scope' => $scopes,
         ]);
 
         return redirect()->away($url);
