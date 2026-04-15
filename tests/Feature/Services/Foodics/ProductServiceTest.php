@@ -28,7 +28,7 @@ it('fetches a product by id', function () {
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with("/products/{$productId}")
+        ->with("/v5/products/{$productId}")
         ->once()
         ->andReturn(fakeFoodicsResponse($payload));
 
@@ -47,7 +47,7 @@ it('throws request exception when product request fails', function () {
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with("/products/{$productId}")
+        ->with("/v5/products/{$productId}")
         ->once()
         ->andReturn(failedFoodicsResponse(404));
 
@@ -64,7 +64,7 @@ it('throws runtime exception when successful response misses data', function () 
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with("/products/{$productId}")
+        ->with("/v5/products/{$productId}")
         ->once()
         ->andReturn(fakeFoodicsResponse(['product' => ['id' => $productId]]));
 

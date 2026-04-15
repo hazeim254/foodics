@@ -16,19 +16,7 @@ beforeEach(function () {
     $this->user = User::factory()->create();
     Context::add('user', $this->user);
 
-    $rawOrder = json_decode(file_get_contents(base_path('json-stubs/foodics/get-order.json')), true)['order'];
-
-    $rawOrder['products'] = collect($rawOrder['products'])->map(function (array $orderProduct) {
-        return array_merge($orderProduct['product'], [
-            'quantity' => $orderProduct['quantity'],
-            'unit_price' => $orderProduct['unit_price'],
-            'discount_amount' => $orderProduct['discount_amount'],
-            'discount_type' => $orderProduct['discount_type'],
-            'taxes' => $orderProduct['taxes'] ?? [],
-        ]);
-    })->toArray();
-
-    $this->order = $rawOrder;
+    $this->order = json_decode(file_get_contents(base_path('json-stubs/foodics/get-order.json')), true)['order'];
 });
 
 it('syncs an order end-to-end with mocked Daftra API', function () {
@@ -42,7 +30,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
 
     $productNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/products', ['product_code' => 'P002-CANONICAL'])
+        ->with('/api2/products', ['product_code' => 'P002'])
         ->once()
         ->andReturn($productNotFoundResponse);
     $mockClient->shouldReceive('get')
@@ -96,7 +84,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
             expect($payload['InvoiceItem'])->toHaveCount(2);
             expect($payload['InvoiceItem'][0])->toBe([
                 'product_id' => 67890,
-                'item' => 'Canonical Tuna Sandwich',
+                'item' => 'Tuna Sandwich',
                 'quantity' => 2,
                 'unit_price' => 14,
                 'discount' => 20,
@@ -142,18 +130,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);
-    $foodicsClient->shouldReceive('get')
-        ->with('/products/8d90b8d1')
-        ->once()
-        ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
-            'data' => [
-                'id' => '8d90b8d1',
-                'name' => 'Canonical Tuna Sandwich',
-                'sku' => 'P002-CANONICAL',
-                'description' => 'Canonical Product Description',
-                'barcode' => 'BRC-100',
-            ],
-        ]));
+    $foodicsClient->shouldNotReceive('get');
     $this->app->instance(FoodicsApiClient::class, $foodicsClient);
 
     $syncOrder = $this->app->make(SyncOrder::class);
@@ -164,7 +141,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
     expect(Product::where('foodics_id', '8d90b8d1')->where('daftra_id', 67890)->exists())->toBeTrue();
 });
 
-it('caches canonical product lookups within the same order', function () {
+it('does not fetch product details from Foodics during sync', function () {
     $orderProduct = $this->order['products'][0];
     $this->order['products'] = [$orderProduct, $orderProduct];
 
@@ -178,7 +155,7 @@ it('caches canonical product lookups within the same order', function () {
 
     $productNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/products', ['product_code' => 'P002-CANONICAL'])
+        ->with('/api2/products', ['product_code' => 'P002'])
         ->once()
         ->andReturn($productNotFoundResponse);
     $mockClient->shouldReceive('get')
@@ -247,21 +224,24 @@ it('caches canonical product lookups within the same order', function () {
     $this->app->instance(DaftraApiClient::class, $mockClient);
 
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);
-    $foodicsClient->shouldReceive('get')
-        ->with('/products/8d90b8d1')
-        ->once()
-        ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
-            'data' => [
-                'id' => '8d90b8d1',
-                'name' => 'Canonical Tuna Sandwich',
-                'sku' => 'P002-CANONICAL',
-                'description' => 'Canonical Product Description',
-            ],
-        ]));
+    $foodicsClient->shouldNotReceive('get');
     $this->app->instance(FoodicsApiClient::class, $foodicsClient);
 
     $syncOrder = $this->app->make(SyncOrder::class);
     $syncOrder->handle($this->order);
+});
+
+it('throws when embedded product id is missing', function () {
+    data_forget($this->order, 'products.0.product.id');
+    unset($this->order['products'][0]['id']);
+
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $this->app->instance(FoodicsApiClient::class, Mockery::mock(FoodicsApiClient::class));
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+
+    expect(fn () => $syncOrder->getInvoiceItems($this->order['products']))
+        ->toThrow(RuntimeException::class, 'Order product line is missing a Foodics product id.');
 });
 
 it('skips order already synced locally', function () {

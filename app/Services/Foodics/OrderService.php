@@ -30,7 +30,6 @@ class OrderService
         while ($hasMore) {
             $result = $this->fetchPage($referenceAfter);
             $orders = $result['orders'];
-            dd($orders);
 
             if (empty($orders)) {
                 $hasMore = false;
@@ -52,7 +51,7 @@ class OrderService
     {
         $params = [
             'sort' => 'reference',
-            'include' => 'payments,charges,customer,products',
+            'include' => 'products,payments.payment_method,charges,customer',
             'limit' => 50,
         ];
 
@@ -80,7 +79,7 @@ class OrderService
     public function getOrder(string $orderId): array
     {
         $response = $this->client->get("/orders/{$orderId}", [
-            'include' => 'payments,charges,customer,products',
+            'include' => 'products,payments.payment_method,charges,customer',
         ]);
 
         $response->throw();

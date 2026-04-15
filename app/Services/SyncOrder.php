@@ -9,14 +9,12 @@ use App\Services\Daftra\InvoiceService;
 use App\Services\Daftra\PaymentMethodService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
-use App\Services\Foodics\ProductService as FoodicsProductService;
 
 class SyncOrder
 {
     public function __construct(
         protected InvoiceService $invoiceService,
         protected ProductService $productService,
-        protected FoodicsProductService $foodicsProductService,
         protected ClientService $clientService,
         protected TaxService $taxService,
         protected PaymentMethodService $paymentMethodService,
@@ -27,9 +25,6 @@ class SyncOrder
 
     /** @var array<string, int> */
     protected array $paymentMethodMap = [];
-
-    /** @var array<string, array<string, mixed>> */
-    protected array $foodicsProductMap = [];
 
     /**
      * A sample of the array structure of foodics order
@@ -53,8 +48,7 @@ class SyncOrder
 
         // 2. Resolve all unique payment methods from the order
         $this->paymentMethodMap = [];
-        $this->resolveUniquePaymentMethods($order);
-        $this->foodicsProductMap = [];
+//        $this->resolveUniquePaymentMethods($order);
 
         // 2. Build invoice line items by resolving Daftra product IDs
         $invoiceItems = $this->getInvoiceItems($order['products']);
@@ -86,7 +80,7 @@ class SyncOrder
 
         // 7. Save the mapping between Foodics order ID and Daftra invoice ID
         $this->invoiceService->saveMapping($order['id'], $daftraInvoiceId, $order['reference']);
-        $this->syncPayment($order['payments'], $daftraInvoiceId);
+//        $this->syncPayment($order['payments'], $daftraInvoiceId);
     }
 
     public function getInvoiceItems($products): array
@@ -94,13 +88,17 @@ class SyncOrder
         $invoiceItems = [];
         foreach ($products as $orderProduct) {
             $foodicsProductId = $this->resolveFoodicsProductId($orderProduct);
-            $foodicsProduct = $this->getCachedFoodicsProduct($foodicsProductId);
-            $sku = trim((string) ($foodicsProduct['sku'] ?? ($orderProduct['sku'] ?? '')));
+            $embeddedProduct = is_array($orderProduct['product'] ?? null) ? $orderProduct['product'] : [];
+            $sku = trim((string) ($embeddedProduct['sku'] ?? ($orderProduct['sku'] ?? '')));
             $enrichedProduct = array_merge($orderProduct, [
-                'id' => $foodicsProduct['id'] ?? $foodicsProductId,
-                'name' => $foodicsProduct['name'] ?? ($orderProduct['name'] ?? 'Foodics Product'),
+                'id' => $embeddedProduct['id'] ?? $foodicsProductId,
+                'name' => $embeddedProduct['name'] ?? ($orderProduct['name'] ?? 'Foodics Product'),
                 'sku' => $sku !== '' ? $sku : $foodicsProductId,
-                'description' => $foodicsProduct['description'] ?? ($orderProduct['description'] ?? ''),
+                'description' => $embeddedProduct['description'] ?? ($orderProduct['description'] ?? ''),
+                'barcode' => $embeddedProduct['barcode'] ?? ($orderProduct['barcode'] ?? null),
+                'price' => $embeddedProduct['price'] ?? ($orderProduct['price'] ?? null),
+                'cost' => $embeddedProduct['cost'] ?? ($orderProduct['cost'] ?? null),
+                'is_active' => $embeddedProduct['is_active'] ?? ($orderProduct['is_active'] ?? true),
             ]);
 
             $daftraProductId = $this->productService->getProductByFoodicsData($enrichedProduct);
@@ -225,23 +223,11 @@ class SyncOrder
      */
     protected function resolveFoodicsProductId(array $orderProduct): string
     {
-        $productId = $orderProduct['id'] ?? data_get($orderProduct, 'product.id');
+        $productId = data_get($orderProduct, 'product.id') ?? ($orderProduct['id'] ?? null);
         if (! is_string($productId) || trim($productId) === '') {
             throw new \RuntimeException('Order product line is missing a Foodics product id.');
         }
 
         return $productId;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function getCachedFoodicsProduct(string $foodicsProductId): array
-    {
-        if (! isset($this->foodicsProductMap[$foodicsProductId])) {
-            $this->foodicsProductMap[$foodicsProductId] = $this->foodicsProductService->getProduct($foodicsProductId);
-        }
-
-        return $this->foodicsProductMap[$foodicsProductId];
     }
 }

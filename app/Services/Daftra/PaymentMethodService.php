@@ -40,7 +40,7 @@ class PaymentMethodService
 
     public function getPaymentMethods(): array
     {
-        $listResponse = $this->daftraClient->get('/api2/site_payment_gateway/list/1.json');
+        $listResponse = $this->daftraClient->get('/v2/api/entity/site_payment_gateway/list');
 
         if (! $listResponse->successful()) {
             throw new \RuntimeException(
@@ -54,7 +54,7 @@ class PaymentMethodService
     public function createPaymentMethod(array $foodicsPaymentMethod): int
     {
         $payload = $this->buildCreatePayload($foodicsPaymentMethod);
-        $createResponse = $this->daftraClient->post('/api2/site_payment_gateway.json', $payload);
+        $createResponse = $this->daftraClient->post('/v2/api/entity/site_payment_gateway', $payload);
 
         if ($createResponse->status() !== 201) {
             throw new \RuntimeException(
