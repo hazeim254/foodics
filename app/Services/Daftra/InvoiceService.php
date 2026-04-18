@@ -30,6 +30,17 @@ class InvoiceService
         return $rows[0]['Invoice'] ?? null;
     }
 
+    public function getInvoiceById(int $daftraInvoiceId): ?array
+    {
+        $response = $this->daftraClient->get("/api2/invoices/$daftraInvoiceId");
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        return $response->json('data.Invoice') ?? null;
+    }
+
     public function doesFoodicsInvoiceExistInDaftra(string $id): bool
     {
         return $this->getInvoice($id) !== null;

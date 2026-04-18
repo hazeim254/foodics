@@ -73,8 +73,7 @@ class SyncOrder
 
         $this->syncPaymentsIfMissing($order['payments'] ?? [], $daftraInvoiceId);
 
-        $daftraInvoice = $this->invoiceService->getInvoice($order['id']);
-
+        $daftraInvoice = $this->invoiceService->getInvoiceById($daftraInvoiceId);
         if ($daftraInvoice !== null) {
             $invoice->update([
                 'daftra_metadata' => [
