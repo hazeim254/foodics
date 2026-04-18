@@ -66,6 +66,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function providerTokens(): HasMany
     {
         return $this->hasMany(ProviderToken::class);
