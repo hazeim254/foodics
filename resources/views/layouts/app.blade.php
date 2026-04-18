@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ config('app.name', 'Laravel') }}</title>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
+    @stack('styles')
+</head>
+<body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] dark:text-[#EDEDEC] min-h-screen">
+    <div x-data="{ sidebarOpen: false, isDesktop: window.innerWidth >= 1024 }" x-init="window.addEventListener('resize', () => { isDesktop = window.innerWidth >= 1024 })" @keydown.escape="sidebarOpen = false">
+        <div
+            x-show="sidebarOpen && !isDesktop"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-black/50 dark:bg-black/70 z-30"
+            @click="sidebarOpen = false"
+        ></div>
+
+        <aside
+            x-show="isDesktop || sidebarOpen"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="-translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="-translate-x-full"
+            class="fixed top-0 left-0 h-full w-64 bg-white dark:bg-[#161615] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] z-40 flex flex-col"
+            :class="{ '-translate-x-full': !isDesktop && !sidebarOpen }"
+        >
+            <div class="p-6 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-[#4A90D9] flex items-center justify-center">
+                        <span class="text-white font-semibold text-sm">D</span>
+                    </div>
+                    <span class="font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">Foodics</span>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-3 space-y-1">
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    Dashboard
+                </a>
+                <a
+                    href="{{ route('invoices') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('invoices') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Invoices
+                </a>
+                <a
+                    href="{{ route('products') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('products') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Products
+                </a>
+                <a
+                    href="{{ route('settings') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('settings') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Settings
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-[#e3e3e0] dark:border-[#3E3E3A]">
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full {{ session('daftra_account') ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                        <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">Daftra</span>
+                    </div>
+                    @if(session('daftra_account') && is_array(session('daftra_account')))
+                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ session('daftra_account')['subdomain'] ?? '' }}</p>
+                    @endif
+
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full {{ session('foodics_account') ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                        <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">Foodics</span>
+                    </div>
+                    @if(session('foodics_account') && is_array(session('foodics_account')))
+                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ session('foodics_account')['business_name'] ?? '' }}</p>
+                    @endif
+                </div>
+            </div>
+        </aside>
+
+        <div class="lg:pl-64">
+            <header class="sticky top-0 z-20 bg-[#FDFDFC] dark:bg-[#0a0a0a] border-b border-[#e3e3e0] dark:border-[#3E3E3A] lg:hidden">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <button
+                        type="button"
+                        class="p-2 -m-2 text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]"
+                        @click="sidebarOpen = !sidebarOpen"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <span class="font-medium text-sm">@yield('title', 'Dashboard')</span>
+                    <div class="w-10"></div>
+                </div>
+            </header>
+
+            <main class="p-6 lg:p-8">
+                @yield('content')
+            </main>
+        </div>
+    </div>
+
+    @stack('scripts')
+</body>
+</html>

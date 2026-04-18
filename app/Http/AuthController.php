@@ -46,11 +46,11 @@ class AuthController
     public function loginForm(): RedirectResponse|View
     {
         if (auth()->check()) {
-            return redirect()->route('home');
+            return redirect()->route('dashboard');
         }
 
         if (session()->has('daftra_account') && session()->has('foodics_account')) {
-            return redirect()->route('home');
+            return redirect()->route('dashboard');
         }
 
         return view('login');
@@ -88,7 +88,7 @@ class AuthController
 
         $this->loginOrCreateUser($request);
 
-        return redirect()->route('home');
+        return redirect()->route('dashboard');
     }
 
     public function foodicsCallback(Request $request): RedirectResponse
@@ -145,7 +145,7 @@ class AuthController
 
         $this->loginOrCreateUser($request);
 
-        return redirect()->route('home');
+        return redirect()->route('dashboard');
     }
 
     private function loginOrCreateUser(Request $request): void

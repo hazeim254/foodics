@@ -10,7 +10,7 @@ it('redirects authenticated user from login to home', function () {
 
     $this->actingAs($user)
         ->get('/login')
-        ->assertRedirect(route('home'));
+        ->assertRedirect(route('dashboard'));
 });
 
 it('shows login page for guests', function () {
@@ -48,7 +48,7 @@ it('redirects to home when both providers are in session', function () {
         'foodics_account' => ['business_name' => 'My Restaurant', 'business_id' => 'abc'],
     ])
         ->get('/login')
-        ->assertRedirect(route('home'));
+        ->assertRedirect(route('dashboard'));
 });
 
 it('redirects unauthenticated users from home to login', function () {
