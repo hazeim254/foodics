@@ -85,6 +85,9 @@ class InvoiceService
 
     public function createPayment(array $data): void
     {
-        $this->daftraClient->post('/api2/invoice_payments', $data);
+        $response = $this->daftraClient->post('/api2/invoice_payments', $data);
+        if ($response->failed()) {
+            dd($response->json(), $data);
+        }
     }
 }

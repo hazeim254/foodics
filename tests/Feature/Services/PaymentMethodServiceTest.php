@@ -14,7 +14,32 @@ beforeEach(function () {
     Context::add('user', $this->user);
 });
 
-it('resolves payment method id from local cache', function () {
+it('resolves payment method slug from local cache', function () {
+    $foodicsPaymentMethod = [
+        'id' => '8df57bde',
+        'name' => 'Card',
+        'code' => 'Card',
+    ];
+
+    EntityMapping::factory()->create([
+        'user_id' => $this->user->id,
+        'type' => 'payment_method',
+        'foodics_id' => '8df57bde',
+        'daftra_id' => 12345,
+        'metadata' => ['name' => 'Card', 'code' => 'Card', 'payment_gateway' => 'card'],
+    ]);
+
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+    $mockClient->shouldNotReceive('get');
+    $mockClient->shouldNotReceive('post');
+
+    $service = new PaymentMethodService($mockClient);
+    $slug = $service->resolvePaymentMethod($foodicsPaymentMethod);
+
+    expect($slug)->toBe('card');
+});
+
+it('falls back to slugified name when cache lacks payment_gateway metadata', function () {
     $foodicsPaymentMethod = [
         'id' => '8df57bde',
         'name' => 'Card',
@@ -34,9 +59,9 @@ it('resolves payment method id from local cache', function () {
     $mockClient->shouldNotReceive('post');
 
     $service = new PaymentMethodService($mockClient);
-    $daftraId = $service->resolvePaymentMethod($foodicsPaymentMethod);
+    $slug = $service->resolvePaymentMethod($foodicsPaymentMethod);
 
-    expect($daftraId)->toBe(12345);
+    expect($slug)->toBe('card');
 });
 
 it('searches daftra when not cached and creates mapping', function () {
@@ -48,7 +73,11 @@ it('searches daftra when not cached and creates mapping', function () {
 
     $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
-            ['SitePaymentGateway' => ['id' => 67890, 'label' => 'Card']],
+            ['SitePaymentGateway' => [
+                'id' => 67890,
+                'label' => 'Card',
+                'payment_gateway' => 'card',
+            ]],
         ],
     ]);
 
@@ -59,9 +88,71 @@ it('searches daftra when not cached and creates mapping', function () {
         ->andReturn($paymentMethodsResponse);
 
     $service = new PaymentMethodService($mockClient);
-    $daftraId = $service->resolvePaymentMethod($foodicsPaymentMethod);
+    $slug = $service->resolvePaymentMethod($foodicsPaymentMethod);
 
-    expect($daftraId)->toBe(67890);
+    expect($slug)->toBe('card');
+    $mapping = EntityMapping::where('foodics_id', '8df57bde')->where('daftra_id', 67890)->first();
+    expect($mapping)->not->toBeNull();
+    expect($mapping->metadata['payment_gateway'])->toBe('card');
+});
+
+it('prefetches gateways once so multiple resolutions reuse the same list', function () {
+    $first = ['id' => 'pm-one', 'name' => 'Card', 'code' => 'Card'];
+    $second = ['id' => 'pm-two', 'name' => 'Card', 'code' => 'Card'];
+
+    $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['SitePaymentGateway' => [
+                'id' => 67890,
+                'label' => 'Card',
+                'payment_gateway' => 'card',
+            ]],
+        ],
+    ]);
+
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->once()
+        ->andReturn($paymentMethodsResponse);
+
+    $service = new PaymentMethodService($mockClient);
+    $service->beginPaymentMethodBatch();
+    expect($service->resolvePaymentMethod($first))->toBe('card');
+    expect($service->resolvePaymentMethod($second))->toBe('card');
+    $service->endPaymentMethodBatch();
+
+    expect(EntityMapping::where('type', 'payment_method')->count())->toBe(2);
+});
+
+it('does not post when list already contains matching payment_gateway slug', function () {
+    $foodicsPaymentMethod = [
+        'id' => '8df57bde',
+        'name' => 'Card',
+        'code' => 'Card',
+    ];
+
+    $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['SitePaymentGateway' => [
+                'id' => 67890,
+                'label' => 'Renamed label',
+                'payment_gateway' => 'card',
+            ]],
+        ],
+    ]);
+
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->once()
+        ->andReturn($paymentMethodsResponse);
+    $mockClient->shouldNotReceive('post');
+
+    $service = new PaymentMethodService($mockClient);
+    $slug = $service->resolvePaymentMethod($foodicsPaymentMethod);
+
+    expect($slug)->toBe('card');
     expect(EntityMapping::where('foodics_id', '8df57bde')->where('daftra_id', 67890)->exists())->toBeTrue();
 });
 
@@ -94,13 +185,64 @@ it('creates payment method in daftra when not found and persists mapping', funct
         ->andReturn($paymentMethodCreateResponse);
 
     $service = new PaymentMethodService($mockClient);
-    $daftraId = $service->resolvePaymentMethod($foodicsPaymentMethod);
+    $slug = $service->resolvePaymentMethod($foodicsPaymentMethod);
 
-    expect($daftraId)->toBe(99999);
+    expect($slug)->toBe('card');
     expect(EntityMapping::where('foodics_id', '8df57bde')->where('daftra_id', 99999)->exists())->toBeTrue();
+    expect(EntityMapping::where('foodics_id', '8df57bde')->first()->metadata['payment_gateway'])->toBe('card');
 });
 
-it('searches daftra by label when getting payment method', function () {
+it('finds payment method in daftra by payment_gateway slug', function () {
+    $foodicsPaymentMethod = [
+        'id' => '8df57bde',
+        'name' => 'Cash',
+        'code' => 'Cash',
+    ];
+
+    $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['SitePaymentGateway' => [
+                'id' => 54321,
+                'label' => 'Cash drawer',
+                'payment_gateway' => 'cash',
+            ]],
+        ],
+    ]);
+
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->once()
+        ->andReturn($paymentMethodsResponse);
+
+    $service = new PaymentMethodService($mockClient);
+    $found = $service->getPaymentMethod($foodicsPaymentMethod);
+
+    expect($found)->toBe(['id' => 54321, 'slug' => 'cash']);
+});
+
+it('returns null when payment method not found in daftra', function () {
+    $foodicsPaymentMethod = [
+        'id' => '8df57bde',
+        'name' => 'Wallet',
+        'code' => 'Wallet',
+    ];
+
+    $paymentMethodsEmptyResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->once()
+        ->andReturn($paymentMethodsEmptyResponse);
+
+    $service = new PaymentMethodService($mockClient);
+    $found = $service->getPaymentMethod($foodicsPaymentMethod);
+
+    expect($found)->toBeNull();
+});
+
+it('returns null when list row is missing payment_gateway', function () {
     $foodicsPaymentMethod = [
         'id' => '8df57bde',
         'name' => 'Cash',
@@ -120,30 +262,9 @@ it('searches daftra by label when getting payment method', function () {
         ->andReturn($paymentMethodsResponse);
 
     $service = new PaymentMethodService($mockClient);
-    $daftraId = $service->getPaymentMethod($foodicsPaymentMethod);
+    $found = $service->getPaymentMethod($foodicsPaymentMethod);
 
-    expect($daftraId)->toBe(54321);
-});
-
-it('returns null when payment method not found in daftra', function () {
-    $foodicsPaymentMethod = [
-        'id' => '8df57bde',
-        'name' => 'Wallet',
-        'code' => 'Wallet',
-    ];
-
-    $paymentMethodsEmptyResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
-
-    $mockClient = Mockery::mock(DaftraApiClient::class);
-    $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
-        ->once()
-        ->andReturn($paymentMethodsEmptyResponse);
-
-    $service = new PaymentMethodService($mockClient);
-    $daftraId = $service->getPaymentMethod($foodicsPaymentMethod);
-
-    expect($daftraId)->toBeNull();
+    expect($found)->toBeNull();
 });
 
 it('creates payment method with correct payload', function () {
@@ -169,9 +290,9 @@ it('creates payment method with correct payload', function () {
         ->andReturn($paymentMethodCreateResponse);
 
     $service = new PaymentMethodService($mockClient);
-    $daftraId = $service->createPaymentMethod($foodicsPaymentMethod);
+    $slug = $service->createPaymentMethod($foodicsPaymentMethod);
 
-    expect($daftraId)->toBe(11111);
+    expect($slug)->toBe('digital_wallet');
 });
 
 it('persists payment method mapping with correct metadata', function () {
@@ -189,5 +310,9 @@ it('persists payment method mapping with correct metadata', function () {
     $mapping = EntityMapping::where('foodics_id', '8df57bde')->where('daftra_id', 99999)->first();
     expect($mapping)->not->toBeNull();
     expect($mapping->type)->toBe('payment_method');
-    expect($mapping->metadata)->toBe(['name' => 'Card', 'code' => 'Card']);
+    expect($mapping->metadata)->toBe([
+        'name' => 'Card',
+        'code' => 'Card',
+        'payment_gateway' => 'card',
+    ]);
 });

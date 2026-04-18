@@ -26,7 +26,7 @@ class SyncOrder
     /** @var array<string, int> */
     protected array $taxMap = [];
 
-    /** @var array<string, int> */
+    /** @var array<string, string> */
     protected array $paymentMethodMap = [];
 
     /**
@@ -51,7 +51,7 @@ class SyncOrder
 
         // 2. Resolve all unique payment methods from the order
         $this->paymentMethodMap = [];
-        //        $this->resolveUniquePaymentMethods($order);
+        $this->resolveUniquePaymentMethods($order);
 
         // 2. Build invoice line items by resolving Daftra product IDs
         $invoiceItems = $this->getInvoiceItems($order['products']);
@@ -189,12 +189,18 @@ class SyncOrder
 
     protected function resolveUniquePaymentMethods(array $order): void
     {
-        foreach ($order['payments'] ?? [] as $payment) {
-            $foodicsPaymentMethod = $payment['payment_method'] ?? [];
-            $foodicsId = (string) ($foodicsPaymentMethod['id'] ?? '');
-            if ($foodicsId !== '' && ! isset($this->paymentMethodMap[$foodicsId])) {
-                $this->paymentMethodMap[$foodicsId] = $this->paymentMethodService->resolvePaymentMethod($foodicsPaymentMethod);
+        $this->paymentMethodService->beginPaymentMethodBatch();
+
+        try {
+            foreach ($order['payments'] ?? [] as $payment) {
+                $foodicsPaymentMethod = $payment['payment_method'] ?? [];
+                $foodicsId = $foodicsPaymentMethod['id'] ?? '';
+                if ($foodicsId !== '' && ! isset($this->paymentMethodMap[$foodicsId])) {
+                    $this->paymentMethodMap[$foodicsId] = $this->paymentMethodService->resolvePaymentMethod($foodicsPaymentMethod);
+                }
             }
+        } finally {
+            $this->paymentMethodService->endPaymentMethodBatch();
         }
     }
 

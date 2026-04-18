@@ -70,6 +70,18 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
+    $paymentGatewayListResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->once()
+        ->andReturn($paymentGatewayListResponse);
+
+    $paymentGatewayCreateResponse = mockHttpResponse(successful: true, status: 201, json: ['id' => 424242]);
+    $mockClient->shouldReceive('post')
+        ->with('/v2/api/entity/site_payment_gateway', Mockery::any())
+        ->once()
+        ->andReturn($paymentGatewayCreateResponse);
+
     $invoiceCreateResponse = mockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
@@ -109,7 +121,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
             expect($payload)->toHaveKey('InvoicePayment');
             expect($payload['InvoicePayment']['invoice_id'])->toBe(12345);
-            expect($payload['InvoicePayment']['payment_method'])->toBeNull();
+            expect($payload['InvoicePayment']['payment_method'])->toBe('card');
             expect($payload['InvoicePayment']['amount'])->toBe(24.15);
             expect($payload['InvoicePayment']['date'])->toBe('2019-11-28 06:07:00');
 
@@ -183,6 +195,18 @@ it('does not fetch product details from Foodics during sync', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
+    $paymentGatewayListResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->once()
+        ->andReturn($paymentGatewayListResponse);
+
+    $paymentGatewayCreateResponse = mockHttpResponse(successful: true, status: 201, json: ['id' => 424242]);
+    $mockClient->shouldReceive('post')
+        ->with('/v2/api/entity/site_payment_gateway', Mockery::any())
+        ->once()
+        ->andReturn($paymentGatewayCreateResponse);
+
     $invoiceCreateResponse = mockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
@@ -198,7 +222,7 @@ it('does not fetch product details from Foodics during sync', function () {
         ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
             expect($payload)->toHaveKey('InvoicePayment');
             expect($payload['InvoicePayment']['invoice_id'])->toBe(12345);
-            expect($payload['InvoicePayment']['payment_method'])->toBeNull();
+            expect($payload['InvoicePayment']['payment_method'])->toBe('card');
             expect($payload['InvoicePayment'])->toHaveKeys(['amount', 'date']);
 
             return true;
