@@ -49,7 +49,7 @@ it('syncs an order with taxes end-to-end', function () {
     // Client lookup
     $clientNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/clients.json', Mockery::on(fn (array $args) => isset($args['filter']['client_number'])))
+        ->with('/v2/api/entity/client/list', Mockery::on(fn (array $args) => isset($args['filter']['client_number'])))
         ->once()
         ->andReturn($clientNotFoundResponse);
 
@@ -101,28 +101,17 @@ it('syncs an order with taxes end-to-end', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    // Payment method lookup - Card (8df57bde) not cached
-    $paymentMethodNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
-    $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
-        ->once()
-        ->andReturn($paymentMethodNotFoundResponse);
-
-    // Payment method creation
-    $paymentMethodCreateResponse = createMockHttpResponse(successful: true, status: 201, json: ['id' => 99999]);
-    $mockClient->shouldReceive('post')
-        ->with('/api2/site_payment_gateway.json', Mockery::any())
-        ->once()
-        ->andReturn($paymentMethodCreateResponse);
-
-    // Payment
     $paymentResponse = createMockHttpResponse(successful: true, status: 200, json: []);
     $mockClient->shouldReceive('post')
-        ->with('/api2/invoices/12345/payments', [
-            'payment_method' => 99999,
-            'amount' => 24.15,
-            'date' => '2019-11-28 06:07:00',
-        ])
+        ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
+            expect($payload)->toHaveKey('InvoicePayment');
+            expect($payload['InvoicePayment']['invoice_id'])->toBe(12345);
+            expect($payload['InvoicePayment']['payment_method'])->toBeNull();
+            expect($payload['InvoicePayment']['amount'])->toBe(24.15);
+            expect($payload['InvoicePayment']['date'])->toBe('2019-11-28 06:07:00');
+
+            return true;
+        }))
         ->once()
         ->andReturn($paymentResponse);
 
@@ -173,7 +162,7 @@ it('uses cached tax mapping when available', function () {
 
     $clientNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/clients.json', Mockery::any())
+        ->with('/v2/api/entity/client/list', Mockery::any())
         ->once()
         ->andReturn($clientNotFoundResponse);
 
@@ -187,24 +176,9 @@ it('uses cached tax mapping when available', function () {
     $mockClient->shouldNotReceive('get')
         ->with('/api2/taxes.json', Mockery::any());
 
-    // Payment method lookup - Card (8df57bde) not cached
-    $paymentMethodNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
-    $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
-        ->once()
-        ->andReturn($paymentMethodNotFoundResponse);
-
-    // Payment method creation
-    $paymentMethodCreateResponse = createMockHttpResponse(successful: true, status: 201, json: ['id' => 88888]);
-    $mockClient->shouldReceive('post')
-        ->with('/api2/site_payment_gateway.json', Mockery::any())
-        ->once()
-        ->andReturn($paymentMethodCreateResponse);
-
     $invoiceCreateResponse = createMockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
-            // Should use cached tax ID 99999
             expect($payload['InvoiceItem'][0]['tax1'])->toBe(99999);
 
             return true;
@@ -214,11 +188,14 @@ it('uses cached tax mapping when available', function () {
 
     $paymentResponse = createMockHttpResponse(successful: true, status: 200, json: []);
     $mockClient->shouldReceive('post')
-        ->with('/api2/invoices/12345/payments', [
-            'payment_method' => 88888,
-            'amount' => 24.15,
-            'date' => '2019-11-28 06:07:00',
-        ])
+        ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
+            expect($payload)->toHaveKey('InvoicePayment');
+            expect($payload['InvoicePayment']['invoice_id'])->toBe(12345);
+            expect($payload['InvoicePayment']['amount'])->toBe(24.15);
+            expect($payload['InvoicePayment']['date'])->toBe('2019-11-28 06:07:00');
+
+            return true;
+        }))
         ->once()
         ->andReturn($paymentResponse);
 

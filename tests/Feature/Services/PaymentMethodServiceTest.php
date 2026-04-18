@@ -54,7 +54,7 @@ it('searches daftra when not cached and creates mapping', function () {
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
+        ->with('/v2/api/entity/site_payment_gateway/list')
         ->once()
         ->andReturn($paymentMethodsResponse);
 
@@ -77,12 +77,12 @@ it('creates payment method in daftra when not found and persists mapping', funct
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
+        ->with('/v2/api/entity/site_payment_gateway/list')
         ->once()
         ->andReturn($paymentMethodsEmptyResponse);
 
     $mockClient->shouldReceive('post')
-        ->with('/api2/site_payment_gateway.json', Mockery::on(function (array $payload) {
+        ->with('/v2/api/entity/site_payment_gateway', Mockery::on(function (array $payload) {
             expect($payload['SitePaymentGateway']['payment_gateway'])->toBe('card');
             expect($payload['SitePaymentGateway']['label'])->toBe('Card');
             expect($payload['SitePaymentGateway']['manually_added'])->toBe(1);
@@ -115,7 +115,7 @@ it('searches daftra by label when getting payment method', function () {
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
+        ->with('/v2/api/entity/site_payment_gateway/list')
         ->once()
         ->andReturn($paymentMethodsResponse);
 
@@ -136,7 +136,7 @@ it('returns null when payment method not found in daftra', function () {
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
+        ->with('/v2/api/entity/site_payment_gateway/list')
         ->once()
         ->andReturn($paymentMethodsEmptyResponse);
 
@@ -157,7 +157,7 @@ it('creates payment method with correct payload', function () {
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('post')
-        ->with('/api2/site_payment_gateway.json', Mockery::on(function (array $payload) {
+        ->with('/v2/api/entity/site_payment_gateway', Mockery::on(function (array $payload) {
             expect($payload['SitePaymentGateway']['payment_gateway'])->toBe('digital_wallet');
             expect($payload['SitePaymentGateway']['label'])->toBe('Digital Wallet');
             expect($payload['SitePaymentGateway']['manually_added'])->toBe(1);

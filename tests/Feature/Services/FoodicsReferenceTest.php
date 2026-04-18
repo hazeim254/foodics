@@ -44,7 +44,7 @@ it('stores foodics_reference when syncing an order', function () {
 
     $clientNotFoundResponse = mockResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/clients.json', Mockery::on(fn ($a) => isset($a['filter']['client_number'])))
+        ->with('/v2/api/entity/client/list', Mockery::on(fn ($a) => isset($a['filter']['client_number'])))
         ->once()
         ->andReturn($clientNotFoundResponse);
 
@@ -72,21 +72,9 @@ it('stores foodics_reference when syncing an order', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    $paymentMethodNotFoundResponse = mockResponse(successful: true, status: 200, json: ['data' => []]);
-    $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
-        ->once()
-        ->andReturn($paymentMethodNotFoundResponse);
-
-    $paymentMethodCreateResponse = mockResponse(successful: true, status: 201, json: ['id' => 99999]);
-    $mockClient->shouldReceive('post')
-        ->with('/api2/site_payment_gateway.json', Mockery::any())
-        ->once()
-        ->andReturn($paymentMethodCreateResponse);
-
     $paymentResponse = mockResponse(successful: true, status: 200, json: []);
     $mockClient->shouldReceive('post')
-        ->with('/api2/invoices/12345/payments', Mockery::any())
+        ->with('/api2/invoice_payments', Mockery::any())
         ->once()
         ->andReturn($paymentResponse);
 

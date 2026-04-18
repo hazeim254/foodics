@@ -45,15 +45,15 @@ function stubDaftraSideEffectsForWalkIn(MockInterface $mockClient): void
         ->andReturn($created(54321));
 
     $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
+        ->with('/v2/api/entity/site_payment_gateway/list')
         ->andReturn($notFound);
 
     $mockClient->shouldReceive('post')
-        ->with('/api2/site_payment_gateway.json', Mockery::any())
+        ->with('/v2/api/entity/site_payment_gateway', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 201, json: ['id' => 99999]));
 
     $mockClient->shouldReceive('post')
-        ->with(Mockery::pattern('#/api2/invoices/\\d+/payments#'), Mockery::any())
+        ->with('/api2/invoice_payments', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: []));
 }
 
@@ -122,7 +122,7 @@ it('ignores the default client setting when the order already has a customer', f
     stubDaftraSideEffectsForWalkIn($mockClient);
 
     $mockClient->shouldReceive('get')
-        ->with('/api2/clients', Mockery::any())
+        ->with('/v2/api/entity/client/list', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
 
     $mockClient->shouldReceive('post')
