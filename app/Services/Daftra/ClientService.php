@@ -21,10 +21,8 @@ class ClientService
     {
         $clientNumber = (string) $foodicsCustomer['id'];
 
-        $listResponse = $this->daftraClient->get('/api2/clients.json', [
-            'filter' => [
-                'client_number' => $clientNumber,
-            ],
+        $listResponse = $this->daftraClient->get('/api2/clients', [
+            'client_number' => $clientNumber,
         ]);
 
         if (! $listResponse->successful()) {

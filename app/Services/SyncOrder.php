@@ -48,7 +48,7 @@ class SyncOrder
 
         // 2. Resolve all unique payment methods from the order
         $this->paymentMethodMap = [];
-//        $this->resolveUniquePaymentMethods($order);
+        //        $this->resolveUniquePaymentMethods($order);
 
         // 2. Build invoice line items by resolving Daftra product IDs
         $invoiceItems = $this->getInvoiceItems($order['products']);
@@ -80,7 +80,7 @@ class SyncOrder
 
         // 7. Save the mapping between Foodics order ID and Daftra invoice ID
         $this->invoiceService->saveMapping($order['id'], $daftraInvoiceId, $order['reference']);
-//        $this->syncPayment($order['payments'], $daftraInvoiceId);
+        $this->syncPayment($order['payments'], $daftraInvoiceId);
     }
 
     public function getInvoiceItems($products): array

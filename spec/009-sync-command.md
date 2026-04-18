@@ -61,7 +61,7 @@ Done. Synced: 10, Failed: 2.
 
 - [x] Create `app/Console/Commands/SyncOrdersCommand.php` using `php artisan make:command`
 - [x] Run `vendor/bin/pint --dirty`
-- [ ] Manually test with `php artisan orders:sync 1`
+- [x] Manually test with `php artisan orders:sync 1`
 
 ---
 
