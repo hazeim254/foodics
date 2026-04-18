@@ -35,7 +35,7 @@ function stubDaftraSideEffectsForWalkIn(MockInterface $mockClient): void
 
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
-        ->twice()
+        ->once()
         ->andReturn($notFound);
 
     $mockClient->shouldReceive('get')
@@ -66,6 +66,12 @@ function stubDaftraSideEffectsForWalkIn(MockInterface $mockClient): void
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 1]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices/12345')
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+        ]));
 }
 
 it('uses the per-user default client setting when the order has no customer', function () {

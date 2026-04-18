@@ -22,19 +22,11 @@ beforeEach(function () {
 
 it('syncs an order end-to-end with mocked Daftra API', function () {
     $mockClient = Mockery::mock(DaftraApiClient::class);
-    $getInvoiceCallCount = 0;
 
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
-        ->twice()
-        ->andReturnUsing(function () use (&$getInvoiceCallCount) {
-            $getInvoiceCallCount++;
-            if ($getInvoiceCallCount === 1) {
-                return mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
-            }
-
-            return mockHttpResponse(successful: true, status: 200, json: ['data' => [['id' => 12345, 'Invoice' => ['id' => 12345, 'no' => 'INV-001']]]]);
-        });
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['data' => []]));
 
     $productNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
@@ -142,6 +134,13 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->once()
         ->andReturn($paymentResponse);
 
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices/12345')
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+        ]));
+
     $this->app->instance(DaftraApiClient::class, $mockClient);
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);
     $foodicsClient->shouldNotReceive('get');
@@ -173,7 +172,7 @@ it('does not fetch product details from Foodics during sync', function () {
     $invoiceNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
-        ->twice()
+        ->once()
         ->andReturn($invoiceNotFoundResponse);
 
     $productNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
@@ -255,6 +254,13 @@ it('does not fetch product details from Foodics during sync', function () {
         ->once()
         ->andReturn($paymentResponse);
 
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices/12345')
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+        ]));
+
     $this->app->instance(DaftraApiClient::class, $mockClient);
 
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);
@@ -301,19 +307,11 @@ it('skips order already synced locally', function () {
 
 it('stores foodics_metadata and daftra_metadata on invoice', function () {
     $mockClient = Mockery::mock(DaftraApiClient::class);
-    $getInvoiceCallCount = 0;
 
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
-        ->twice()
-        ->andReturnUsing(function () use (&$getInvoiceCallCount) {
-            $getInvoiceCallCount++;
-            if ($getInvoiceCallCount === 1) {
-                return mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
-            }
-
-            return mockHttpResponse(successful: true, status: 200, json: ['data' => [['id' => 12345, 'Invoice' => ['id' => 12345, 'no' => 'INV-001']]]]);
-        });
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['data' => []]));
 
     $productNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
@@ -382,6 +380,13 @@ it('stores foodics_metadata and daftra_metadata on invoice', function () {
         ->with('/api2/invoice_payments', Mockery::any())
         ->once()
         ->andReturn($paymentResponse);
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices/12345')
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+        ]));
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);

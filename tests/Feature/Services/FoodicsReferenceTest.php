@@ -23,7 +23,7 @@ it('stores foodics_reference when syncing an order', function () {
     $invoiceNotFoundResponse = mockResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn ($a) => isset($a['custom_field']) && isset($a['custom_field_label'])))
-        ->twice()
+        ->once()
         ->andReturn($invoiceNotFoundResponse);
 
     $productNotFoundResponse = mockResponse(successful: true, status: 200, json: ['data' => []]);
@@ -93,6 +93,13 @@ it('stores foodics_reference when syncing an order', function () {
         ->with('/api2/invoice_payments', Mockery::any())
         ->once()
         ->andReturn($paymentResponse);
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices/12345')
+        ->once()
+        ->andReturn(mockResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+        ]));
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);

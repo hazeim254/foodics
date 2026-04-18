@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\InvoiceSyncStatus;
+use App\Jobs\RetryInvoiceSyncJob;
 use App\Jobs\SyncInvoicesJob;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\Cache;
 
 class InvoiceController extends Controller
@@ -40,5 +43,24 @@ class InvoiceController extends Controller
         return response()->json([
             'syncing' => Cache::has('sync_in_progress:'.auth()->id()),
         ]);
+    }
+
+    public function retrySync(Invoice $invoice)
+    {
+        if ($invoice->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($invoice->status === InvoiceSyncStatus::Synced) {
+            return redirect()->route('invoices')
+                ->with('status', 'This invoice is already synced.');
+        }
+
+        $invoice->update(['status' => InvoiceSyncStatus::Failed]);
+
+        RetryInvoiceSyncJob::dispatch($invoice);
+
+        return redirect()->route('invoices')
+            ->with('status', "Retrying sync for {$invoice->foodics_reference}…");
     }
 }

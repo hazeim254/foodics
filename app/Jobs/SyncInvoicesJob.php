@@ -43,7 +43,8 @@ class SyncInvoicesJob implements ShouldBeUnique, ShouldQueue
                 try {
                     app(SyncOrder::class)->handle($order);
                 } catch (\Throwable $e) {
-                    Log::error("Failed to sync order: {$e->getMessage()}");
+                    report($e);
+                    //                    Log::error("Failed to sync order: {$e->getMessage()}");
                 }
             }
         } finally {

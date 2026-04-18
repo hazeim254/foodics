@@ -26,7 +26,7 @@ it('syncs an order with taxes end-to-end', function () {
     $invoiceNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
-        ->twice()
+        ->once()
         ->andReturn($invoiceNotFoundResponse);
 
     // Product lookup
@@ -131,6 +131,13 @@ it('syncs an order with taxes end-to-end', function () {
         ->once()
         ->andReturn($paymentResponse);
 
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices/12345')
+        ->once()
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+        ]));
+
     $this->app->instance(DaftraApiClient::class, $mockClient);
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);
     $foodicsClient->shouldNotReceive('get');
@@ -157,7 +164,7 @@ it('uses cached tax mapping when available', function () {
     $invoiceNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::any())
-        ->twice()
+        ->once()
         ->andReturn($invoiceNotFoundResponse);
 
     $productNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
@@ -231,6 +238,13 @@ it('uses cached tax mapping when available', function () {
         }))
         ->once()
         ->andReturn($paymentResponse);
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices/12345')
+        ->once()
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+        ]));
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);

@@ -30,14 +30,14 @@ function stubHappyPathDaftraCalls(MockInterface $mockClient, int $daftraInvoiceI
     if ($daftraInvoiceAlreadyExists) {
         $mockClient->shouldReceive('get')
             ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field'])))
-            ->atLeast()->once()
+            ->zeroOrMoreTimes()
             ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
                 'data' => [['Invoice' => ['id' => $daftraInvoiceId, 'po_number' => 'foo']]],
             ]));
     } else {
         $mockClient->shouldReceive('get')
             ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field'])))
-            ->atLeast()->once()
+            ->zeroOrMoreTimes()
             ->andReturn($notFound);
     }
 
@@ -57,6 +57,12 @@ function stubHappyPathDaftraCalls(MockInterface $mockClient, int $daftraInvoiceI
         ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
             'data' => [['id' => 424242, 'label' => 'Card', 'payment_gateway' => 'card']],
+        ]));
+
+    $mockClient->shouldReceive('get')
+        ->with("/api2/invoices/{$daftraInvoiceId}")
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => $daftraInvoiceId, 'no' => 'INV-001']],
         ]));
 }
 
@@ -256,7 +262,7 @@ it('reuses an existing Daftra invoice id from the local pending row on retry', f
     ]);
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
-    stubHappyPathDaftraCalls($mockClient);
+    stubHappyPathDaftraCalls($mockClient, daftraInvoiceId: 99999);
     $mockClient->shouldNotReceive('post')->with('/api2/invoices', Mockery::any());
 
     $mockClient->shouldReceive('get')
@@ -312,7 +318,7 @@ it('skips payment posting entirely when Daftra already has at least one payment'
     ]);
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
-    stubHappyPathDaftraCalls($mockClient);
+    stubHappyPathDaftraCalls($mockClient, daftraInvoiceId: 33333);
     $mockClient->shouldNotReceive('post')->with('/api2/invoices', Mockery::any());
 
     $mockClient->shouldReceive('get')
