@@ -60,7 +60,7 @@
                             <td class="px-6 py-4 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">{{ $invoice->foodics_reference }}</td>
                             <td class="px-6 py-4 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">{{ $invoice->daftra_id }}</td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400">{{ ucfirst($invoice->status) }}</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $invoice->status->badgeClasses() }}">{{ ucfirst($invoice->status->value) }}</span>
                             </td>
                             <td class="px-6 py-4 text-sm text-[#706f6c] dark:text-[#A1A09A]" title="{{$invoice->created_at->toDateTimeString()}}">{{ $invoice->created_at->diffForHumans() }}</td>
                         </tr>

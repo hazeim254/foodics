@@ -75,17 +75,15 @@ it('syncs an order with taxes end-to-end', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
-    $paymentGatewayListResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $paymentGatewayListResponse = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['id' => 424242, 'label' => 'Card', 'payment_gateway' => 'card'],
+        ],
+    ]);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentGatewayListResponse);
-
-    $paymentGatewayCreateResponse = createMockHttpResponse(successful: true, status: 201, json: ['id' => 424242]);
-    $mockClient->shouldReceive('post')
-        ->with('/v2/api/entity/site_payment_gateway', Mockery::any())
-        ->once()
-        ->andReturn($paymentGatewayCreateResponse);
 
     // Invoice creation with tax data
     $invoiceCreateResponse = createMockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
@@ -113,7 +111,13 @@ it('syncs an order with taxes end-to-end', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    $paymentResponse = createMockHttpResponse(successful: true, status: 200, json: []);
+    $listPaymentsEmptyResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 12345, 'limit' => 50])
+        ->once()
+        ->andReturn($listPaymentsEmptyResponse);
+
+    $paymentResponse = createMockHttpResponse(successful: true, status: 200, json: ['id' => 1]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
             expect($payload)->toHaveKey('InvoicePayment');
@@ -184,17 +188,15 @@ it('uses cached tax mapping when available', function () {
         ->once()
         ->andReturn($clientCreateResponse);
 
-    $paymentGatewayListResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $paymentGatewayListResponse = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['id' => 424242, 'label' => 'Card', 'payment_gateway' => 'card'],
+        ],
+    ]);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentGatewayListResponse);
-
-    $paymentGatewayCreateResponse = createMockHttpResponse(successful: true, status: 201, json: ['id' => 424242]);
-    $mockClient->shouldReceive('post')
-        ->with('/v2/api/entity/site_payment_gateway', Mockery::any())
-        ->once()
-        ->andReturn($paymentGatewayCreateResponse);
 
     // Tax API should NOT be called when cached
     $mockClient->shouldNotReceive('get')
@@ -210,7 +212,13 @@ it('uses cached tax mapping when available', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    $paymentResponse = createMockHttpResponse(successful: true, status: 200, json: []);
+    $listPaymentsEmptyResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 12345, 'limit' => 50])
+        ->once()
+        ->andReturn($listPaymentsEmptyResponse);
+
+    $paymentResponse = createMockHttpResponse(successful: true, status: 200, json: ['id' => 1]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
             expect($payload)->toHaveKey('InvoicePayment');

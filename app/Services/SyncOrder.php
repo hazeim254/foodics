@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\InvoiceSyncStatus;
 use App\Enums\SettingKey;
 use App\Exceptions\InvoiceAlreadyExistsException;
 use App\Models\Invoice;
@@ -12,6 +13,7 @@ use App\Services\Daftra\PaymentMethodService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
 use Illuminate\Support\Facades\Context;
+use Throwable;
 
 class SyncOrder
 {
@@ -38,29 +40,61 @@ class SyncOrder
      */
     public function handle(array $order): void
     {
-
         try {
-            $this->skipIfAlreadySynced($order['id']);
+            $this->skipIfAlreadySynced($order['id'], $order['reference']);
         } catch (InvoiceAlreadyExistsException $e) {
             return;
         }
 
-        // 1. Resolve all unique taxes from the order
+        $invoice = $this->createPendingInvoice($order);
+
+        try {
+            $this->runSync($order, $invoice);
+        } catch (Throwable $e) {
+            $invoice->update(['status' => InvoiceSyncStatus::Failed]);
+
+            throw $e;
+        }
+    }
+
+    protected function runSync(array $order, Invoice $invoice): void
+    {
         $this->taxMap = [];
         $this->resolveUniqueTaxes($order);
 
-        // 2. Resolve all unique payment methods from the order
         $this->paymentMethodMap = [];
         $this->resolveUniquePaymentMethods($order);
 
-        // 2. Build invoice line items by resolving Daftra product IDs
-        $invoiceItems = $this->getInvoiceItems($order['products']);
+        $daftraInvoiceId = $this->resolveDaftraInvoiceId($order, $invoice);
 
-        // 3. Add charges as invoice items
+        if ($invoice->daftra_id !== $daftraInvoiceId) {
+            $invoice->update(['daftra_id' => $daftraInvoiceId]);
+        }
+
+        $this->syncPaymentsIfMissing($order['payments'] ?? [], $daftraInvoiceId);
+
+        $invoice->update(['status' => InvoiceSyncStatus::Synced]);
+    }
+
+    /**
+     * Resolve the Daftra invoice id to use for this order, preferring an
+     * existing id on the local row, then an invoice already present on
+     * Daftra, and finally creating a new one.
+     */
+    protected function resolveDaftraInvoiceId(array $order, Invoice $invoice): int
+    {
+        if ($invoice->daftra_id !== null) {
+            return (int) $invoice->daftra_id;
+        }
+
+        $existing = $this->invoiceService->getInvoice($order['id']);
+        if (! empty($existing['id'])) {
+            return (int) $existing['id'];
+        }
+
+        $invoiceItems = $this->getInvoiceItems($order['products']);
         $invoiceItems = $this->addChargeInvoiceItems($invoiceItems, $order['charges'] ?? []);
 
-        // 4. Resolve Daftra client ID from the order customer, or fall back to the
-        //    per-user default client setting for walk-in orders (no customer).
         $clientId = null;
         if (! empty($order['customer'])) {
             $clientId = $this->clientService->getClientUsingFoodicsData($order['customer']);
@@ -70,8 +104,6 @@ class SyncOrder
             $clientId = $this->resolveDefaultClientId();
         }
 
-        // 5. Build the Daftra invoice payload
-        //    po_number stores the Foodics order ID for later filtering
         $invoiceData = [
             'Invoice' => [
                 'po_number' => $order['id'],
@@ -83,12 +115,7 @@ class SyncOrder
             'InvoiceItem' => $invoiceItems,
         ];
 
-        // 6. Create the invoice on Daftra
-        $daftraInvoiceId = $this->invoiceService->createInvoice($invoiceData);
-
-        // 7. Save the mapping between Foodics order ID and Daftra invoice ID
-        $this->invoiceService->saveMapping($order['id'], $daftraInvoiceId, $order['reference']);
-        $this->syncPayment($order['payments'], $daftraInvoiceId);
+        return $this->invoiceService->createInvoice($invoiceData);
     }
 
     public function getInvoiceItems($products): array
@@ -163,21 +190,17 @@ class SyncOrder
     {
         $allTaxes = collect();
 
-        // Collect product-level taxes
         foreach ($order['products'] ?? [] as $product) {
             $allTaxes = $allTaxes->merge($product['taxes'] ?? []);
-            // Collect modifier option taxes
             foreach ($product['options'] ?? [] as $option) {
                 $allTaxes = $allTaxes->merge($option['taxes'] ?? []);
             }
         }
 
-        // Collect charge taxes
         foreach ($order['charges'] ?? [] as $charge) {
             $allTaxes = $allTaxes->merge($charge['taxes'] ?? []);
         }
 
-        // Deduplicate by Foodics tax ID and resolve each
         $uniqueTaxes = $allTaxes->unique('id');
         foreach ($uniqueTaxes as $tax) {
             $foodicsId = (string) $tax['id'];
@@ -204,8 +227,21 @@ class SyncOrder
         }
     }
 
-    public function syncPayment($payments, mixed $daftraInvoiceId): void
+    /**
+     * Post Foodics payments to Daftra only when the Daftra invoice has no
+     * payments recorded yet. If any payments already exist on Daftra, the
+     * sync is considered payment-complete (per spec 017: no Foodics-side
+     * correlation, presence of any payments is treated as done).
+     *
+     * @param  array<int, array<string, mixed>>  $payments
+     */
+    public function syncPaymentsIfMissing(array $payments, int $daftraInvoiceId): void
     {
+        $existing = $this->invoiceService->listInvoicePayments($daftraInvoiceId);
+        if ($existing !== []) {
+            return;
+        }
+
         foreach ($payments as $payment) {
             $foodicsPaymentMethodId = (string) ($payment['payment_method']['id'] ?? '');
             $daftraPaymentMethodId = $this->paymentMethodMap[$foodicsPaymentMethodId] ?? null;
@@ -222,16 +258,57 @@ class SyncOrder
     }
 
     /**
-     * @throws \Throwable
+     * @throws InvoiceAlreadyExistsException
      */
-    protected function skipIfAlreadySynced($id): void
+    protected function skipIfAlreadySynced(string $foodicsId, string $foodicsReference): void
     {
-        $orderAlreadyExists = Invoice::query()->where('foodics_id', $id)->exists();
-        throw_if($orderAlreadyExists, new InvoiceAlreadyExistsException('Order already synced locally'));
+        $userId = Context::get('user')?->id;
 
-        // Skip if already exists on Daftra (e.g. synced by another process)
-        $orderExistsOnDaftra = $this->invoiceService->doesFoodicsInvoiceExistInDaftra($id);
-        throw_if($orderExistsOnDaftra, new InvoiceAlreadyExistsException('Order already synced on Daftra'));
+        $blocking = Invoice::query()
+            ->where('user_id', $userId)
+            ->whereIn('status', [InvoiceSyncStatus::Pending, InvoiceSyncStatus::Synced])
+            ->where(function ($query) use ($foodicsId, $foodicsReference) {
+                $query->where('foodics_id', $foodicsId)
+                    ->orWhere('foodics_reference', $foodicsReference);
+            })
+            ->exists();
+
+        throw_if($blocking, new InvoiceAlreadyExistsException('Order already synced or in progress locally'));
+    }
+
+    /**
+     * Insert or revive the single local row that tracks this Foodics order.
+     *
+     * The duplicate guard has already rejected `pending`/`synced` rows, so any
+     * row found here is `failed` — we flip it back to `pending` (keeping its
+     * `daftra_id` if already known) rather than creating a second row, per
+     * the "exactly one local row per Foodics order" rule.
+     */
+    protected function createPendingInvoice(array $order): Invoice
+    {
+        $userId = Context::get('user')?->id;
+
+        $invoice = Invoice::query()
+            ->where('user_id', $userId)
+            ->where('foodics_id', $order['id'])
+            ->first();
+
+        if ($invoice !== null) {
+            $invoice->fill([
+                'foodics_reference' => $order['reference'],
+                'status' => InvoiceSyncStatus::Pending,
+            ])->save();
+
+            return $invoice;
+        }
+
+        return Invoice::query()->create([
+            'user_id' => $userId,
+            'foodics_id' => $order['id'],
+            'foodics_reference' => $order['reference'],
+            'daftra_id' => null,
+            'status' => InvoiceSyncStatus::Pending,
+        ]);
     }
 
     protected function resolveDefaultClientId(): ?int

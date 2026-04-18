@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InvoiceSyncStatus;
 use App\Models\Invoice;
 use App\Models\User;
 use App\Services\Foodics\FoodicsApiClient;
@@ -75,6 +76,35 @@ it('includes reference_after param when max foodics_reference exists', function 
     $orders = $orderService->fetchNewOrders();
 
     expect($orders)->toBeEmpty();
+});
+
+it('ignores pending and failed invoices when computing the reference_after cursor', function () {
+    Invoice::factory()->create([
+        'user_id' => $this->user->id,
+        'foodics_reference' => '00100',
+        'status' => InvoiceSyncStatus::Synced,
+    ]);
+    Invoice::factory()->create([
+        'user_id' => $this->user->id,
+        'foodics_reference' => '00999',
+        'daftra_id' => null,
+        'status' => InvoiceSyncStatus::Pending,
+    ]);
+    Invoice::factory()->create([
+        'user_id' => $this->user->id,
+        'foodics_reference' => '00900',
+        'status' => InvoiceSyncStatus::Failed,
+    ]);
+
+    $mockClient = Mockery::mock(FoodicsApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v5/orders', Mockery::on(fn ($p) => ($p['filter[reference_after]'] ?? null) === '00100'))
+        ->once()
+        ->andReturn(fakeResponse(['data' => []]));
+
+    $this->app->instance(FoodicsApiClient::class, $mockClient);
+
+    $this->app->make(OrderService::class)->fetchNewOrders();
 });
 
 it('omits reference_after param on first sync', function () {

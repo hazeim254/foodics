@@ -1,7 +1,7 @@
 <?php
 
 use App\Exceptions\DaftraInvoiceCreationFailedException;
-use App\Models\Invoice;
+use App\Exceptions\DaftraPaymentCreationFailedException;
 use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
 use App\Services\Daftra\InvoiceService;
@@ -106,19 +106,46 @@ it('throws DaftraInvoiceCreationFailedException when response id is missing', fu
     $this->service->createInvoice(['Invoice' => []]);
 })->throws(DaftraInvoiceCreationFailedException::class, 'Daftra invoice creation response missing id');
 
-it('saves mapping between Foodics and Daftra IDs', function () {
-    $this->service->saveMapping('foodics-1', 555, 'ref-001');
+it('lists invoice payments for a Daftra invoice', function () {
+    $response = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['InvoicePayment' => ['id' => 1, 'invoice_id' => 555, 'amount' => 10.0]],
+            ['InvoicePayment' => ['id' => 2, 'invoice_id' => 555, 'amount' => 20.0]],
+        ],
+    ]);
 
-    $invoice = Invoice::query()->first();
-    expect($invoice)
-        ->user_id->toBe($this->user->id)
-        ->foodics_id->toBe('foodics-1')
-        ->daftra_id->toBe(555)
-        ->foodics_reference->toBe('ref-001')
-        ->status->toBe('synced');
+    $this->mockClient->shouldReceive('get')
+        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 555, 'limit' => 50])
+        ->once()
+        ->andReturn($response);
+
+    $payments = $this->service->listInvoicePayments(555);
+
+    expect($payments)->toHaveCount(2);
 });
 
+it('returns an empty array when no payments exist on Daftra', function () {
+    $response = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+
+    $this->mockClient->shouldReceive('get')
+        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 555, 'limit' => 50])
+        ->once()
+        ->andReturn($response);
+
+    expect($this->service->listInvoicePayments(555))->toBe([]);
+});
+
+it('throws on listInvoicePayments API failure', function () {
+    $response = createMockHttpResponse(successful: false, status: 500, json: []);
+
+    $this->mockClient->shouldReceive('get')->once()->andReturn($response);
+
+    $this->service->listInvoicePayments(555);
+})->throws(RuntimeException::class, 'Daftra invoice payments list request failed');
+
 it('creates a payment against a Daftra invoice', function () {
+    $response = createMockHttpResponse(successful: true, status: 200, json: ['id' => 10]);
+
     $this->mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', [
             'InvoicePayment' => [
@@ -128,7 +155,8 @@ it('creates a payment against a Daftra invoice', function () {
                 'date' => '2024-01-01',
             ],
         ])
-        ->once();
+        ->once()
+        ->andReturn($response);
 
     $this->service->createPayment([
         'InvoicePayment' => [
@@ -139,3 +167,21 @@ it('creates a payment against a Daftra invoice', function () {
         ],
     ]);
 });
+
+it('throws DaftraPaymentCreationFailedException on payment API failure', function () {
+    $response = createMockHttpResponse(successful: false, status: 422, json: ['error' => 'bad data']);
+
+    $this->mockClient->shouldReceive('post')
+        ->with('/api2/invoice_payments', Mockery::any())
+        ->once()
+        ->andReturn($response);
+
+    $this->service->createPayment([
+        'InvoicePayment' => [
+            'invoice_id' => 555,
+            'payment_method' => 1,
+            'amount' => 100.0,
+            'date' => '2024-01-01',
+        ],
+    ]);
+})->throws(DaftraPaymentCreationFailedException::class, 'Daftra invoice payment creation failed: HTTP 422');

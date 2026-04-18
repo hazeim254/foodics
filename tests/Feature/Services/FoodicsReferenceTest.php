@@ -66,13 +66,29 @@ it('stores foodics_reference when syncing an order', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
+    $paymentGatewayListResponse = mockResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['id' => 424242, 'label' => 'Card', 'payment_gateway' => 'card'],
+        ],
+    ]);
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
+        ->once()
+        ->andReturn($paymentGatewayListResponse);
+
     $invoiceCreateResponse = mockResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::any())
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    $paymentResponse = mockResponse(successful: true, status: 200, json: []);
+    $listPaymentsEmptyResponse = mockResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 12345, 'limit' => 50])
+        ->once()
+        ->andReturn($listPaymentsEmptyResponse);
+
+    $paymentResponse = mockResponse(successful: true, status: 200, json: ['id' => 1]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::any())
         ->once()

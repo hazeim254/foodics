@@ -3,8 +3,7 @@
 namespace App\Services\Daftra;
 
 use App\Exceptions\DaftraInvoiceCreationFailedException;
-use App\Models\Invoice;
-use Illuminate\Support\Facades\Context;
+use App\Exceptions\DaftraPaymentCreationFailedException;
 
 class InvoiceService
 {
@@ -72,22 +71,39 @@ class InvoiceService
         return $result->successful();
     }
 
-    public function saveMapping(string $foodicsId, int $daftraId, string $foodicsReference): void
+    /**
+     * Fetch existing payments for a Daftra invoice. Used to decide whether
+     * a retry of a sync needs to re-post payments or can skip them entirely.
+     *
+     * @see https://docs.daftara.dev/15115306e0
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function listInvoicePayments(int $daftraInvoiceId): array
     {
-        Invoice::query()->create([
-            'user_id' => Context::get('user')->id,
-            'foodics_id' => $foodicsId,
-            'daftra_id' => $daftraId,
-            'foodics_reference' => $foodicsReference,
-            'status' => 'synced',
+        $response = $this->daftraClient->get('/api2/invoice_payments', [
+            'filter[invoice_id]' => $daftraInvoiceId,
+            'limit' => 50,
         ]);
+
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Daftra invoice payments list request failed: HTTP '.$response->status().' '.$response->body()
+            );
+        }
+
+        return $response->json('data') ?? [];
     }
 
     public function createPayment(array $data): void
     {
         $response = $this->daftraClient->post('/api2/invoice_payments', $data);
+
         if ($response->failed()) {
-            dd($response->json(), $data);
+            throw new DaftraPaymentCreationFailedException(
+                message: 'Daftra invoice payment creation failed: HTTP '.$response->status(),
+                responseBody: $response->body(),
+            );
         }
     }
 }

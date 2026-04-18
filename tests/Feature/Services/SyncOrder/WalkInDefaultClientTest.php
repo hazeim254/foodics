@@ -26,11 +26,9 @@ function stubDaftraSideEffectsForWalkIn(MockInterface $mockClient): void
     $existingCardGateway = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
             [
-                'SitePaymentGateway' => [
-                    'id' => 99999,
-                    'label' => 'Card',
-                    'payment_gateway' => 'card',
-                ],
+                'id' => 99999,
+                'label' => 'Card',
+                'payment_gateway' => 'card',
             ],
         ],
     ]);
@@ -57,13 +55,17 @@ function stubDaftraSideEffectsForWalkIn(MockInterface $mockClient): void
         ->andReturn($created(54321));
 
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($existingCardGateway);
 
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoice_payments', Mockery::on(fn (array $args) => isset($args['filter[invoice_id]']) && $args['filter[invoice_id]'] === 12345))
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::any())
-        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: []));
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 1]));
 }
 
 it('uses the per-user default client setting when the order has no customer', function () {

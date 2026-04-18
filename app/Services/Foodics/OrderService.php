@@ -2,6 +2,7 @@
 
 namespace App\Services\Foodics;
 
+use App\Enums\InvoiceSyncStatus;
 use App\Models\Invoice;
 use App\Models\User;
 use Illuminate\Support\Facades\Context;
@@ -22,6 +23,7 @@ class OrderService
         $user = Context::get('user');
 
         $referenceAfter = Invoice::where('user_id', $user->id)
+            ->where('status', InvoiceSyncStatus::Synced)
             ->max('foodics_reference');
 
         $allOrders = [];

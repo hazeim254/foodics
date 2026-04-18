@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InvoiceSyncStatus;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Product;
@@ -70,17 +71,15 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
-    $paymentGatewayListResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $paymentGatewayListResponse = mockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['id' => 424242, 'label' => 'Card', 'payment_gateway' => 'card'],
+        ],
+    ]);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentGatewayListResponse);
-
-    $paymentGatewayCreateResponse = mockHttpResponse(successful: true, status: 201, json: ['id' => 424242]);
-    $mockClient->shouldReceive('post')
-        ->with('/v2/api/entity/site_payment_gateway', Mockery::any())
-        ->once()
-        ->andReturn($paymentGatewayCreateResponse);
 
     $invoiceCreateResponse = mockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
@@ -116,7 +115,13 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    $paymentResponse = mockHttpResponse(successful: true, status: 200, json: []);
+    $listPaymentsEmptyResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 12345, 'limit' => 50])
+        ->once()
+        ->andReturn($listPaymentsEmptyResponse);
+
+    $paymentResponse = mockHttpResponse(successful: true, status: 200, json: ['id' => 1]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
             expect($payload)->toHaveKey('InvoicePayment');
@@ -138,7 +143,10 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
     $syncOrder = $this->app->make(SyncOrder::class);
     $syncOrder->handle($this->order);
 
-    expect(Invoice::where('foodics_id', $this->order['id'])->where('daftra_id', 12345)->exists())->toBeTrue();
+    $invoice = Invoice::where('foodics_id', $this->order['id'])->first();
+    expect($invoice)->not->toBeNull();
+    expect($invoice->daftra_id)->toBe(12345);
+    expect($invoice->status)->toBe(InvoiceSyncStatus::Synced);
     expect(Client::where('foodics_id', '8d831d65')->where('daftra_id', 11111)->exists())->toBeTrue();
     expect(Product::where('foodics_id', '8d90b8d1')->where('daftra_id', 67890)->exists())->toBeTrue();
 });
@@ -195,17 +203,15 @@ it('does not fetch product details from Foodics during sync', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
-    $paymentGatewayListResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $paymentGatewayListResponse = mockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['id' => 424242, 'label' => 'Card', 'payment_gateway' => 'card'],
+        ],
+    ]);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentGatewayListResponse);
-
-    $paymentGatewayCreateResponse = mockHttpResponse(successful: true, status: 201, json: ['id' => 424242]);
-    $mockClient->shouldReceive('post')
-        ->with('/v2/api/entity/site_payment_gateway', Mockery::any())
-        ->once()
-        ->andReturn($paymentGatewayCreateResponse);
 
     $invoiceCreateResponse = mockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
@@ -217,7 +223,13 @@ it('does not fetch product details from Foodics during sync', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    $paymentResponse = mockHttpResponse(successful: true, status: 200, json: []);
+    $listPaymentsEmptyResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 12345, 'limit' => 50])
+        ->once()
+        ->andReturn($listPaymentsEmptyResponse);
+
+    $paymentResponse = mockHttpResponse(successful: true, status: 200, json: ['id' => 1]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
             expect($payload)->toHaveKey('InvoicePayment');
