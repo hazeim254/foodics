@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Enums\SettingKey;
 use App\Exceptions\InvoiceAlreadyExistsException;
 use App\Models\Invoice;
+use App\Models\User;
 use App\Services\Daftra\ClientService;
 use App\Services\Daftra\InvoiceService;
 use App\Services\Daftra\PaymentMethodService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
+use Illuminate\Support\Facades\Context;
 
 class SyncOrder
 {
@@ -56,10 +59,13 @@ class SyncOrder
         // 3. Add charges as invoice items
         $invoiceItems = $this->addChargeInvoiceItems($invoiceItems, $order['charges'] ?? []);
 
-        // 4. Resolve Daftra client ID from the order customer
+        // 4. Resolve Daftra client ID from the order customer, or fall back to the
+        //    per-user default client setting for walk-in orders (no customer).
         $clientId = null;
         if (! empty($order['customer'])) {
             $clientId = $this->clientService->getClientUsingFoodicsData($order['customer']);
+        } else {
+            $clientId = $this->resolveDefaultClientId();
         }
 
         // 5. Build the Daftra invoice payload
@@ -216,6 +222,18 @@ class SyncOrder
         // Skip if already exists on Daftra (e.g. synced by another process)
         $orderExistsOnDaftra = $this->invoiceService->doesFoodicsInvoiceExistInDaftra($id);
         throw_if($orderExistsOnDaftra, new InvoiceAlreadyExistsException('Order already synced on Daftra'));
+    }
+
+    protected function resolveDefaultClientId(): ?int
+    {
+        $user = Context::get('user');
+        if (! $user instanceof User) {
+            return null;
+        }
+
+        $default = $user->setting(SettingKey::DaftraDefaultClientId);
+
+        return $default !== null && $default !== '' ? (int) $default : null;
     }
 
     /**

@@ -61,7 +61,7 @@ class SyncOrdersCommand extends Command
                 $this->info('✓');
                 $synced++;
             } catch (\Throwable $e) {
-                throw $e;
+                //                throw $e;
                 $this->warn('✗ '.$e->getMessage());
                 $failed++;
             }
