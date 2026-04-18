@@ -35,7 +35,7 @@ function stubDaftraSideEffectsForWalkIn(MockInterface $mockClient): void
 
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
-        ->once()
+        ->twice()
         ->andReturn($notFound);
 
     $mockClient->shouldReceive('get')

@@ -17,6 +17,8 @@ class Invoice extends Model
         'daftra_id',
         'foodics_reference',
         'status',
+        'foodics_metadata',
+        'daftra_metadata',
     ];
 
     /**
@@ -26,6 +28,8 @@ class Invoice extends Model
     {
         return [
             'status' => InvoiceSyncStatus::class,
+            'foodics_metadata' => 'array',
+            'daftra_metadata' => 'array',
         ];
     }
 

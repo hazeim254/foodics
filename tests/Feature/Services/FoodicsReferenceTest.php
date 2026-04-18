@@ -23,7 +23,7 @@ it('stores foodics_reference when syncing an order', function () {
     $invoiceNotFoundResponse = mockResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn ($a) => isset($a['custom_field']) && isset($a['custom_field_label'])))
-        ->once()
+        ->twice()
         ->andReturn($invoiceNotFoundResponse);
 
     $productNotFoundResponse = mockResponse(successful: true, status: 200, json: ['data' => []]);

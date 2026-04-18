@@ -141,3 +141,100 @@ it('returns syncing true when cache key exists', function () {
 it('requires authentication for sync-status endpoint', function () {
     $this->getJson('/invoices/sync-status')->assertUnauthorized();
 });
+
+it('displays foodics reference as clickable link', function () {
+    $user = User::factory()->create();
+    $invoice = Invoice::factory()->create([
+        'user_id' => $user->id,
+        'foodics_id' => 'abc-123',
+        'foodics_reference' => 'ORD-001',
+        'status' => 'synced',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/invoices')
+        ->assertOk()
+        ->assertSee('<a href="'.config('services.foodics.base_url').'/orders/abc-123" target="_blank"', false)
+        ->assertSee('ORD-001');
+});
+
+it('displays daftra invoice number as clickable link with subdomain', function () {
+    $user = User::factory()->create([
+        'daftra_meta' => ['subdomain' => 'myshop.daftra.com'],
+    ]);
+    $invoice = Invoice::factory()->create([
+        'user_id' => $user->id,
+        'daftra_id' => 12345,
+        'daftra_metadata' => ['no' => 'INV-001'],
+        'status' => 'synced',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/invoices')
+        ->assertOk()
+        ->assertSee('<a href="https://myshop.daftra.com/owner/invoices/view/12345" target="_blank"', false)
+        ->assertSee('INV-001');
+});
+
+it('displays daftra id as fallback when metadata is null', function () {
+    $user = User::factory()->create([
+        'daftra_meta' => ['subdomain' => 'myshop.daftra.com'],
+    ]);
+    $invoice = Invoice::factory()->create([
+        'user_id' => $user->id,
+        'daftra_id' => 12345,
+        'daftra_metadata' => null,
+        'status' => 'synced',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/invoices')
+        ->assertOk()
+        ->assertSee('12345');
+});
+
+it('displays daftra as plain text when subdomain is missing', function () {
+    $user = User::factory()->create([
+        'daftra_meta' => null,
+    ]);
+    $invoice = Invoice::factory()->create([
+        'user_id' => $user->id,
+        'daftra_id' => 12345,
+        'daftra_metadata' => ['no' => 'INV-001'],
+        'status' => 'synced',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/invoices')
+        ->assertOk()
+        ->assertDontSee('daftra.com/owner/invoices/view', false)
+        ->assertSee('INV-001');
+});
+
+it('displays total price from foodics_metadata', function () {
+    $user = User::factory()->create();
+    $invoice = Invoice::factory()->create([
+        'user_id' => $user->id,
+        'foodics_metadata' => ['total_price' => 24.15],
+        'status' => 'synced',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/invoices')
+        ->assertOk()
+        ->assertSee('24.15');
+});
+
+it('displays dash when total price is missing', function () {
+    $user = User::factory()->create();
+    $invoice = Invoice::factory()->create([
+        'user_id' => $user->id,
+        'foodics_metadata' => null,
+        'status' => 'synced',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/invoices')
+        ->assertOk()
+        ->assertSee('—');
+});

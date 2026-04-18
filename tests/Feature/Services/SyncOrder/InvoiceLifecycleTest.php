@@ -30,12 +30,14 @@ function stubHappyPathDaftraCalls(MockInterface $mockClient, int $daftraInvoiceI
     if ($daftraInvoiceAlreadyExists) {
         $mockClient->shouldReceive('get')
             ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field'])))
+            ->atLeast()->once()
             ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
                 'data' => [['Invoice' => ['id' => $daftraInvoiceId, 'po_number' => 'foo']]],
             ]));
     } else {
         $mockClient->shouldReceive('get')
             ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field'])))
+            ->atLeast()->once()
             ->andReturn($notFound);
     }
 
@@ -78,6 +80,10 @@ it('writes a pending row scoped to the current user before Daftra work starts', 
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 1]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
 

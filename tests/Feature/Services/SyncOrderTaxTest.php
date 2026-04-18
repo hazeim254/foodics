@@ -26,7 +26,7 @@ it('syncs an order with taxes end-to-end', function () {
     $invoiceNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field']) && isset($args['custom_field_label'])))
-        ->once()
+        ->twice()
         ->andReturn($invoiceNotFoundResponse);
 
     // Product lookup
@@ -157,7 +157,7 @@ it('uses cached tax mapping when available', function () {
     $invoiceNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
         ->with('/api2/invoices', Mockery::any())
-        ->once()
+        ->twice()
         ->andReturn($invoiceNotFoundResponse);
 
     $productNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);

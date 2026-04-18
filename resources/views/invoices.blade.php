@@ -49,7 +49,8 @@
                 <thead>
                     <tr class="border-b border-[#e3e3e0] dark:border-[#3E3E3A]">
                         <th class="px-6 py-3 text-left text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Foodics Ref</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Daftra ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Daftra Invoice</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Total</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Created</th>
                     </tr>
@@ -57,8 +58,28 @@
                 <tbody class="divide-y divide-[#e3e3e0] dark:divide-[#3E3E3A]">
                     @foreach($invoices as $invoice)
                         <tr class="hover:bg-[#F5F5F3] dark:hover:bg-[#262625] transition-colors">
-                            <td class="px-6 py-4 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">{{ $invoice->foodics_reference }}</td>
-                            <td class="px-6 py-4 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">{{ $invoice->daftra_id }}</td>
+                            <td class="px-6 py-4 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
+                                <a href="{{ config('services.foodics.base_url') }}/orders/{{ $invoice->foodics_id }}" target="_blank" class="hover:underline">
+                                    {{ $invoice->foodics_reference }}
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
+                                @php
+                                    $daftraNo = $invoice->daftra_metadata['no'] ?? $invoice->daftra_id;
+                                    $daftraSubdomain = auth()->user()?->daftra_meta['subdomain'] ?? null;
+                                @endphp
+
+                                @if($daftraSubdomain && $invoice->daftra_id)
+                                    <a href="https://{{ $daftraSubdomain }}/owner/invoices/view/{{ $invoice->daftra_id }}" target="_blank" class="hover:underline">
+                                        {{ $daftraNo }}
+                                    </a>
+                                @else
+                                    {{ $daftraNo ?? '—' }}
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-sm text-[#1b1b18] dark:text-[#EDEDEC]">
+                                {{ $invoice->foodics_metadata['total_price'] ?? '—' }}
+                            </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $invoice->status->badgeClasses() }}">{{ ucfirst($invoice->status->value) }}</span>
                             </td>
