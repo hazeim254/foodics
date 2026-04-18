@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Services\Daftra\DaftraApiClient;
 use App\Services\Foodics\FoodicsApiClient;
+use App\Services\Http\CurlCommandBuilder;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +39,13 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return new FoodicsApiClient($user);
+        });
+
+        Response::macro('toCurl', function (): string {
+            /** @var Response $this */
+            $request = $this->transferStats?->getRequest();
+
+            return $request ? CurlCommandBuilder::build($request) : '';
         });
     }
 }
