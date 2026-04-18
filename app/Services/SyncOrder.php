@@ -238,6 +238,7 @@ class SyncOrder
     public function syncPaymentsIfMissing(array $payments, int $daftraInvoiceId): void
     {
         $existing = $this->invoiceService->listInvoicePayments($daftraInvoiceId);
+
         if ($existing !== []) {
             return;
         }

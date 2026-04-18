@@ -159,7 +159,7 @@ class PaymentMethodService
             );
         }
 
-        $slug = $payload['SitePaymentGateway']['payment_gateway'] ?? null;
+        $slug = $payload['payment_gateway'] ?? null;
         if ($slug === null || $slug === '') {
             throw new \RuntimeException('Daftra payment method create payload missing payment_gateway slug.');
         }

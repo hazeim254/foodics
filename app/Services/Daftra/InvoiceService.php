@@ -81,9 +81,8 @@ class InvoiceService
      */
     public function listInvoicePayments(int $daftraInvoiceId): array
     {
-        $response = $this->daftraClient->get('/api2/invoice_payments', [
+        $response = $this->daftraClient->get('/v2/api/entity/invoice_payment/list', [
             'filter[invoice_id]' => $daftraInvoiceId,
-            'limit' => 50,
         ]);
 
         if (! $response->successful()) {

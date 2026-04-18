@@ -115,7 +115,7 @@ it('lists invoice payments for a Daftra invoice', function () {
     ]);
 
     $this->mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 555, 'limit' => 50])
+        ->with('/v2/api/entity/invoice_payment/list', ['filter[invoice_id]' => 555])
         ->once()
         ->andReturn($response);
 
@@ -128,7 +128,7 @@ it('returns an empty array when no payments exist on Daftra', function () {
     $response = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
 
     $this->mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 555, 'limit' => 50])
+        ->with('/v2/api/entity/invoice_payment/list', ['filter[invoice_id]' => 555])
         ->once()
         ->andReturn($response);
 

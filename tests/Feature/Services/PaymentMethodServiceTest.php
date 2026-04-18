@@ -73,17 +73,17 @@ it('searches daftra when not cached and creates mapping', function () {
 
     $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
-            ['SitePaymentGateway' => [
+            [
                 'id' => 67890,
                 'label' => 'Card',
                 'payment_gateway' => 'card',
-            ]],
+            ],
         ],
     ]);
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentMethodsResponse);
 
@@ -102,17 +102,17 @@ it('prefetches gateways once so multiple resolutions reuse the same list', funct
 
     $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
-            ['SitePaymentGateway' => [
+            [
                 'id' => 67890,
                 'label' => 'Card',
                 'payment_gateway' => 'card',
-            ]],
+            ],
         ],
     ]);
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentMethodsResponse);
 
@@ -134,17 +134,17 @@ it('does not post when list already contains matching payment_gateway slug', fun
 
     $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
-            ['SitePaymentGateway' => [
+            [
                 'id' => 67890,
                 'label' => 'Renamed label',
                 'payment_gateway' => 'card',
-            ]],
+            ],
         ],
     ]);
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentMethodsResponse);
     $mockClient->shouldNotReceive('post');
@@ -168,16 +168,17 @@ it('creates payment method in daftra when not found and persists mapping', funct
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentMethodsEmptyResponse);
 
     $mockClient->shouldReceive('post')
         ->with('/v2/api/entity/site_payment_gateway', Mockery::on(function (array $payload) {
-            expect($payload['SitePaymentGateway']['payment_gateway'])->toBe('card');
-            expect($payload['SitePaymentGateway']['label'])->toBe('Card');
-            expect($payload['SitePaymentGateway']['manually_added'])->toBe(1);
-            expect($payload['SitePaymentGateway']['active'])->toBe(1);
+            expect($payload['payment_gateway'])->toBe('card');
+            expect($payload['slug'])->toBe('card');
+            expect($payload['label'])->toBe('Card');
+            expect($payload['manually_added'])->toBe(1);
+            expect($payload['active'])->toBe(1);
 
             return true;
         }))
@@ -201,17 +202,17 @@ it('finds payment method in daftra by payment_gateway slug', function () {
 
     $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
-            ['SitePaymentGateway' => [
+            [
                 'id' => 54321,
                 'label' => 'Cash drawer',
                 'payment_gateway' => 'cash',
-            ]],
+            ],
         ],
     ]);
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentMethodsResponse);
 
@@ -232,7 +233,7 @@ it('returns null when payment method not found in daftra', function () {
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentMethodsEmptyResponse);
 
@@ -251,13 +252,13 @@ it('returns null when list row is missing payment_gateway', function () {
 
     $paymentMethodsResponse = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
-            ['SitePaymentGateway' => ['id' => 54321, 'label' => 'Cash']],
+            ['id' => 54321, 'label' => 'Cash'],
         ],
     ]);
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v2/api/entity/site_payment_gateway/list')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
         ->once()
         ->andReturn($paymentMethodsResponse);
 
@@ -279,10 +280,11 @@ it('creates payment method with correct payload', function () {
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('post')
         ->with('/v2/api/entity/site_payment_gateway', Mockery::on(function (array $payload) {
-            expect($payload['SitePaymentGateway']['payment_gateway'])->toBe('digital_wallet');
-            expect($payload['SitePaymentGateway']['label'])->toBe('Digital Wallet');
-            expect($payload['SitePaymentGateway']['manually_added'])->toBe(1);
-            expect($payload['SitePaymentGateway']['active'])->toBe(1);
+            expect($payload['payment_gateway'])->toBe('digital_wallet');
+            expect($payload['slug'])->toBe('digital_wallet');
+            expect($payload['label'])->toBe('Digital Wallet');
+            expect($payload['manually_added'])->toBe(1);
+            expect($payload['active'])->toBe(1);
 
             return true;
         }))

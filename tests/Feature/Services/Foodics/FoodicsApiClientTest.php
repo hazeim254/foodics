@@ -104,14 +104,6 @@ it('proxies delete requests to the client', function () {
     expect($mockClient->delete('/api/v1/products/123')->successful())->toBeTrue();
 });
 
-it('refreshes token on 401 response and retries request', function () {
-    $this->markTestSkipped('HTTP fake middleware complexity - tested via integration');
-});
-
-it('throws exception when token refresh fails', function () {
-    $this->markTestSkipped('HTTP fake middleware complexity - tested via integration');
-});
-
 it('proxies non-http methods to the underlying client', function () {
     $mockClient = Mockery::mock(FoodicsApiClient::class)->makePartial();
     $mockClient->shouldReceive('foo')->once()->andReturn('bar');

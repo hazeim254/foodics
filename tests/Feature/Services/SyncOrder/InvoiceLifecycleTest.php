@@ -73,7 +73,7 @@ it('writes a pending row scoped to the current user before Daftra work starts', 
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 12345]));
 
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', Mockery::any())
+        ->with('/v2/api/entity/invoice_payment/list', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
     $mockClient->shouldReceive('post')
         ->with('/api2/invoice_payments', Mockery::any())
@@ -148,7 +148,7 @@ it('revives a previously failed row into a single pending/synced row on retry', 
         ->once()
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 12345]));
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', Mockery::any())
+        ->with('/v2/api/entity/invoice_payment/list', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
     $mockClient->shouldReceive('post')->with('/api2/invoice_payments', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 1]));
@@ -179,7 +179,7 @@ it('does not block a sync for another user with the same foodics_id', function (
         ->once()
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 12345]));
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', Mockery::any())
+        ->with('/v2/api/entity/invoice_payment/list', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
     $mockClient->shouldReceive('post')->with('/api2/invoice_payments', Mockery::any())
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 1]));
@@ -221,7 +221,7 @@ it('persists daftra_id even when a later payment post fails and marks row failed
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 12345]));
 
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', Mockery::any())
+        ->with('/v2/api/entity/invoice_payment/list', Mockery::any())
         ->once()
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
 
@@ -254,7 +254,7 @@ it('reuses an existing Daftra invoice id from the local pending row on retry', f
     $mockClient->shouldNotReceive('post')->with('/api2/invoices', Mockery::any());
 
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 99999, 'limit' => 50])
+        ->with('/v2/api/entity/invoice_payment/list', ['filter[invoice_id]' => 99999])
         ->once()
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
             'data' => [['InvoicePayment' => ['id' => 5, 'invoice_id' => 99999]]],
@@ -278,7 +278,7 @@ it('adopts an existing Daftra invoice id when local row has no daftra_id yet', f
     $mockClient->shouldNotReceive('post')->with('/api2/invoices', Mockery::any());
 
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 77777, 'limit' => 50])
+        ->with('/v2/api/entity/invoice_payment/list', ['filter[invoice_id]' => 77777])
         ->once()
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
 
@@ -310,7 +310,7 @@ it('skips payment posting entirely when Daftra already has at least one payment'
     $mockClient->shouldNotReceive('post')->with('/api2/invoices', Mockery::any());
 
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', ['filter[invoice_id]' => 33333, 'limit' => 50])
+        ->with('/v2/api/entity/invoice_payment/list', ['filter[invoice_id]' => 33333])
         ->once()
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
             'data' => [['InvoicePayment' => ['id' => 5]]],

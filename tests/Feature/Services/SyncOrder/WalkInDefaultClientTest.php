@@ -60,7 +60,7 @@ function stubDaftraSideEffectsForWalkIn(MockInterface $mockClient): void
         ->andReturn($existingCardGateway);
 
     $mockClient->shouldReceive('get')
-        ->with('/api2/invoice_payments', Mockery::on(fn (array $args) => isset($args['filter[invoice_id]']) && $args['filter[invoice_id]'] === 12345))
+        ->with('/v2/api/entity/invoice_payment/list', Mockery::on(fn (array $args) => isset($args['filter[invoice_id]']) && $args['filter[invoice_id]'] === 12345))
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
 
     $mockClient->shouldReceive('post')
