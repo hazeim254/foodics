@@ -64,7 +64,9 @@ class SyncOrder
         $clientId = null;
         if (! empty($order['customer'])) {
             $clientId = $this->clientService->getClientUsingFoodicsData($order['customer']);
-        } else {
+        }
+
+        if (! $clientId) {
             $clientId = $this->resolveDefaultClientId();
         }
 

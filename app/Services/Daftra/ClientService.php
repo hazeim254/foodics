@@ -21,8 +21,10 @@ class ClientService
     {
         $clientNumber = (string) $foodicsCustomer['id'];
 
-        $listResponse = $this->daftraClient->get('/api2/clients', [
-            'client_number' => $clientNumber,
+        $listResponse = $this->daftraClient->get('/v2/api/entity/client/list', [
+            'filter' => [
+                'client_number' => $clientNumber,
+            ],
         ]);
 
         if (! $listResponse->successful()) {
@@ -111,9 +113,9 @@ class ClientService
      */
     private function daftraClientIdFromListRow(array $row): int
     {
-        $id = $row['Client']['id'] ?? null;
+        $id = $row['id'] ?? null;
         if ($id === null || $id === '') {
-            throw new \RuntimeException('Daftra client list row missing Client.id.');
+            throw new \RuntimeException('Daftra client list row missing id.');
         }
 
         return (int) $id;
