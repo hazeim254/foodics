@@ -2,11 +2,14 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\HasResponseBody;
 use RuntimeException;
 use Throwable;
 
-class DaftraProductCreationFailedException extends RuntimeException
+class DaftraProductCreationFailedException extends RuntimeException implements LoggableException
 {
+    use HasResponseBody;
+
     public function __construct(
         string $message = 'Failed to create product in Daftra.',
         int $code = 0,

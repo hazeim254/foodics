@@ -2,11 +2,14 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Concerns\HasResponseBody;
 use RuntimeException;
 use Throwable;
 
-class DaftraInvoiceCreationFailedException extends RuntimeException
+class DaftraInvoiceCreationFailedException extends RuntimeException implements LoggableException
 {
+    use HasResponseBody;
+
     public function __construct(
         string $message = 'Failed to create invoice in Daftra.',
         int $code = 0,
