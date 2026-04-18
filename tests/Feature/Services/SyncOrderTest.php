@@ -46,7 +46,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
 
     $clientNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/clients.json', Mockery::on(fn (array $args) => isset($args['filter']['client_number'])))
+        ->with('/v2/api/entity/client/list', ['filter' => ['client_number' => '8d831d65']])
         ->once()
         ->andReturn($clientNotFoundResponse);
 
@@ -104,27 +104,17 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    // Payment method lookup - Card (8df57bde) not cached
-    $paymentMethodNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
-    $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
-        ->once()
-        ->andReturn($paymentMethodNotFoundResponse);
-
-    // Payment method creation
-    $paymentMethodCreateResponse = mockHttpResponse(successful: true, status: 201, json: ['id' => 99999]);
-    $mockClient->shouldReceive('post')
-        ->with('/api2/site_payment_gateway.json', Mockery::any())
-        ->once()
-        ->andReturn($paymentMethodCreateResponse);
-
     $paymentResponse = mockHttpResponse(successful: true, status: 200, json: []);
     $mockClient->shouldReceive('post')
-        ->with('/api2/invoices/12345/payments', [
-            'payment_method' => 99999,
-            'amount' => 24.15,
-            'date' => '2019-11-28 06:07:00',
-        ])
+        ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
+            expect($payload)->toHaveKey('InvoicePayment');
+            expect($payload['InvoicePayment']['invoice_id'])->toBe(12345);
+            expect($payload['InvoicePayment']['payment_method'])->toBeNull();
+            expect($payload['InvoicePayment']['amount'])->toBe(24.15);
+            expect($payload['InvoicePayment']['date'])->toBe('2019-11-28 06:07:00');
+
+            return true;
+        }))
         ->once()
         ->andReturn($paymentResponse);
 
@@ -171,7 +161,7 @@ it('does not fetch product details from Foodics during sync', function () {
 
     $clientNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
     $mockClient->shouldReceive('get')
-        ->with('/api2/clients.json', Mockery::any())
+        ->with('/v2/api/entity/client/list', Mockery::on(fn (array $args) => isset($args['filter']['client_number'])))
         ->once()
         ->andReturn($clientNotFoundResponse);
 
@@ -203,21 +193,16 @@ it('does not fetch product details from Foodics during sync', function () {
         ->once()
         ->andReturn($invoiceCreateResponse);
 
-    $paymentMethodNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
-    $mockClient->shouldReceive('get')
-        ->with('/api2/site_payment_gateway/list/1.json')
-        ->once()
-        ->andReturn($paymentMethodNotFoundResponse);
-
-    $paymentMethodCreateResponse = mockHttpResponse(successful: true, status: 201, json: ['id' => 99999]);
-    $mockClient->shouldReceive('post')
-        ->with('/api2/site_payment_gateway.json', Mockery::any())
-        ->once()
-        ->andReturn($paymentMethodCreateResponse);
-
     $paymentResponse = mockHttpResponse(successful: true, status: 200, json: []);
     $mockClient->shouldReceive('post')
-        ->with('/api2/invoices/12345/payments', Mockery::any())
+        ->with('/api2/invoice_payments', Mockery::on(function (array $payload) {
+            expect($payload)->toHaveKey('InvoicePayment');
+            expect($payload['InvoicePayment']['invoice_id'])->toBe(12345);
+            expect($payload['InvoicePayment']['payment_method'])->toBeNull();
+            expect($payload['InvoicePayment'])->toHaveKeys(['amount', 'date']);
+
+            return true;
+        }))
         ->once()
         ->andReturn($paymentResponse);
 

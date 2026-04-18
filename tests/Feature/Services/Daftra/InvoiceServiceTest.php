@@ -120,16 +120,22 @@ it('saves mapping between Foodics and Daftra IDs', function () {
 
 it('creates a payment against a Daftra invoice', function () {
     $this->mockClient->shouldReceive('post')
-        ->with('/api2/invoices/555/payments', [
-            'payment_method' => 1,
-            'amount' => 100.0,
-            'date' => '2024-01-01',
+        ->with('/api2/invoice_payments', [
+            'InvoicePayment' => [
+                'invoice_id' => 555,
+                'payment_method' => 1,
+                'amount' => 100.0,
+                'date' => '2024-01-01',
+            ],
         ])
         ->once();
 
-    $this->service->createPayment(555, [
-        'payment_method' => 1,
-        'amount' => 100.0,
-        'date' => '2024-01-01',
+    $this->service->createPayment([
+        'InvoicePayment' => [
+            'invoice_id' => 555,
+            'payment_method' => 1,
+            'amount' => 100.0,
+            'date' => '2024-01-01',
+        ],
     ]);
 });

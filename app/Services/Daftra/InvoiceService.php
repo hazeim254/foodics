@@ -83,8 +83,8 @@ class InvoiceService
         ]);
     }
 
-    public function createPayment(int $daftraInvoiceId, array $paymentData): void
+    public function createPayment(array $data): void
     {
-        $this->daftraClient->post("/api2/invoices/$daftraInvoiceId/payments", $paymentData);
+        $this->daftraClient->post('/api2/invoice_payments', $data);
     }
 }
