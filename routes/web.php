@@ -23,7 +23,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/invoices/sync-status', [InvoiceController::class, 'syncStatus'])->name('invoices.sync-status');
     Route::post('/invoices/{invoice}/retry-sync', [InvoiceController::class, 'retrySync'])->name('invoices.retry-sync');
     Route::get('/products', ProductController::class)->name('products');
-    Route::get('/settings', SettingController::class)->name('settings');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings');
+    Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 });
 
 Route::post('webhooks/foodics', WebhooksController::class)
