@@ -144,20 +144,23 @@ it('returns empty array when API returns empty page', function () {
 it('fetches a single order by ID', function () {
     $orderId = 'order-uuid-123';
     $orderData = [
-        'order' => [
-            'id' => $orderId,
-            'reference' => '00420',
-            'business_date' => '2026-04-14',
-            'products' => [],
-            'payments' => [],
-            'charges' => [],
-            'customer' => null,
+        'data' => [
+            [
+                'id' => $orderId,
+                'reference' => '00420',
+                'business_date' => '2026-04-14',
+                'products' => [],
+                'payments' => [],
+                'charges' => [],
+                'customer' => null,
+            ],
         ],
     ];
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with("/orders/{$orderId}", Mockery::on(fn ($p) => $p['include'] === 'products,payments.payment_method,charges,customer'))
+        ->with('/v5/orders', Mockery::on(fn ($p) => ($p['filter[id]'] ?? null) === $orderId
+            && ($p['include'] ?? null) === 'products.product,payments.payment_method,charges,customer'))
         ->once()
         ->andReturn(fakeResponse($orderData));
 
@@ -170,14 +173,30 @@ it('fetches a single order by ID', function () {
     expect($order['reference'])->toBe('00420');
 });
 
-it('throws exception when fetching a single order returns 404', function () {
+it('returns empty array when fetching a single order returns no results', function () {
     $orderId = 'non-existent-order-id';
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with("/orders/{$orderId}", Mockery::any())
+        ->with('/v5/orders', Mockery::on(fn ($p) => ($p['filter[id]'] ?? null) === $orderId))
         ->once()
-        ->andReturn(failedResponse(404));
+        ->andReturn(fakeResponse(['data' => []]));
+
+    $this->app->instance(FoodicsApiClient::class, $mockClient);
+
+    $orderService = $this->app->make(OrderService::class);
+
+    expect($orderService->getOrder($orderId))->toBe([]);
+});
+
+it('throws exception when fetching a single order request fails', function () {
+    $orderId = 'order-uuid-123';
+
+    $mockClient = Mockery::mock(FoodicsApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v5/orders', Mockery::any())
+        ->once()
+        ->andReturn(failedResponse(500));
 
     $this->app->instance(FoodicsApiClient::class, $mockClient);
 

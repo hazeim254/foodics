@@ -80,12 +80,14 @@ class OrderService
      */
     public function getOrder(string $orderId): array
     {
-        $response = $this->client->get("/orders/{$orderId}", [
-            'include' => 'products,payments.payment_method,charges,customer',
+        $response = $this->client->get('/v5/orders', [
+            'include' => 'products.product,payments.payment_method,charges,customer',
+            'filter[id]' => $orderId,
         ]);
 
         $response->throw();
 
-        return $response->json('order');
+        $orders = $response->json('data') ?? [];
+        return $orders[0] ?? [];
     }
 }
