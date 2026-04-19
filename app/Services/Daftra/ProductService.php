@@ -26,19 +26,29 @@ class ProductService
             ->where('foodics_id', $foodicsId)
             ->first();
 
-        if ($local !== null) {
+        if ($local !== null && $local->daftra_id !== null) {
             return $local->daftra_id;
         }
 
         $daftraId = $this->getProduct($foodicsProduct);
-        if ($daftraId !== null) {
-            $this->persistProduct($userId, $foodicsId, $daftraId);
+        $foodicsName = (string) ($foodicsProduct['name'] ?? 'Unknown Product');
+        $foodicsSku = isset($foodicsProduct['sku']) && trim((string) $foodicsProduct['sku']) !== ''
+            ? trim((string) $foodicsProduct['sku'])
+            : null;
 
-            return $daftraId;
+        if ($daftraId === null) {
+            $daftraId = $this->createProduct($foodicsProduct);
         }
 
-        $daftraId = $this->createProduct($foodicsProduct);
-        $this->persistProduct($userId, $foodicsId, $daftraId);
+        if ($local !== null) {
+            $local->fill([
+                'daftra_id' => $daftraId,
+                'foodics_name' => $foodicsName,
+                'foodics_sku' => $foodicsSku,
+            ])->save();
+        } else {
+            $this->persistProduct($userId, $foodicsId, $daftraId, 'synced', $foodicsName, $foodicsSku);
+        }
 
         return $daftraId;
     }
@@ -124,13 +134,15 @@ class ProductService
         return (int) $id;
     }
 
-    private function persistProduct(int $userId, string $foodicsId, int $daftraId): void
+    private function persistProduct(int $userId, string $foodicsId, int $daftraId, string $status = 'synced', ?string $foodicsName = null, ?string $foodicsSku = null): void
     {
         Product::query()->create([
             'user_id' => $userId,
             'foodics_id' => $foodicsId,
+            'foodics_name' => $foodicsName ?? 'Unknown Product',
+            'foodics_sku' => $foodicsSku,
             'daftra_id' => $daftraId,
-            'status' => 'synced',
+            'status' => $status,
         ]);
     }
 

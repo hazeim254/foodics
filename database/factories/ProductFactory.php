@@ -25,6 +25,7 @@ class ProductFactory extends Factory
             'foodics_id' => fake()->uuid(),
             'daftra_id' => fake()->randomNumber(5),
             'status' => 'synced',
+            'foodics_name' => fake()->words(3, true),
         ];
     }
 }

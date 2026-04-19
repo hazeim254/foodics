@@ -22,7 +22,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/invoices/sync', [InvoiceController::class, 'sync'])->name('invoices.sync');
     Route::get('/invoices/sync-status', [InvoiceController::class, 'syncStatus'])->name('invoices.sync-status');
     Route::post('/invoices/{invoice}/retry-sync', [InvoiceController::class, 'retrySync'])->name('invoices.retry-sync');
-    Route::get('/products', ProductController::class)->name('products');
+    Route::get('/products', [ProductController::class, 'index'])->name('products');
+    Route::post('/products/sync', [ProductController::class, 'sync'])->name('products.sync');
+    Route::get('/products/sync-status', [ProductController::class, 'syncStatus'])->name('products.sync-status');
+    Route::post('/products/{product}/resync', [ProductController::class, 'resync'])->name('products.resync');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
 });
