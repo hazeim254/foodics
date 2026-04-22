@@ -1,0 +1,47 @@
+{
+	"result": "successful",
+	"code": 200,
+	"data": {
+		"Site": {
+			"id": "3605817",
+			"business_name": "ex4y9",
+			"first_name": "Hazem",
+			"last_name": "Mohamed",
+			"subdomain": "ex4y9.daftra.com",
+			"site_logo": null,
+			"invoice_logo": null,
+			"address1": " �Abu Hadrya",
+			"address2": "",
+			"city": "Khubar",
+			"state": "Eastern Provincce",
+			"postal_code": "32415",
+			"phone1": "",
+			"phone2": "+966544834934",
+			"country_code": "SA",
+			"timezone": "264",
+			"date_format": "DD/MM/YYYY",
+			"currency_code": "SAR",
+			"language_code": "7",
+			"email": "ex4y9@fthcapital.com",
+			"expiry_date": "2026-10-01",
+			"package_id": "281",
+			"bn1": "",
+			"bn2": "",
+			"tolerant": null,
+			"beta_version": "0",
+			"staff_id": -3,
+			"currencyFormat": "%s ر.س",
+			"currencies": {
+				"currencies_ar": "%s ر.س",
+				"currencies_en": "%s ر.س"
+			},
+			"numberFormat": [2, ".", ","],
+			"SITE_HASH": "e4882281",
+			"url": "https://ex4y9.daftra.com",
+			"is_beta": false,
+			"is_expired": false,
+			"moment_format": "DD/MM/YYYY",
+			"ALLOWED_LOYALTY_PLUGIN": false
+		}
+	}
+}
