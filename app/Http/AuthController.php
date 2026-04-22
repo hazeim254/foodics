@@ -191,7 +191,7 @@ class AuthController
             ]
         );
 
-        Auth::login($user);
+        Auth::login($user, true);
 
         $request->session()->forget(['daftra_account', 'foodics_account', 'foodics_state']);
     }
