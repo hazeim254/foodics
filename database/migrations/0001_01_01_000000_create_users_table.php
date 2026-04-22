@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('password');
             $table->string('foodics_ref')->nullable();
             $table->string('daftra_id')->nullable();
+            $table->string('foodics_id')->nullable();
+            $table->json('daftra_meta')->nullable();
+            $table->json('foodics_meta')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
