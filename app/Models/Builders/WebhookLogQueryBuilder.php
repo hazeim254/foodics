@@ -54,4 +54,9 @@ class WebhookLogQueryBuilder extends Builder
     {
         return $this->where('order_id', $orderId);
     }
+
+    public function byUser(int $userId): self
+    {
+        return $this->where('user_id', $userId);
+    }
 }

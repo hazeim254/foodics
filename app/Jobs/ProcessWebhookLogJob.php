@@ -14,6 +14,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -71,11 +72,11 @@ class ProcessWebhookLogJob implements ShouldQueue
                 return;
             }
 
-            try {
-                // Mark as processing (optional: add a 'processing' status if needed)
-                // For now, we'll keep it as pending until successful
+            if ($webhookLog->user) {
+                Context::add('user', $webhookLog->user);
+            }
 
-                // Process the webhook based on event type
+            try {
                 $this->processWebhook($webhookLog);
 
                 // Mark as processed
@@ -162,10 +163,10 @@ class ProcessWebhookLogJob implements ShouldQueue
     protected function getHandlerForEvent(string $event): WebhookHandlerInterface
     {
         return match ($event) {
-            'order.created' => new OrderCreatedHandler,
-            'order.updated' => new OrderUpdatedHandler,
-            'order.cancelled' => new OrderCancelledHandler,
-            default => new UnknownEventHandler,
+            'order.created' => app(OrderCreatedHandler::class),
+            'order.updated' => app(OrderUpdatedHandler::class),
+            'order.cancelled' => app(OrderCancelledHandler::class),
+            default => app(UnknownEventHandler::class),
         };
     }
 

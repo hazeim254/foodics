@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Enums\WebhookStatus;
 use App\Models\Builders\WebhookLogQueryBuilder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WebhookLog extends Model
 {
     protected $fillable = [
+        'user_id',
         'event',
         'timestamp',
         'payload',
@@ -20,6 +22,11 @@ class WebhookLog extends Model
         'order_id',
         'order_reference',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     protected function casts(): array
     {

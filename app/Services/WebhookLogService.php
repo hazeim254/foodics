@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\WebhookStatus;
 use App\Jobs\ProcessWebhookLogJob;
+use App\Models\User;
 use App\Models\WebhookLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -31,11 +32,16 @@ class WebhookLogService
         $orderId = data_get($payload, 'order.id');
         $orderReference = data_get($payload, 'order.reference');
 
+        $user = $businessReference
+            ? User::query()->where('foodics_ref', (string) $businessReference)->first()
+            : null;
+
         $timestamp = is_numeric($payload['timestamp'])
             ? Carbon::createFromTimestamp($payload['timestamp'])
             : Carbon::parse($payload['timestamp']);
 
         $webhookLog = WebhookLog::query()->create([
+            'user_id' => $user?->id,
             'event' => $payload['event'],
             'timestamp' => $timestamp,
             'payload' => $payload,
@@ -46,7 +52,6 @@ class WebhookLogService
             'order_reference' => $orderReference ? (int) $orderReference : null,
         ]);
 
-        // Dispatch job to process the webhook asynchronously
         ProcessWebhookLogJob::dispatch($webhookLog->id);
 
         return $webhookLog;
