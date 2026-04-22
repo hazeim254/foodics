@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Context;
  */
 class OrderService
 {
-    private const ORDER_INCLUDES = 'branch,charges,payments.payment_method,discount,products,products.taxes,charges.taxes,products.product,products.options,products.options.modifier_option,combos.products,charges.charge,products.discount,combos.discount,combos.products.options.taxes,combos.products.taxes,products.options.taxes';
+    private const ORDER_INCLUDES = 'branch,charges,payments.payment_method,discount,products,products.taxes,charges.taxes,products.product,products.options,products.options.modifier_option,combos.products,charges.charge,products.discount,combos.discount,combos.products.options.taxes,combos.products.taxes,products.options.taxes,customer';
 
     public function __construct(protected FoodicsApiClient $client) {}
 

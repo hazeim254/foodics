@@ -231,6 +231,7 @@ it('requests all include paths recommended by the accounting guide', function ()
                 'combos.products.options.taxes',
                 'combos.products.taxes',
                 'products.options.taxes',
+                'customer',
             ];
 
             foreach ($requiredPaths as $path) {
@@ -293,6 +294,7 @@ function hasFullIncludes(array $params): bool
         'combos.products.options.taxes',
         'combos.products.taxes',
         'products.options.taxes',
+        'customer',
     ];
 
     foreach ($requiredPaths as $path) {
