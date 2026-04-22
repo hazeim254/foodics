@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Context;
  */
 class OrderService
 {
+    private const ORDER_INCLUDES = 'branch,charges,payments.payment_method,discount,products,products.taxes,charges.taxes,products.product,products.options,combos.products,charges.charge,products.discount,combos.discount,combos.products.options.taxes,combos.products.taxes,products.options.taxes';
+
     public function __construct(protected FoodicsApiClient $client) {}
 
     /**
@@ -53,7 +55,8 @@ class OrderService
     {
         $params = [
             'sort' => 'reference',
-            'include' => 'products.product,payments.payment_method,charges,customer',
+            'include' => self::ORDER_INCLUDES,
+            'filter[status]' => '4',
             'limit' => 50,
         ];
 
@@ -81,13 +84,14 @@ class OrderService
     public function getOrder(string $orderId): array
     {
         $response = $this->client->get('/v5/orders', [
-            'include' => 'products.product,payments.payment_method,charges,customer',
+            'include' => self::ORDER_INCLUDES,
             'filter[id]' => $orderId,
         ]);
 
         $response->throw();
 
         $orders = $response->json('data') ?? [];
+
         return $orders[0] ?? [];
     }
 }

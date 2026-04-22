@@ -33,15 +33,15 @@ it('fetches all new orders across multiple pages', function () {
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v5/orders', Mockery::on(fn ($p) => ! isset($p['filter[reference_after]']) && ($p['include'] ?? null) === 'products.product,payments.payment_method,charges,customer'))
+        ->with('/v5/orders', Mockery::on(fn ($p) => ! isset($p['filter[reference_after]']) && hasFullIncludes($p) && ($p['filter[status]'] ?? null) === '4'))
         ->once()
         ->andReturn(fakeResponse($page1Data));
     $mockClient->shouldReceive('get')
-        ->with('/v5/orders', Mockery::on(fn ($p) => isset($p['filter[reference_after]']) && $p['filter[reference_after]'] === '00200' && ($p['include'] ?? null) === 'products.product,payments.payment_method,charges,customer'))
+        ->with('/v5/orders', Mockery::on(fn ($p) => isset($p['filter[reference_after]']) && $p['filter[reference_after]'] === '00200' && hasFullIncludes($p) && ($p['filter[status]'] ?? null) === '4'))
         ->once()
         ->andReturn(fakeResponse($page2Data));
     $mockClient->shouldReceive('get')
-        ->with('/v5/orders', Mockery::on(fn ($p) => isset($p['filter[reference_after]']) && $p['filter[reference_after]'] === '00300' && ($p['include'] ?? null) === 'products.product,payments.payment_method,charges,customer'))
+        ->with('/v5/orders', Mockery::on(fn ($p) => isset($p['filter[reference_after]']) && $p['filter[reference_after]'] === '00300' && hasFullIncludes($p) && ($p['filter[status]'] ?? null) === '4'))
         ->once()
         ->andReturn(fakeResponse($page3Data));
 
@@ -66,7 +66,7 @@ it('includes reference_after param when max foodics_reference exists', function 
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v5/orders', Mockery::on(fn ($p) => isset($p['filter[reference_after]']) && $p['filter[reference_after]'] === '00500' && ($p['include'] ?? null) === 'products.product,payments.payment_method,charges,customer'))
+        ->with('/v5/orders', Mockery::on(fn ($p) => isset($p['filter[reference_after]']) && $p['filter[reference_after]'] === '00500' && hasFullIncludes($p) && ($p['filter[status]'] ?? null) === '4'))
         ->once()
         ->andReturn(fakeResponse($pageData));
 
@@ -112,7 +112,7 @@ it('omits reference_after param on first sync', function () {
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v5/orders', Mockery::on(fn ($p) => ! isset($p['filter[reference_after]']) && ($p['include'] ?? null) === 'products.product,payments.payment_method,charges,customer'))
+        ->with('/v5/orders', Mockery::on(fn ($p) => ! isset($p['filter[reference_after]']) && hasFullIncludes($p) && ($p['filter[status]'] ?? null) === '4'))
         ->once()
         ->andReturn(fakeResponse($pageData));
 
@@ -129,7 +129,7 @@ it('returns empty array when API returns empty page', function () {
 
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/v5/orders', Mockery::on(fn ($p) => ($p['include'] ?? null) === 'products.product,payments.payment_method,charges,customer'))
+        ->with('/v5/orders', Mockery::on(fn ($p) => hasFullIncludes($p) && ($p['filter[status]'] ?? null) === '4'))
         ->once()
         ->andReturn(fakeResponse($pageData));
 
@@ -160,7 +160,8 @@ it('fetches a single order by ID', function () {
     $mockClient = Mockery::mock(FoodicsApiClient::class);
     $mockClient->shouldReceive('get')
         ->with('/v5/orders', Mockery::on(fn ($p) => ($p['filter[id]'] ?? null) === $orderId
-            && ($p['include'] ?? null) === 'products.product,payments.payment_method,charges,customer'))
+            && hasFullIncludes($p)
+            && ! isset($p['filter[status]'])))
         ->once()
         ->andReturn(fakeResponse($orderData));
 
@@ -205,6 +206,101 @@ it('throws exception when fetching a single order request fails', function () {
     expect(fn () => $orderService->getOrder($orderId))
         ->toThrow(RequestException::class);
 });
+
+it('requests all include paths recommended by the accounting guide', function () {
+    $mockClient = Mockery::mock(FoodicsApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v5/orders', Mockery::on(function ($p) {
+            $include = $p['include'] ?? '';
+
+            $requiredPaths = [
+                'branch',
+                'charges',
+                'payments.payment_method',
+                'discount',
+                'products',
+                'products.taxes',
+                'charges.taxes',
+                'products.product',
+                'products.options',
+                'combos.products',
+                'charges.charge',
+                'products.discount',
+                'combos.discount',
+                'combos.products.options.taxes',
+                'combos.products.taxes',
+                'products.options.taxes',
+            ];
+
+            foreach ($requiredPaths as $path) {
+                if (! str_contains($include, $path)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }))
+        ->once()
+        ->andReturn(fakeResponse(['data' => []]));
+
+    $this->app->instance(FoodicsApiClient::class, $mockClient);
+
+    $this->app->make(OrderService::class)->fetchNewOrders();
+});
+
+it('restricts fetch to completed orders (status 4)', function () {
+    $mockClient = Mockery::mock(FoodicsApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v5/orders', Mockery::on(fn ($p) => ($p['filter[status]'] ?? null) === '4'))
+        ->once()
+        ->andReturn(fakeResponse(['data' => []]));
+
+    $this->app->instance(FoodicsApiClient::class, $mockClient);
+
+    $this->app->make(OrderService::class)->fetchNewOrders();
+
+    $mockClient = Mockery::mock(FoodicsApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/v5/orders', Mockery::on(fn ($p) => ! isset($p['filter[status]'])))
+        ->once()
+        ->andReturn(fakeResponse(['data' => [['id' => 'test', 'reference' => '001']]]));
+
+    $this->app->instance(FoodicsApiClient::class, $mockClient);
+
+    $this->app->make(OrderService::class)->getOrder('test');
+});
+
+function hasFullIncludes(array $params): bool
+{
+    $include = $params['include'] ?? '';
+
+    $requiredPaths = [
+        'branch',
+        'charges',
+        'payments.payment_method',
+        'discount',
+        'products',
+        'products.taxes',
+        'charges.taxes',
+        'products.product',
+        'products.options',
+        'combos.products',
+        'charges.charge',
+        'products.discount',
+        'combos.discount',
+        'combos.products.options.taxes',
+        'combos.products.taxes',
+        'products.options.taxes',
+    ];
+
+    foreach ($requiredPaths as $path) {
+        if (! str_contains($include, $path)) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 function fakeResponse(array $json): object
 {
