@@ -40,11 +40,15 @@ class TaxService
     public function getTax(array $foodicsTax): ?int
     {
         $taxName = (string) ($foodicsTax['name'] ?? '');
+        if ($taxName === '') {
+            return null;
+        }
+
+        $taxValue = (float) ($foodicsTax['rate'] ?? 0);
 
         $listResponse = $this->daftraClient->get('/api2/taxes.json', [
-            'filter' => [
-                'name' => $taxName,
-            ],
+            'filter' => ['name' => $taxName],
+            'limit' => 100,
         ]);
 
         if (! $listResponse->successful()) {
@@ -58,7 +62,16 @@ class TaxService
             return null;
         }
 
-        return $this->daftraTaxIdFromListRow($rows[0]);
+        foreach ($rows as $row) {
+            $rowName = (string) ($row['Tax']['name'] ?? '');
+            $rowValue = (float) ($row['Tax']['value'] ?? 0);
+
+            if ($rowName === $taxName && $rowValue === $taxValue) {
+                return $this->daftraTaxIdFromListRow($row);
+            }
+        }
+
+        return null;
     }
 
     public function createTax(array $foodicsTax): int
