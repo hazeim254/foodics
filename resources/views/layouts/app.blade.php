@@ -88,19 +88,29 @@
             <div class="p-4 border-t border-[#e3e3e0] dark:border-[#3E3E3A]">
                 <div class="space-y-3">
                     <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full {{ session('daftra_account') ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                        <span class="w-2 h-2 rounded-full {{ session('daftra_account') || auth()->user()?->hasDaftraConnection() ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
                         <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">Daftra</span>
                     </div>
                     @if(session('daftra_account') && is_array(session('daftra_account')))
                         <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ session('daftra_account')['subdomain'] ?? '' }}</p>
+                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ session('daftra_account')['business_name'] ?? '' }}</p>
+                    @elseif(auth()->check())
+                        @if(auth()->user()->daftraSubdomain())
+                            <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ auth()->user()->daftraSubdomain() }}</p>
+                        @endif
+                        @if(auth()->user()->daftraBusinessName())
+                            <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ auth()->user()->daftraBusinessName() }}</p>
+                        @endif
                     @endif
 
                     <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full {{ session('foodics_account') ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
+                        <span class="w-2 h-2 rounded-full {{ session('foodics_account') || auth()->user()?->hasFoodicsConnection() ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
                         <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">Foodics</span>
                     </div>
                     @if(session('foodics_account') && is_array(session('foodics_account')))
                         <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ session('foodics_account')['business_name'] ?? '' }}</p>
+                    @elseif(auth()->check() && auth()->user()->foodicsBusinessName())
+                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ auth()->user()->foodicsBusinessName() }}</p>
                     @endif
                 </div>
             </div>

@@ -99,6 +99,61 @@ it('dashboard shows disconnected status when no providers in session', function 
         ->assertSee('Foodics');
 });
 
+it('shows green dot and daftra metadata from database when token exists', function () {
+    $user = User::factory()->create([
+        'daftra_meta' => [
+            'subdomain' => 'myshop',
+            'business_name' => 'My Daftra Business',
+        ],
+    ]);
+
+    $user->providerTokens()->create([
+        'provider' => 'daftra',
+        'token' => 'token-123',
+        'refresh_token' => 'refresh-123',
+        'expires_at' => now()->addHour(),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/')
+        ->assertOk()
+        ->assertSee('bg-green-500')
+        ->assertSee('myshop')
+        ->assertSee('My Daftra Business');
+});
+
+it('shows green dot and foodics metadata from database when token exists', function () {
+    $user = User::factory()->create([
+        'foodics_meta' => [
+            'business_name' => 'My Foodics Business',
+            'business_id' => 'abc',
+        ],
+    ]);
+
+    $user->providerTokens()->create([
+        'provider' => 'foodics',
+        'token' => 'token-456',
+        'refresh_token' => 'refresh-456',
+        'expires_at' => now()->addHour(),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/')
+        ->assertOk()
+        ->assertSee('bg-green-500')
+        ->assertSee('My Foodics Business');
+});
+
+it('shows gray dots when no provider tokens exist and no session data', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)
+        ->get('/')
+        ->assertOk();
+
+    expect($response->content())->not->toContain('bg-green-500');
+});
+
 it('invoices page extends layouts and shows title', function () {
     $user = User::factory()->create();
 
