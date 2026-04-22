@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\InvoiceSyncStatus;
 use App\Enums\SettingKey;
+use App\Exceptions\InvalidOrderLineException;
 use App\Exceptions\InvoiceAlreadyExistsException;
 use App\Models\Invoice;
 use App\Models\User;
@@ -13,6 +14,7 @@ use App\Services\Daftra\PaymentMethodService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SyncOrder
@@ -31,6 +33,8 @@ class SyncOrder
     /** @var array<string, string> */
     protected array $paymentMethodMap = [];
 
+    protected ?string $currentOrderId = null;
+
     /**
      * A sample of the array structure of foodics order
      * and Daftra Invoice are found in see section.
@@ -40,6 +44,8 @@ class SyncOrder
      */
     public function handle(array $order): void
     {
+        $this->currentOrderId = $order['id'];
+
         try {
             $this->skipIfAlreadySynced($order['id'], $order['reference']);
         } catch (InvoiceAlreadyExistsException $e) {
@@ -54,6 +60,8 @@ class SyncOrder
             $invoice->update(['status' => InvoiceSyncStatus::Failed]);
 
             throw $e;
+        } finally {
+            $this->currentOrderId = null;
         }
     }
 
@@ -165,9 +173,77 @@ class SyncOrder
                 'tax1' => $daftraTaxIds->get(0),
                 'tax2' => $daftraTaxIds->get(1),
             ];
+
+            foreach ($orderProduct['options'] ?? [] as $option) {
+                $invoiceItems[] = $this->buildOptionInvoiceItem($option);
+            }
         }
 
         return $invoiceItems;
+    }
+
+    protected function buildOptionInvoiceItem(array $option): array
+    {
+        $modifierOption = $option['modifier_option'] ?? [];
+        $foodicsId = $modifierOption['id'] ?? ($option['id'] ?? null);
+
+        if ($foodicsId === null || (is_string($foodicsId) && trim($foodicsId) === '')) {
+            throw (new InvalidOrderLineException('Order option line is missing a Foodics id.'))
+                ->setOrderId($this->currentOrderId)
+                ->setLineIdentifier($modifierOption['sku'] ?? null);
+        }
+
+        $enriched = [
+            'id' => $foodicsId,
+            'name' => $modifierOption['name'] ?? 'Modifier Option',
+            'sku' => isset($modifierOption['sku']) && trim((string) $modifierOption['sku']) !== ''
+                ? trim((string) $modifierOption['sku'])
+                : (string) $foodicsId,
+            'description' => $modifierOption['description'] ?? '',
+            'barcode' => $modifierOption['barcode'] ?? null,
+            'price' => $modifierOption['price'] ?? 0,
+            'cost' => $modifierOption['cost'] ?? null,
+            'is_active' => $modifierOption['is_active'] ?? true,
+        ];
+
+        $daftraProductId = $this->productService->getProductByFoodicsData($enriched);
+
+        $allDaftraTaxIds = collect($option['taxes'] ?? [])
+            ->pluck('id')
+            ->map(fn ($foodicsTaxId) => $this->taxMap[$foodicsTaxId] ?? null)
+            ->filter()
+            ->values();
+
+        if ($allDaftraTaxIds->count() > 2) {
+            $droppedFoodicsIds = collect($option['taxes'])
+                ->pluck('id')
+                ->slice(2)
+                ->values()
+                ->all();
+
+            Log::warning('Option line has more than 2 taxes; dropping excess.', [
+                'order_id' => Context::get('order_id'),
+                'option_id' => $foodicsId,
+                'dropped_foodics_tax_ids' => $droppedFoodicsIds,
+            ]);
+        }
+
+        $daftraTaxIds = $allDaftraTaxIds->take(2);
+
+        $discount = $option['discount_amount']
+            ?? $option['tax_exclusive_discount_amount']
+            ?? 0;
+
+        return [
+            'product_id' => $daftraProductId,
+            'item' => $enriched['name'],
+            'quantity' => $option['quantity'] ?? 1,
+            'unit_price' => $option['unit_price'] ?? 0,
+            'discount' => $discount,
+            'discount_type' => 2,
+            'tax1' => $daftraTaxIds->get(0),
+            'tax2' => $daftraTaxIds->get(1),
+        ];
     }
 
     public function addChargeInvoiceItems(array $invoiceItems, array $charges): array
@@ -346,7 +422,9 @@ class SyncOrder
     {
         $productId = data_get($orderProduct, 'product.id') ?? ($orderProduct['id'] ?? null);
         if (! is_string($productId) || trim($productId) === '') {
-            throw new \RuntimeException('Order product line is missing a Foodics product id.');
+            throw (new InvalidOrderLineException('Order product line is missing a Foodics product id.'))
+                ->setOrderId($this->currentOrderId)
+                ->setLineIdentifier($orderProduct['sku'] ?? null);
         }
 
         return $productId;
