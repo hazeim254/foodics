@@ -217,3 +217,36 @@ it('app layout uses rtl direction for arabic locale', function () {
         ->assertOk()
         ->assertSee('dir="rtl"', false);
 });
+
+it('invoices page uses rtl direction for arabic locale', function () {
+    $user = User::factory()->create();
+
+    app()->setLocale('ar');
+
+    $this->actingAs($user)
+        ->get('/invoices')
+        ->assertOk()
+        ->assertSee('dir="rtl"', false);
+});
+
+it('products page uses rtl direction for arabic locale', function () {
+    $user = User::factory()->create();
+
+    app()->setLocale('ar');
+
+    $this->actingAs($user)
+        ->get('/products')
+        ->assertOk()
+        ->assertSee('dir="rtl"', false);
+});
+
+it('settings page uses rtl direction for arabic locale', function () {
+    $user = User::factory()->create();
+
+    app()->setLocale('ar');
+
+    $this->actingAs($user)
+        ->get('/settings')
+        ->assertOk()
+        ->assertSee('dir="rtl"', false);
+});
