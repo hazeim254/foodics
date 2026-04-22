@@ -12,6 +12,7 @@ use App\Services\Foodics\FoodicsApiClient;
 use App\Services\SyncOrder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Log;
 
 uses(RefreshDatabase::class);
 
@@ -575,9 +576,13 @@ it('caps option line taxes at two and warns when more are present', function () 
 
     $syncOrder = $this->app->make(SyncOrder::class);
     $reflection = new ReflectionClass($syncOrder);
-    $prop = $reflection->getProperty('taxMap');
-    $prop->setAccessible(true);
-    $prop->setValue($syncOrder, ['t1' => 11, 't2' => 22, 't3' => 33]);
+    $taxMapProp = $reflection->getProperty('taxMap');
+    $taxMapProp->setAccessible(true);
+    $taxMapProp->setValue($syncOrder, ['t1' => 11, 't2' => 22, 't3' => 33]);
+
+    $orderIdProp = $reflection->getProperty('currentOrderId');
+    $orderIdProp->setAccessible(true);
+    $orderIdProp->setValue($syncOrder, 'order-abc-123');
 
     $option = [
         'id' => 'opt-cap',
@@ -593,7 +598,8 @@ it('caps option line taxes at two and warns when more are present', function () 
 
     Log::shouldReceive('warning')->once()->withArgs(function (string $message, array $context) {
         return str_contains($message, 'more than 2 taxes')
-            && in_array('t3', $context['dropped_foodics_tax_ids']);
+            && $context['dropped_foodics_tax_ids'] === ['t3']
+            && $context['order_id'] === 'order-abc-123';
     });
 
     $method = $reflection->getMethod('buildOptionInvoiceItem');
@@ -602,6 +608,54 @@ it('caps option line taxes at two and warns when more are present', function () 
 
     expect($item['tax1'])->toBe(11);
     expect($item['tax2'])->toBe(22);
+});
+
+it('reports only resolved excess tax ids when dropping', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(500);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $taxMapProp = $reflection->getProperty('taxMap');
+    $taxMapProp->setAccessible(true);
+    // t2 is NOT in the map (unresolved); t1, t3, t4, t5 are resolved
+    $taxMapProp->setValue($syncOrder, ['t1' => 11, 't3' => 33, 't4' => 44, 't5' => 55]);
+
+    $orderIdProp = $reflection->getProperty('currentOrderId');
+    $orderIdProp->setAccessible(true);
+    $orderIdProp->setValue($syncOrder, 'order-resolved-excess');
+
+    $option = [
+        'id' => 'opt-resolved',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'modifier_option' => ['id' => 'opt-resolved', 'name' => 'Test', 'sku' => 'TR', 'price' => 10, 'cost' => null, 'is_active' => true],
+        'taxes' => [
+            ['id' => 't1', 'name' => 'Tax1', 'rate' => 5],
+            ['id' => 't2', 'name' => 'Tax2', 'rate' => 10],
+            ['id' => 't3', 'name' => 'Tax3', 'rate' => 15],
+            ['id' => 't4', 'name' => 'Tax4', 'rate' => 20],
+            ['id' => 't5', 'name' => 'Tax5', 'rate' => 25],
+        ],
+    ];
+
+    Log::shouldReceive('warning')->once()->withArgs(function (string $message, array $context) {
+        // After filtering out t2 (unresolved), resolved order is: t1, t3, t4, t5
+        // Positions >= 2 in the post-filter list: t4, t5
+        return str_contains($message, 'more than 2 taxes')
+            && $context['dropped_foodics_tax_ids'] === ['t4', 't5']
+            && $context['order_id'] === 'order-resolved-excess';
+    });
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    // tax1 and tax2 should be the first two resolved Daftra ids: 11 and 33
+    expect($item['tax1'])->toBe(11);
+    expect($item['tax2'])->toBe(33);
 });
 
 it('skips unresolved Foodics tax ids on option lines', function () {
@@ -717,9 +771,8 @@ it('falls back to a generic name when modifier_option sub-object is missing', fu
 
     expect($item['item'])->toBe('Modifier Option');
 
-    $mockProductService->shouldHaveReceived('getProductByFoodicsData', function (array $data) {
-        return $data['id'] === 'opt-nomod' && $data['sku'] === 'opt-nomod';
-    });
+    $mockProductService->shouldHaveReceived('getProductByFoodicsData')
+        ->with(Mockery::on(fn (array $data) => $data['id'] === 'opt-nomod' && $data['sku'] === 'opt-nomod'));
 });
 
 it('throws InvalidOrderLineException when an option has no resolvable id', function () {

@@ -208,27 +208,25 @@ class SyncOrder
 
         $daftraProductId = $this->productService->getProductByFoodicsData($enriched);
 
-        $allDaftraTaxIds = collect($option['taxes'] ?? [])
-            ->pluck('id')
-            ->map(fn ($foodicsTaxId) => $this->taxMap[$foodicsTaxId] ?? null)
-            ->filter()
+        $resolved = collect($option['taxes'] ?? [])
+            ->map(fn (array $tax) => [
+                'foodics_id' => $tax['id'] ?? null,
+                'daftra_id' => $this->taxMap[$tax['id'] ?? null] ?? null,
+            ])
+            ->filter(fn (array $pair) => $pair['daftra_id'] !== null)
             ->values();
 
-        if ($allDaftraTaxIds->count() > 2) {
-            $droppedFoodicsIds = collect($option['taxes'])
-                ->pluck('id')
-                ->slice(2)
-                ->values()
-                ->all();
+        $daftraTaxIds = $resolved->pluck('daftra_id')->take(2);
+
+        if ($resolved->count() > 2) {
+            $droppedFoodicsIds = $resolved->slice(2)->pluck('foodics_id')->values()->all();
 
             Log::warning('Option line has more than 2 taxes; dropping excess.', [
-                'order_id' => Context::get('order_id'),
+                'order_id' => $this->currentOrderId,
                 'option_id' => $foodicsId,
                 'dropped_foodics_tax_ids' => $droppedFoodicsIds,
             ]);
         }
-
-        $daftraTaxIds = $allDaftraTaxIds->take(2);
 
         $discount = $option['discount_amount']
             ?? $option['tax_exclusive_discount_amount']
