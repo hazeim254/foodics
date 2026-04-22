@@ -197,3 +197,23 @@ it('authenticated pages use the app layout', function () {
         ->assertOk()
         ->assertSee('Foodics');
 });
+
+it('app layout uses ltr direction for english locale', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/')
+        ->assertOk()
+        ->assertSee('dir="ltr"', false);
+});
+
+it('app layout uses rtl direction for arabic locale', function () {
+    $user = User::factory()->create();
+
+    app()->setLocale('ar');
+
+    $this->actingAs($user)
+        ->get('/')
+        ->assertOk()
+        ->assertSee('dir="rtl"', false);
+});

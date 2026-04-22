@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa', 'ur']) ? 'rtl' : 'ltr' }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -28,13 +28,13 @@
         <aside
             x-show="isDesktop || sidebarOpen"
             x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="-translate-x-full"
+            x-transition:enter-start="-translate-x-full rtl:translate-x-full"
             x-transition:enter-end="translate-x-0"
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="-translate-x-full"
-            class="fixed top-0 left-0 h-full w-64 bg-white dark:bg-[#161615] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] z-40 flex flex-col"
-            :class="{ '-translate-x-full': !isDesktop && !sidebarOpen }"
+            x-transition:leave-end="-translate-x-full rtl:translate-x-full"
+            class="fixed top-0 start-0 h-full w-64 bg-white dark:bg-[#161615] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] z-40 flex flex-col"
+            :class="{ '-translate-x-full rtl:translate-x-full': !isDesktop && !sidebarOpen }"
         >
             <div class="p-6 pb-4">
                 <div class="flex items-center gap-3">
@@ -92,14 +92,14 @@
                         <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">Daftra</span>
                     </div>
                     @if(session('daftra_account') && is_array(session('daftra_account')))
-                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ session('daftra_account')['subdomain'] ?? '' }}</p>
-                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ session('daftra_account')['business_name'] ?? '' }}</p>
+                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] ps-4">{{ session('daftra_account')['subdomain'] ?? '' }}</p>
+                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] ps-4">{{ session('daftra_account')['business_name'] ?? '' }}</p>
                     @elseif(auth()->check())
                         @if(auth()->user()->daftraSubdomain())
-                            <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ auth()->user()->daftraSubdomain() }}</p>
+                            <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] ps-4">{{ auth()->user()->daftraSubdomain() }}</p>
                         @endif
                         @if(auth()->user()->daftraBusinessName())
-                            <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ auth()->user()->daftraBusinessName() }}</p>
+                            <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] ps-4">{{ auth()->user()->daftraBusinessName() }}</p>
                         @endif
                     @endif
 
@@ -108,17 +108,26 @@
                         <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">Foodics</span>
                     </div>
                     @if(session('foodics_account') && is_array(session('foodics_account')))
-                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ session('foodics_account')['business_name'] ?? '' }}</p>
+                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] ps-4">{{ session('foodics_account')['business_name'] ?? '' }}</p>
                     @elseif(auth()->check() && auth()->user()->foodicsBusinessName())
-                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] pl-4">{{ auth()->user()->foodicsBusinessName() }}</p>
+                        <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] ps-4">{{ auth()->user()->foodicsBusinessName() }}</p>
                     @endif
                 </div>
             </div>
         </aside>
 
-        <div class="lg:pl-64">
-            <header class="sticky top-0 z-20 bg-[#FDFDFC] dark:bg-[#0a0a0a] border-b border-[#e3e3e0] dark:border-[#3E3E3A] lg:hidden">
-                <div class="flex items-center justify-between px-4 py-3">
+        <div class="lg:ps-64">
+            <header class="sticky top-0 z-20 bg-[#FDFDFC] dark:bg-[#0a0a0a] border-b border-[#e3e3e0] dark:border-[#3E3E3A]">
+                <div class="hidden lg:flex items-center justify-end px-8 py-3">
+                    <form method="POST" action="{{ route('language.switch') }}" class="inline-flex">
+                        @csrf
+                        <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
+                        <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]">
+                            {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+                        </button>
+                    </form>
+                </div>
+                <div class="flex lg:hidden items-center justify-between px-4 py-3">
                     <button
                         type="button"
                         class="p-2 -m-2 text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]"
@@ -129,7 +138,13 @@
                         </svg>
                     </button>
                     <span class="font-medium text-sm">@yield('title', 'Dashboard')</span>
-                    <div class="w-10"></div>
+                    <form method="POST" action="{{ route('language.switch') }}" class="inline-flex">
+                        @csrf
+                        <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
+                        <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]">
+                            {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+                        </button>
+                    </form>
                 </div>
             </header>
 

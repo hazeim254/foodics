@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa', 'ur']) ? 'rtl' : 'ltr' }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,6 +18,15 @@
     <body class="min-h-screen bg-white dark:bg-[#0a0a0a] font-[Instrument_Sans,ui-sans-serif,system-ui,sans-serif] antialiased">
 
         <div class="flex min-h-screen">
+            <div class="absolute top-4 end-4 z-10">
+                <form method="POST" action="{{ route('language.switch') }}" class="inline-flex">
+                    @csrf
+                    <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
+                    <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] bg-white/80 dark:bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A]">
+                        {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+                    </button>
+                </form>
+            </div>
 
             {{-- Left decorative panel (hidden on mobile) --}}
             <div class="hidden lg:flex lg:w-2/5 flex-col items-center justify-center relative overflow-hidden bg-[#1b1b18] dark:bg-[#161615]">

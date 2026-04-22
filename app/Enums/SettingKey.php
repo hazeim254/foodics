@@ -5,6 +5,7 @@ namespace App\Enums;
 enum SettingKey: string
 {
     case DaftraDefaultClientId = 'daftra.default_client_id';
+    case Locale = 'locale';
 
     /**
      * @return array<int, string>

@@ -85,3 +85,17 @@ it('requests required scopes when redirecting to foodics oauth', function () {
         'customers.get',
     );
 });
+
+it('login page uses ltr direction for english locale', function () {
+    $this->get('/login')
+        ->assertOk()
+        ->assertSee('dir="ltr"', false);
+});
+
+it('login page uses rtl direction for arabic locale', function () {
+    app()->setLocale('ar');
+
+    $this->get('/login')
+        ->assertOk()
+        ->assertSee('dir="rtl"', false);
+});
