@@ -1,15 +1,18 @@
 <?php
 
 use App\Enums\InvoiceSyncStatus;
+use App\Exceptions\InvalidOrderLineException;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
+use App\Services\Daftra\ProductService;
 use App\Services\Foodics\FoodicsApiClient;
 use App\Services\SyncOrder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Log;
 
 uses(RefreshDatabase::class);
 
@@ -37,11 +40,19 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->with('/api2/products', ['product_code' => '8d90b8d1'])
         ->once()
         ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'M002'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '8d90d06e'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = mockHttpResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
         ->with('/api2/products', Mockery::any())
-        ->once()
+        ->twice()
         ->andReturn($productCreateResponse);
 
     $clientNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
@@ -90,8 +101,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
             expect($payload['Invoice']['discount_amount'])->toBe(5);
             expect($payload['Invoice']['notes'])->toBe('Some Kitchen Notes 73664');
             expect($payload)->toHaveKey('InvoiceItem');
-            // Now expects 2 items: 1 product + 1 charge
-            expect($payload['InvoiceItem'])->toHaveCount(2);
+            expect($payload['InvoiceItem'])->toHaveCount(3);
             expect($payload['InvoiceItem'][0])->toBe([
                 'product_id' => 67890,
                 'item' => 'Tuna Sandwich',
@@ -102,12 +112,17 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
                 'tax1' => 54321,
                 'tax2' => null,
             ]);
-            // Second item is the Service Charge
-            expect($payload['InvoiceItem'][1]['item'])->toBe('Service Charge');
-            expect($payload['InvoiceItem'][1]['quantity'])->toBe(1);
-            expect($payload['InvoiceItem'][1]['unit_price'])->toBe(8);
+            expect($payload['InvoiceItem'][1]['item'])->toBe('Cheese Slice');
+            expect($payload['InvoiceItem'][1]['product_id'])->toBe(67890);
+            expect($payload['InvoiceItem'][1]['quantity'])->toBe(2);
+            expect($payload['InvoiceItem'][1]['unit_price'])->toBe(3);
             expect($payload['InvoiceItem'][1]['tax1'])->toBe(54321);
             expect($payload['InvoiceItem'][1]['tax2'])->toBeNull();
+            expect($payload['InvoiceItem'][2]['item'])->toBe('Service Charge');
+            expect($payload['InvoiceItem'][2]['quantity'])->toBe(1);
+            expect($payload['InvoiceItem'][2]['unit_price'])->toBe(8);
+            expect($payload['InvoiceItem'][2]['tax1'])->toBe(54321);
+            expect($payload['InvoiceItem'][2]['tax2'])->toBeNull();
 
             return true;
         }))
@@ -184,11 +199,19 @@ it('does not fetch product details from Foodics during sync', function () {
         ->with('/api2/products', ['product_code' => '8d90b8d1'])
         ->once()
         ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'M002'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '8d90d06e'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = mockHttpResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
         ->with('/api2/products', Mockery::any())
-        ->once()
+        ->twice()
         ->andReturn($productCreateResponse);
 
     $clientNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
@@ -228,7 +251,8 @@ it('does not fetch product details from Foodics during sync', function () {
     $invoiceCreateResponse = mockHttpResponse(successful: true, status: 200, json: ['id' => 12345]);
     $mockClient->shouldReceive('post')
         ->with('/api2/invoices', Mockery::on(function (array $payload) {
-            expect($payload['InvoiceItem'])->toHaveCount(3);
+            // 2 products x (1 + 1 option) + 1 charge = 5
+            expect($payload['InvoiceItem'])->toHaveCount(5);
 
             return true;
         }))
@@ -281,7 +305,7 @@ it('throws when embedded product id is missing', function () {
     $syncOrder = $this->app->make(SyncOrder::class);
 
     expect(fn () => $syncOrder->getInvoiceItems($this->order['products']))
-        ->toThrow(RuntimeException::class, 'Order product line is missing a Foodics product id.');
+        ->toThrow(InvalidOrderLineException::class, 'Order product line is missing a Foodics product id.');
 });
 
 it('skips order already synced locally', function () {
@@ -322,11 +346,19 @@ it('stores foodics_metadata and daftra_metadata on invoice', function () {
         ->with('/api2/products', ['product_code' => '8d90b8d1'])
         ->once()
         ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'M002'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '8d90d06e'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = mockHttpResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
         ->with('/api2/products', Mockery::any())
-        ->once()
+        ->twice()
         ->andReturn($productCreateResponse);
 
     $clientNotFoundResponse = mockHttpResponse(successful: true, status: 200, json: ['data' => []]);
@@ -405,6 +437,379 @@ it('stores foodics_metadata and daftra_metadata on invoice', function () {
     expect($invoice->daftra_metadata)->toBe([
         'no' => 'INV-001',
     ]);
+});
+
+it('emits each modifier option as its own invoice line', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(100);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, []);
+
+    $product = $this->order['products'][0];
+    $product['options'] = [
+        [
+            'id' => 'opt-1',
+            'quantity' => 1,
+            'unit_price' => 2.5,
+            'modifier_option' => ['id' => 'opt-1', 'name' => 'Extra Shot', 'sku' => 'OS1', 'price' => 2.5, 'cost' => null, 'is_active' => true],
+            'taxes' => [],
+        ],
+        [
+            'id' => 'opt-2',
+            'quantity' => 2,
+            'unit_price' => 1.0,
+            'modifier_option' => ['id' => 'opt-2', 'name' => 'Cheese', 'sku' => 'OS2', 'price' => 1.0, 'cost' => null, 'is_active' => true],
+            'taxes' => [],
+        ],
+    ];
+    $products = [$product];
+
+    $items = $syncOrder->getInvoiceItems($products);
+
+    expect($items)->toHaveCount(3);
+    expect($items[0]['item'])->toBe('Tuna Sandwich');
+    expect($items[1]['item'])->toBe('Extra Shot');
+    expect($items[2]['item'])->toBe('Cheese');
+});
+
+it('uses modifier_option.name as the option line item name', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(200);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, []);
+
+    $option = [
+        'id' => 'opt-name',
+        'quantity' => 1,
+        'unit_price' => 5,
+        'modifier_option' => ['id' => 'opt-name', 'name' => 'Avocado Spread', 'sku' => 'AVC', 'price' => 5, 'cost' => null, 'is_active' => true],
+        'taxes' => [],
+    ];
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    expect($item['item'])->toBe('Avocado Spread');
+});
+
+it('propagates option quantity, unit_price, and taxes to the invoice line', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(300);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, ['tax-abc' => 99]);
+
+    $option = [
+        'id' => 'opt-qty',
+        'quantity' => 3,
+        'unit_price' => 4.5,
+        'modifier_option' => ['id' => 'opt-qty', 'name' => 'Syrup', 'sku' => 'SYR', 'price' => 4.5, 'cost' => null, 'is_active' => true],
+        'taxes' => [['id' => 'tax-abc', 'name' => 'VAT', 'rate' => 5]],
+    ];
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    expect($item['quantity'])->toBe(3);
+    expect($item['unit_price'])->toBe(4.5);
+    expect($item['tax1'])->toBe(99);
+});
+
+it('uses Daftra tax ids (not Foodics ids) for tax1 and tax2 on option lines', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(400);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, ['foodics-tax-1' => 99, 'foodics-tax-2' => 88]);
+
+    $option = [
+        'id' => 'opt-daftra',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'modifier_option' => ['id' => 'opt-daftra', 'name' => 'Test', 'sku' => 'T', 'price' => 10, 'cost' => null, 'is_active' => true],
+        'taxes' => [
+            ['id' => 'foodics-tax-1', 'name' => 'VAT', 'rate' => 5],
+            ['id' => 'foodics-tax-2', 'name' => 'SVC', 'rate' => 10],
+        ],
+    ];
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    expect($item['tax1'])->toBe(99);
+    expect($item['tax2'])->toBe(88);
+    expect($item['tax1'])->toBeInt();
+    expect($item['tax2'])->toBeInt();
+});
+
+it('caps option line taxes at two and warns when more are present', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(500);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $taxMapProp = $reflection->getProperty('taxMap');
+    $taxMapProp->setAccessible(true);
+    $taxMapProp->setValue($syncOrder, ['t1' => 11, 't2' => 22, 't3' => 33]);
+
+    $orderIdProp = $reflection->getProperty('currentOrderId');
+    $orderIdProp->setAccessible(true);
+    $orderIdProp->setValue($syncOrder, 'order-abc-123');
+
+    $option = [
+        'id' => 'opt-cap',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'modifier_option' => ['id' => 'opt-cap', 'name' => 'Test', 'sku' => 'TC', 'price' => 10, 'cost' => null, 'is_active' => true],
+        'taxes' => [
+            ['id' => 't1', 'name' => 'Tax1', 'rate' => 5],
+            ['id' => 't2', 'name' => 'Tax2', 'rate' => 10],
+            ['id' => 't3', 'name' => 'Tax3', 'rate' => 15],
+        ],
+    ];
+
+    Log::shouldReceive('warning')->once()->withArgs(function (string $message, array $context) {
+        return str_contains($message, 'more than 2 taxes')
+            && $context['dropped_foodics_tax_ids'] === ['t3']
+            && $context['order_id'] === 'order-abc-123';
+    });
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    expect($item['tax1'])->toBe(11);
+    expect($item['tax2'])->toBe(22);
+});
+
+it('reports only resolved excess tax ids when dropping', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(500);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $taxMapProp = $reflection->getProperty('taxMap');
+    $taxMapProp->setAccessible(true);
+    // t2 is NOT in the map (unresolved); t1, t3, t4, t5 are resolved
+    $taxMapProp->setValue($syncOrder, ['t1' => 11, 't3' => 33, 't4' => 44, 't5' => 55]);
+
+    $orderIdProp = $reflection->getProperty('currentOrderId');
+    $orderIdProp->setAccessible(true);
+    $orderIdProp->setValue($syncOrder, 'order-resolved-excess');
+
+    $option = [
+        'id' => 'opt-resolved',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'modifier_option' => ['id' => 'opt-resolved', 'name' => 'Test', 'sku' => 'TR', 'price' => 10, 'cost' => null, 'is_active' => true],
+        'taxes' => [
+            ['id' => 't1', 'name' => 'Tax1', 'rate' => 5],
+            ['id' => 't2', 'name' => 'Tax2', 'rate' => 10],
+            ['id' => 't3', 'name' => 'Tax3', 'rate' => 15],
+            ['id' => 't4', 'name' => 'Tax4', 'rate' => 20],
+            ['id' => 't5', 'name' => 'Tax5', 'rate' => 25],
+        ],
+    ];
+
+    Log::shouldReceive('warning')->once()->withArgs(function (string $message, array $context) {
+        // After filtering out t2 (unresolved), resolved order is: t1, t3, t4, t5
+        // Positions >= 2 in the post-filter list: t4, t5
+        return str_contains($message, 'more than 2 taxes')
+            && $context['dropped_foodics_tax_ids'] === ['t4', 't5']
+            && $context['order_id'] === 'order-resolved-excess';
+    });
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    // tax1 and tax2 should be the first two resolved Daftra ids: 11 and 33
+    expect($item['tax1'])->toBe(11);
+    expect($item['tax2'])->toBe(33);
+});
+
+it('skips unresolved Foodics tax ids on option lines', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(600);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, ['t1' => 11, 't3' => 33]);
+
+    $option = [
+        'id' => 'opt-skip',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'modifier_option' => ['id' => 'opt-skip', 'name' => 'Test', 'sku' => 'TS', 'price' => 10, 'cost' => null, 'is_active' => true],
+        'taxes' => [
+            ['id' => 't1', 'name' => 'Tax1', 'rate' => 5],
+            ['id' => 't2-unresolved', 'name' => 'Tax2', 'rate' => 10],
+            ['id' => 't3', 'name' => 'Tax3', 'rate' => 15],
+        ],
+    ];
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    expect($item['tax1'])->toBe(11);
+    expect($item['tax2'])->toBe(33);
+});
+
+it('falls back to tax_exclusive_discount_amount when option discount_amount is missing', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(700);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, []);
+
+    $option = [
+        'id' => 'opt-disc',
+        'quantity' => 1,
+        'unit_price' => 10,
+        'tax_exclusive_discount_amount' => 1.5,
+        'modifier_option' => ['id' => 'opt-disc', 'name' => 'Test', 'sku' => 'TD', 'price' => 10, 'cost' => null, 'is_active' => true],
+        'taxes' => [],
+    ];
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    expect($item['discount'])->toBe(1.5);
+});
+
+it('emits zero-price options as invoice lines', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(800);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, []);
+
+    $option = [
+        'id' => 'opt-free',
+        'quantity' => 1,
+        'unit_price' => 0,
+        'modifier_option' => ['id' => 'opt-free', 'name' => 'Free Topping', 'sku' => 'FT', 'price' => 0, 'cost' => null, 'is_active' => true],
+        'taxes' => [],
+    ];
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    expect($item)->not->toBeNull();
+    expect($item['unit_price'])->toBe(0);
+});
+
+it('falls back to a generic name when modifier_option sub-object is missing', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(900);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, []);
+
+    $option = [
+        'id' => 'opt-nomod',
+        'quantity' => 1,
+        'unit_price' => 5,
+        'taxes' => [],
+    ];
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+    $item = $method->invoke($syncOrder, $option);
+
+    expect($item['item'])->toBe('Modifier Option');
+
+    $mockProductService->shouldHaveReceived('getProductByFoodicsData')
+        ->with(Mockery::on(fn (array $data) => $data['id'] === 'opt-nomod' && $data['sku'] === 'opt-nomod'));
+});
+
+it('throws InvalidOrderLineException when an option has no resolvable id', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $mockProductService = Mockery::mock(ProductService::class);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+    $prop = $reflection->getProperty('taxMap');
+    $prop->setAccessible(true);
+    $prop->setValue($syncOrder, []);
+
+    $option = [
+        'quantity' => 1,
+        'unit_price' => 5,
+        'taxes' => [],
+    ];
+
+    $method = $reflection->getMethod('buildOptionInvoiceItem');
+    $method->setAccessible(true);
+
+    expect(fn () => $method->invoke($syncOrder, $option))
+        ->toThrow(InvalidOrderLineException::class, 'Order option line is missing a Foodics id.');
+});
+
+it('throws InvalidOrderLineException when a product line has no resolvable id', function () {
+    data_forget($this->order, 'products.0.product.id');
+    unset($this->order['products'][0]['id']);
+
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+    $this->app->instance(FoodicsApiClient::class, Mockery::mock(FoodicsApiClient::class));
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+
+    expect(fn () => $syncOrder->getInvoiceItems($this->order['products']))
+        ->toThrow(InvalidOrderLineException::class, 'Order product line is missing a Foodics product id.');
 });
 
 function mockHttpResponse(bool $successful, int $status, array $json): object
