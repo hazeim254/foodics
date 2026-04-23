@@ -13,11 +13,18 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
+            $table->foreignId('user_id')->nullable()->constrained();
             $table->string('foodics_id')->index();
-            $table->integer('daftra_id');
+            $table->string('foodics_name')->default('Unknown Product');
+            $table->string('foodics_sku')->nullable();
+            $table->integer('daftra_id')->nullable();
             $table->string('status');
+            $table->json('foodics_metadata')->nullable();
+            $table->json('daftra_metadata')->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'foodics_id']);
+            $table->index('foodics_sku');
         });
     }
 

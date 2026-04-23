@@ -3,6 +3,7 @@
 use App\Http\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\WebhooksController;
@@ -10,6 +11,7 @@ use App\Http\Middleware\FoodicsWebhook;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/language', [LanguageController::class, 'switch'])->name('language.switch');
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
 Route::get('daftra/auth', [AuthController::class, 'daftraRedirect'])->name('daftra.auth');
 Route::get('daftra/auth/callback', [AuthController::class, 'daftraCallback'])->name('daftra.callback');

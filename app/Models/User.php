@@ -51,6 +51,31 @@ class User extends Authenticatable
         return $this->providerTokens->firstWhere('provider', 'foodics');
     }
 
+    public function hasDaftraConnection(): bool
+    {
+        return $this->getDaftraToken() !== null;
+    }
+
+    public function hasFoodicsConnection(): bool
+    {
+        return $this->getFoodicsToken() !== null;
+    }
+
+    public function daftraSubdomain(): ?string
+    {
+        return $this->daftra_meta['subdomain'] ?? null;
+    }
+
+    public function daftraBusinessName(): ?string
+    {
+        return $this->daftra_meta['business_name'] ?? null;
+    }
+
+    public function foodicsBusinessName(): ?string
+    {
+        return $this->foodics_meta['business_name'] ?? null;
+    }
+
     /**
      * Get the attributes that should be cast.
      *

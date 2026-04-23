@@ -74,9 +74,22 @@ class AuthController
 
         $result = $response->json();
 
+        $siteInfoResponse = Http::asJson()
+            ->acceptJson()
+            ->withToken($result['access_token'])
+            ->withHeaders(['Site-Id' => $result['site_id']])
+            ->get(config('services.daftra.base_url').'/api2/site_info');
+
+        if ($siteInfoResponse->failed()) {
+            throw new \Exception('Failed to fetch Daftra site info.');
+        }
+
+        $businessName = $siteInfoResponse->json('data.Site.business_name');
+
         $request->session()->put('daftra_account', [
             'site_id' => $result['site_id'],
             'subdomain' => $result['subdomain'],
+            'business_name' => $businessName,
             'access_token' => $result['access_token'],
             'refresh_token' => $result['refresh_token'],
             'expires_in' => $result['expires_in'],
@@ -163,7 +176,10 @@ class AuthController
                 'email' => $foodics['user_email'],
                 'password' => Str::password(40),
                 'daftra_id' => $daftra['site_id'],
-                'daftra_meta' => ['subdomain' => $daftra['subdomain']],
+                'daftra_meta' => [
+                    'subdomain' => $daftra['subdomain'],
+                    'business_name' => $daftra['business_name'],
+                ],
                 'foodics_ref' => $foodics['business_ref'],
                 'foodics_id' => $foodics['business_id'],
                 'foodics_meta' => [
@@ -191,7 +207,7 @@ class AuthController
             ]
         );
 
-        Auth::login($user);
+        Auth::login($user, true);
 
         $request->session()->forget(['daftra_account', 'foodics_account', 'foodics_state']);
     }

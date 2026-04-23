@@ -15,9 +15,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->string('foodics_id')->index();
-            $table->integer('daftra_id');
+            $table->string('foodics_reference');
+            $table->integer('daftra_id')->nullable();
             $table->string('status');
+            $table->json('foodics_metadata')->nullable();
+            $table->json('daftra_metadata')->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'foodics_reference']);
         });
     }
 

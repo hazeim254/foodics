@@ -11,6 +11,9 @@ return new class extends Migration
     {
         Schema::create('webhook_logs', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
+            $table->index('user_id');
             $table->string('event');
             $table->dateTime('timestamp');
             $table->json('payload');
