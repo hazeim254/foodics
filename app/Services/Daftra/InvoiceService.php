@@ -2,6 +2,7 @@
 
 namespace App\Services\Daftra;
 
+use App\Exceptions\DaftraCreditNoteCreationFailedException;
 use App\Exceptions\DaftraInvoiceCreationFailedException;
 use App\Exceptions\DaftraPaymentCreationFailedException;
 
@@ -115,5 +116,59 @@ class InvoiceService
                 responseBody: $response->body(),
             );
         }
+    }
+
+    public function getCreditNote(string $foodicsId): ?array
+    {
+        $response = $this->daftraClient->get('/api2/credit_notes', [
+            'custom_field' => $foodicsId,
+            'custom_field_label' => 'Foodics ID',
+        ]);
+
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Daftra credit note list request failed: HTTP '.$response->status().' '.$response->body()
+            );
+        }
+
+        $rows = $response->json('data') ?? [];
+        if ($rows === []) {
+            return null;
+        }
+
+        return $rows[0]['Invoice'] ?? null;
+    }
+
+    public function createCreditNote(array $data): int
+    {
+        $response = $this->daftraClient->post('/api2/credit_notes', $data);
+
+        if ($response->failed()) {
+            throw new DaftraCreditNoteCreationFailedException(
+                message: 'Daftra credit note creation failed: HTTP '.$response->status(),
+                responseBody: $response->body(),
+            );
+        }
+
+        $newId = $response->json('id');
+        if ($newId === null || $newId === '') {
+            throw new DaftraCreditNoteCreationFailedException(
+                message: 'Daftra credit note creation response missing id.',
+                responseBody: $response->body(),
+            );
+        }
+
+        return (int) $newId;
+    }
+
+    public function getCreditNoteById(int $id): ?array
+    {
+        $response = $this->daftraClient->get("/api2/credit_notes/$id");
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        return $response->json('data.Invoice') ?? null;
     }
 }

@@ -56,7 +56,7 @@ class OrderService
         $params = [
             'sort' => 'reference',
             'include' => self::ORDER_INCLUDES,
-            'filter[status]' => '4',
+            'filter[status]' => '4,5',
             'limit' => 50,
         ];
 

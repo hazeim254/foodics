@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\DaftraCreditNoteCreationFailedException;
 use App\Exceptions\DaftraInvoiceCreationFailedException;
 use App\Exceptions\DaftraPaymentCreationFailedException;
 use App\Models\User;
@@ -185,3 +186,103 @@ it('throws DaftraPaymentCreationFailedException on payment API failure', functio
         ],
     ]);
 })->throws(DaftraPaymentCreationFailedException::class, 'Daftra invoice payment creation failed: HTTP 422');
+
+it('lists credit notes by Foodics custom field', function () {
+    $response = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => [
+            ['Invoice' => ['id' => 99, 'po_number' => 'return-1']],
+        ],
+    ]);
+
+    $this->mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes', ['custom_field' => 'return-1', 'custom_field_label' => 'Foodics ID'])
+        ->once()
+        ->andReturn($response);
+
+    $result = $this->service->getCreditNote('return-1');
+
+    expect($result)->toBe(['id' => 99, 'po_number' => 'return-1']);
+});
+
+it('returns null when credit note not found on Daftra', function () {
+    $response = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+
+    $this->mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes', ['custom_field' => 'return-1', 'custom_field_label' => 'Foodics ID'])
+        ->once()
+        ->andReturn($response);
+
+    expect($this->service->getCreditNote('return-1'))->toBeNull();
+});
+
+it('throws on getCreditNote API failure', function () {
+    $response = createMockHttpResponse(successful: false, status: 500, json: []);
+
+    $this->mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes', ['custom_field' => 'return-1', 'custom_field_label' => 'Foodics ID'])
+        ->once()
+        ->andReturn($response);
+
+    $this->service->getCreditNote('return-1');
+})->throws(RuntimeException::class, 'Daftra credit note list request failed');
+
+it('creates a credit note and returns the new Daftra id', function () {
+    $response = createMockHttpResponse(successful: true, status: 200, json: ['id' => 55555]);
+
+    $this->mockClient->shouldReceive('post')
+        ->with('/api2/credit_notes', ['Invoice' => ['po_number' => 'return-1']])
+        ->once()
+        ->andReturn($response);
+
+    $daftraId = $this->service->createCreditNote(['Invoice' => ['po_number' => 'return-1']]);
+
+    expect($daftraId)->toBe(55555);
+});
+
+it('throws DaftraCreditNoteCreationFailedException on API failure', function () {
+    $response = createMockHttpResponse(successful: false, status: 422, json: ['error' => 'bad data']);
+
+    $this->mockClient->shouldReceive('post')
+        ->with('/api2/credit_notes', Mockery::any())
+        ->once()
+        ->andReturn($response);
+
+    $this->service->createCreditNote(['Invoice' => []]);
+})->throws(DaftraCreditNoteCreationFailedException::class, 'Daftra credit note creation failed: HTTP 422');
+
+it('throws DaftraCreditNoteCreationFailedException when credit note response id is missing', function () {
+    $response = createMockHttpResponse(successful: true, status: 200, json: []);
+
+    $this->mockClient->shouldReceive('post')
+        ->with('/api2/credit_notes', Mockery::any())
+        ->once()
+        ->andReturn($response);
+
+    $this->service->createCreditNote(['Invoice' => []]);
+})->throws(DaftraCreditNoteCreationFailedException::class, 'Daftra credit note creation response missing id.');
+
+it('gets credit note by Daftra id', function () {
+    $response = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => ['Invoice' => ['id' => 55555, 'no' => 'CN-001']],
+    ]);
+
+    $this->mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes/55555')
+        ->once()
+        ->andReturn($response);
+
+    $result = $this->service->getCreditNoteById(55555);
+
+    expect($result)->toBe(['id' => 55555, 'no' => 'CN-001']);
+});
+
+it('returns null when getCreditNoteById fails', function () {
+    $response = createMockHttpResponse(successful: false, status: 404, json: []);
+
+    $this->mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes/99999')
+        ->once()
+        ->andReturn($response);
+
+    expect($this->service->getCreditNoteById(99999))->toBeNull();
+});

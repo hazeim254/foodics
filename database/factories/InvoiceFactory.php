@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\InvoiceType;
 use App\Models\Invoice;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,5 +28,15 @@ class InvoiceFactory extends Factory
             'status' => 'synced',
             'foodics_reference' => fake()->randomNumber(5),
         ];
+    }
+
+    public function creditNote(Invoice $original): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => InvoiceType::CreditNote,
+            'original_invoice_id' => $original->id,
+            'foodics_id' => fake()->uuid(),
+            'foodics_reference' => (string) ((int) ($attributes['foodics_reference'] ?? fake()->randomNumber(5)) + 1),
+        ]);
     }
 }

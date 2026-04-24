@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\InvoiceSyncStatus;
+use App\Enums\InvoiceType;
 use App\Exceptions\InvalidOrderLineException;
 use App\Models\Client;
 use App\Models\Invoice;
@@ -153,7 +154,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
         ->with('/api2/invoices/12345')
         ->once()
         ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
-            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001', 'client_id' => 11111]],
         ]));
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
@@ -175,6 +176,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
     ]);
     expect($invoice->daftra_metadata)->toBe([
         'no' => 'INV-001',
+        'client_id' => 11111,
     ]);
 });
 
@@ -282,7 +284,7 @@ it('does not fetch product details from Foodics during sync', function () {
         ->with('/api2/invoices/12345')
         ->once()
         ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
-            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001', 'client_id' => 11111]],
         ]));
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
@@ -417,7 +419,7 @@ it('stores foodics_metadata and daftra_metadata on invoice', function () {
         ->with('/api2/invoices/12345')
         ->once()
         ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
-            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001']],
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001', 'client_id' => 11111]],
         ]));
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
@@ -436,6 +438,7 @@ it('stores foodics_metadata and daftra_metadata on invoice', function () {
 
     expect($invoice->daftra_metadata)->toBe([
         'no' => 'INV-001',
+        'client_id' => 11111,
     ]);
 });
 
@@ -810,6 +813,118 @@ it('throws InvalidOrderLineException when a product line has no resolvable id', 
 
     expect(fn () => $syncOrder->getInvoiceItems($this->order['products']))
         ->toThrow(InvalidOrderLineException::class, 'Order product line is missing a Foodics product id.');
+});
+
+it('routes status-4 orders to the invoice path and status-5 orders to the credit-note path', function () {
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices', Mockery::on(fn (array $args) => isset($args['custom_field'])))
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', Mockery::any())
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
+    $mockClient->shouldReceive('post')
+        ->with('/api2/products', Mockery::any())
+        ->andReturn(mockHttpResponse(successful: true, status: 202, json: ['id' => 67890]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/client/list', Mockery::on(fn (array $args) => isset($args['filter']['client_number'])))
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
+    $mockClient->shouldReceive('post')
+        ->with('/api2/clients.json', Mockery::any())
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 202, json: ['id' => 11111]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/taxes.json', Mockery::any())
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
+    $mockClient->shouldReceive('post')
+        ->with('/api2/taxes.json', Mockery::any())
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 202, json: ['id' => 54321]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
+            'data' => [['id' => 424242, 'label' => 'Card', 'payment_gateway' => 'card']],
+        ]));
+
+    $mockClient->shouldReceive('post')
+        ->with('/api2/invoices', Mockery::any())
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['id' => 12345]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/v2/api/entity/invoice_payment/list', ['filter[invoice_id]' => 12345])
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
+    $mockClient->shouldReceive('post')
+        ->with('/api2/invoice_payments', Mockery::any())
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['id' => 1]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/invoices/12345')
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 12345, 'no' => 'INV-001', 'client_id' => 11111]],
+        ]));
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes', Mockery::on(fn (array $args) => isset($args['custom_field'])))
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
+    $mockClient->shouldReceive('post')
+        ->with('/api2/credit_notes', Mockery::any())
+        ->once()
+        ->andReturn(mockHttpResponse(successful: true, status: 200, json: ['id' => 55555]));
+
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+    $this->app->instance(FoodicsApiClient::class, Mockery::mock(FoodicsApiClient::class));
+
+    $order4 = $this->order;
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $syncOrder->handle($order4);
+
+    $invoiceRow = Invoice::where('foodics_id', $order4['id'])->first();
+    expect($invoiceRow)->not->toBeNull();
+    expect($invoiceRow->type)->toBe(InvoiceType::Invoice);
+    expect($invoiceRow->daftra_id)->toBe(12345);
+
+    $returnOrder = [
+        'id' => 'return-uuid-001',
+        'reference' => '00300',
+        'status' => 5,
+        'business_date' => '2026-04-15',
+        'discount_amount' => 0,
+        'kitchen_notes' => null,
+        'total_price' => 10,
+        'original_order' => ['id' => $order4['id'], 'reference' => $order4['reference']],
+        'customer' => null,
+        'products' => [],
+        'charges' => [],
+        'payments' => [],
+    ];
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $syncOrder->handle($returnOrder);
+
+    $creditNote = Invoice::where('foodics_id', 'return-uuid-001')->first();
+    expect($creditNote)->not->toBeNull();
+    expect($creditNote->type)->toBe(InvoiceType::CreditNote);
+    expect($creditNote->original_invoice_id)->toBe($invoiceRow->id);
+    expect($creditNote->daftra_id)->toBe(55555);
 });
 
 function mockHttpResponse(bool $successful, int $status, array $json): object
