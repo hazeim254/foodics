@@ -3,39 +3,32 @@
 namespace App\Services;
 
 use App\Enums\InvoiceSyncStatus;
-use App\Enums\InvoiceType;
-use App\Enums\SettingKey;
-use App\Exceptions\InvalidOrderLineException;
 use App\Exceptions\InvoiceAlreadyExistsException;
-use App\Exceptions\OriginalInvoiceNotSyncedException;
 use App\Models\Invoice;
-use App\Models\User;
+use App\Services\Concerns\BuildsInvoiceItems;
 use App\Services\Daftra\ClientService;
 use App\Services\Daftra\InvoiceService;
 use App\Services\Daftra\PaymentMethodService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SyncOrder
 {
+    use BuildsInvoiceItems;
+
     public function __construct(
         protected InvoiceService $invoiceService,
         protected ProductService $productService,
         protected ClientService $clientService,
         protected TaxService $taxService,
         protected PaymentMethodService $paymentMethodService,
+        protected SyncCreditNote $syncCreditNote,
     ) {}
-
-    /** @var array<string, int> */
-    protected array $taxMap = [];
 
     /** @var array<string, string> */
     protected array $paymentMethodMap = [];
-
-    protected ?string $currentOrderId = null;
 
     /**
      * A sample of the array structure of foodics order
@@ -46,7 +39,6 @@ class SyncOrder
      */
     public function handle(array $order): void
     {
-        dump($order);
         $this->currentOrderId = $order['id'];
 
         try {
@@ -56,7 +48,7 @@ class SyncOrder
         }
 
         if ((int) ($order['status'] ?? 0) === 5) {
-            $this->syncReturn($order);
+            $this->syncCreditNote->handle($order);
 
             return;
         }
@@ -103,136 +95,6 @@ class SyncOrder
         $invoice->update(['status' => InvoiceSyncStatus::Synced]);
     }
 
-    protected function syncReturn(array $order): void
-    {
-        $originalFoodicsId = data_get($order, 'original_order.id');
-        if (empty($originalFoodicsId)) {
-            throw (new InvalidOrderLineException('Return order is missing original_order reference.'))
-                ->setOrderId($this->currentOrderId);
-        }
-
-        $original = Invoice::query()
-            ->where('user_id', Context::get('user')?->id)
-            ->where('foodics_id', $originalFoodicsId)
-            ->where('type', InvoiceType::Invoice)
-            ->first();
-
-        if (
-            $original === null
-            || $original->status !== InvoiceSyncStatus::Synced
-            || $original->daftra_id === null
-        ) {
-            throw (new OriginalInvoiceNotSyncedException)
-                ->setOriginalFoodicsId($originalFoodicsId)
-                ->setReturnFoodicsId($order['id']);
-        }
-
-        $creditNoteRow = $this->createPendingCreditNote($order, $original);
-
-        try {
-            $this->taxMap = [];
-            $this->resolveUniqueTaxes($order);
-
-            $daftraCreditNoteId = $this->resolveDaftraCreditNoteId($order, $creditNoteRow, $original);
-
-            if ($creditNoteRow->daftra_id !== $daftraCreditNoteId) {
-                $creditNoteRow->update(['daftra_id' => $daftraCreditNoteId]);
-            }
-
-            if (! empty($order['payments'])) {
-                Log::warning('Return order carries payments; credit-note payments are not yet synced.', [
-                    'order_id' => $order['id'],
-                    'payments_count' => count($order['payments']),
-                ]);
-            }
-
-            $creditNoteRow->update(['status' => InvoiceSyncStatus::Synced]);
-        } catch (Throwable $e) {
-            $creditNoteRow->update(['status' => InvoiceSyncStatus::Failed]);
-
-            throw $e;
-        } finally {
-            $this->currentOrderId = null;
-        }
-    }
-
-    protected function resolveDaftraCreditNoteId(array $order, Invoice $row, Invoice $original): int
-    {
-        if ($row->daftra_id !== null) {
-            return (int) $row->daftra_id;
-        }
-
-        $existing = $this->invoiceService->getCreditNote($order['id']);
-        if (! empty($existing['id'])) {
-            return (int) $existing['id'];
-        }
-
-        $invoiceItems = $this->getInvoiceItems($order['products'] ?? []);
-        $invoiceItems = $this->addChargeInvoiceItems($invoiceItems, $order['charges'] ?? []);
-
-        $clientId = null;
-        if (! empty($order['customer'])) {
-            $clientId = $this->clientService->getClientUsingFoodicsData($order['customer']);
-        }
-
-        if (! $clientId) {
-            $clientId = $original->daftra_metadata['client_id'] ?? null;
-        }
-
-        if (! $clientId) {
-            $clientId = $this->resolveDefaultClientId();
-        }
-
-        $payload = [
-            'Invoice' => [
-                'po_number' => $order['id'],
-                'client_id' => $clientId,
-                'subscription_id' => (int) $original->daftra_id,
-                'date' => $order['business_date'],
-                'discount_amount' => $order['discount_amount'] ?? 0,
-                'notes' => $order['kitchen_notes'] ?? null,
-            ],
-            'InvoiceItem' => $invoiceItems,
-        ];
-
-        return $this->invoiceService->createCreditNote($payload);
-    }
-
-    protected function createPendingCreditNote(array $order, Invoice $original): Invoice
-    {
-        $userId = Context::get('user')?->id;
-
-        $creditNote = Invoice::query()
-            ->where('user_id', $userId)
-            ->where('foodics_id', $order['id'])
-            ->first();
-
-        if ($creditNote !== null) {
-            $creditNote->fill([
-                'foodics_reference' => $order['reference'],
-                'status' => InvoiceSyncStatus::Pending,
-                'foodics_metadata' => [
-                    'total_price' => (float) ($order['total_price'] ?? 0),
-                ],
-            ])->save();
-
-            return $creditNote;
-        }
-
-        return Invoice::query()->create([
-            'user_id' => $userId,
-            'foodics_id' => $order['id'],
-            'foodics_reference' => $order['reference'],
-            'daftra_id' => null,
-            'type' => InvoiceType::CreditNote,
-            'original_invoice_id' => $original->id,
-            'status' => InvoiceSyncStatus::Pending,
-            'foodics_metadata' => [
-                'total_price' => (float) ($order['total_price'] ?? 0),
-            ],
-        ]);
-    }
-
     /**
      * Resolve the Daftra invoice id to use for this order, preferring an
      * existing id on the local row, then an invoice already present on
@@ -273,164 +135,6 @@ class SyncOrder
         ];
 
         return $this->invoiceService->createInvoice($invoiceData);
-    }
-
-    public function getInvoiceItems($products): array
-    {
-        $invoiceItems = [];
-        foreach ($products as $orderProduct) {
-            $foodicsProductId = $this->resolveFoodicsProductId($orderProduct);
-            $embeddedProduct = is_array($orderProduct['product'] ?? null) ? $orderProduct['product'] : [];
-            $sku = trim((string) ($embeddedProduct['sku'] ?? ($orderProduct['sku'] ?? '')));
-            $enrichedProduct = array_merge($orderProduct, [
-                'id' => $embeddedProduct['id'] ?? $foodicsProductId,
-                'name' => $embeddedProduct['name'] ?? ($orderProduct['name'] ?? 'Foodics Product'),
-                'sku' => $sku !== '' ? $sku : $foodicsProductId,
-                'description' => $embeddedProduct['description'] ?? ($orderProduct['description'] ?? ''),
-                'barcode' => $embeddedProduct['barcode'] ?? ($orderProduct['barcode'] ?? null),
-                'price' => $embeddedProduct['price'] ?? ($orderProduct['price'] ?? null),
-                'cost' => $embeddedProduct['cost'] ?? ($orderProduct['cost'] ?? null),
-                'is_active' => $embeddedProduct['is_active'] ?? ($orderProduct['is_active'] ?? true),
-            ]);
-
-            $daftraProductId = $this->productService->getProductByFoodicsData($enrichedProduct);
-
-            $taxes = $orderProduct['taxes'] ?? [];
-            $daftraTaxIds = collect($taxes)
-                ->pluck('id')
-                ->map(fn ($foodicsId) => $this->taxMap[$foodicsId] ?? null)
-                ->filter()
-                ->values()
-                ->take(2);
-
-            $invoiceItems[] = [
-                'product_id' => $daftraProductId,
-                'item' => $enrichedProduct['name'] ?? 'Foodics Product',
-                'quantity' => $orderProduct['quantity'],
-                'unit_price' => $orderProduct['unit_price'],
-                'discount' => $orderProduct['discount_amount'] ?? 0,
-                'discount_type' => $orderProduct['discount_type'] ?? 2,
-                'tax1' => $daftraTaxIds->get(0),
-                'tax2' => $daftraTaxIds->get(1),
-            ];
-
-            foreach ($orderProduct['options'] ?? [] as $option) {
-                $invoiceItems[] = $this->buildOptionInvoiceItem($option);
-            }
-        }
-
-        return $invoiceItems;
-    }
-
-    protected function buildOptionInvoiceItem(array $option): array
-    {
-        $modifierOption = $option['modifier_option'] ?? [];
-        $foodicsId = $modifierOption['id'] ?? ($option['id'] ?? null);
-
-        if ($foodicsId === null || (is_string($foodicsId) && trim($foodicsId) === '')) {
-            throw (new InvalidOrderLineException('Order option line is missing a Foodics id.'))
-                ->setOrderId($this->currentOrderId)
-                ->setLineIdentifier($modifierOption['sku'] ?? null);
-        }
-
-        $enriched = [
-            'id' => $foodicsId,
-            'name' => $modifierOption['name'] ?? 'Modifier Option',
-            'sku' => isset($modifierOption['sku']) && trim((string) $modifierOption['sku']) !== ''
-                ? trim((string) $modifierOption['sku'])
-                : (string) $foodicsId,
-            'description' => $modifierOption['description'] ?? '',
-            'barcode' => $modifierOption['barcode'] ?? null,
-            'price' => $modifierOption['price'] ?? 0,
-            'cost' => $modifierOption['cost'] ?? null,
-            'is_active' => $modifierOption['is_active'] ?? true,
-        ];
-
-        $daftraProductId = $this->productService->getProductByFoodicsData($enriched);
-
-        $resolved = collect($option['taxes'] ?? [])
-            ->map(fn (array $tax) => [
-                'foodics_id' => $tax['id'] ?? null,
-                'daftra_id' => $this->taxMap[$tax['id'] ?? null] ?? null,
-            ])
-            ->filter(fn (array $pair) => $pair['daftra_id'] !== null)
-            ->values();
-
-        $daftraTaxIds = $resolved->pluck('daftra_id')->take(2);
-
-        if ($resolved->count() > 2) {
-            $droppedFoodicsIds = $resolved->slice(2)->pluck('foodics_id')->values()->all();
-
-            Log::warning('Option line has more than 2 taxes; dropping excess.', [
-                'order_id' => $this->currentOrderId,
-                'option_id' => $foodicsId,
-                'dropped_foodics_tax_ids' => $droppedFoodicsIds,
-            ]);
-        }
-
-        $discount = $option['discount_amount']
-            ?? $option['tax_exclusive_discount_amount']
-            ?? 0;
-
-        return [
-            'product_id' => $daftraProductId,
-            'item' => $enriched['name'],
-            'quantity' => $option['quantity'] ?? 1,
-            'unit_price' => $option['unit_price'] ?? 0,
-            'discount' => $discount,
-            'discount_type' => 2,
-            'tax1' => $daftraTaxIds->get(0),
-            'tax2' => $daftraTaxIds->get(1),
-        ];
-    }
-
-    public function addChargeInvoiceItems(array $invoiceItems, array $charges): array
-    {
-        foreach ($charges as $charge) {
-            $taxes = $charge['taxes'] ?? [];
-            $daftraTaxIds = collect($taxes)
-                ->pluck('id')
-                ->map(fn ($foodicsId) => $this->taxMap[$foodicsId] ?? null)
-                ->filter()
-                ->values()
-                ->take(2);
-
-            $invoiceItems[] = [
-                'item' => $charge['charge']['name'],
-                'quantity' => 1,
-                'unit_price' => $charge['amount'],
-                'discount' => 0,
-                'discount_type' => 2,
-                'tax1' => $daftraTaxIds->get(0),
-                'tax2' => $daftraTaxIds->get(1),
-            ];
-        }
-
-        return $invoiceItems;
-    }
-
-    protected function resolveUniqueTaxes(array $order): void
-    {
-        $allTaxes = collect();
-
-        foreach ($order['products'] ?? [] as $product) {
-            $allTaxes = $allTaxes->merge($product['taxes'] ?? []);
-            foreach ($product['options'] ?? [] as $option) {
-                $allTaxes = $allTaxes->merge($option['taxes'] ?? []);
-            }
-        }
-
-        foreach ($order['charges'] ?? [] as $charge) {
-            $allTaxes = $allTaxes->merge($charge['taxes'] ?? []);
-        }
-
-        $uniqueTaxes = $allTaxes->unique('id');
-        foreach ($uniqueTaxes as $tax) {
-            $foodicsId = (string) $tax['id'];
-            if (! isset($this->taxMap[$foodicsId])) {
-                $this->taxMap[$foodicsId] = $this->taxService->resolveTaxId($tax);
-            }
-        }
     }
 
     protected function resolveUniquePaymentMethods(array $order): void
@@ -539,32 +243,5 @@ class SyncOrder
                 'total_price' => (float) ($order['total_price'] ?? 0),
             ],
         ]);
-    }
-
-    protected function resolveDefaultClientId(): ?int
-    {
-        $user = Context::get('user');
-        if (! $user instanceof User) {
-            return null;
-        }
-
-        $default = $user->setting(SettingKey::DaftraDefaultClientId);
-
-        return $default !== null && $default !== '' ? (int) $default : null;
-    }
-
-    /**
-     * @param  array<string, mixed>  $orderProduct
-     */
-    protected function resolveFoodicsProductId(array $orderProduct): string
-    {
-        $productId = data_get($orderProduct, 'product.id') ?? ($orderProduct['id'] ?? null);
-        if (! is_string($productId) || trim($productId) === '') {
-            throw (new InvalidOrderLineException('Order product line is missing a Foodics product id.'))
-                ->setOrderId($this->currentOrderId)
-                ->setLineIdentifier($orderProduct['sku'] ?? null);
-        }
-
-        return $productId;
     }
 }
