@@ -101,6 +101,11 @@ class User extends Authenticatable
         return $this->hasMany(Product::class);
     }
 
+    public function contactMessages(): HasMany
+    {
+        return $this->hasMany(ContactMessage::class);
+    }
+
     public function providerTokens(): HasMany
     {
         return $this->hasMany(ProviderToken::class);

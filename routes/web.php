@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\AuthController;
+use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LanguageController;
@@ -30,6 +31,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/products/{product}/resync', [ProductController::class, 'resync'])->name('products.resync');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('/contact', [ContactMessageController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('contact.store');
 });
 
 Route::post('webhooks/foodics', WebhooksController::class)
