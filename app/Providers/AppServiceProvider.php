@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->bind(DaftraApiClient::class, function ($app) {
-            $user = \Context::get('user');
+            $user = \Context::get('user') ?? auth()->user();
             if (! $user) {
                 throw new \Exception('User not found in context');
             }

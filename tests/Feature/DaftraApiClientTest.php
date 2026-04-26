@@ -100,3 +100,76 @@ it('does not duplicate request_branch_id if already present in URL', function ()
 
     expect(substr_count($url, 'request_branch_id'))->toBe(1);
 });
+
+it('fetches branch list from Daftra', function () {
+    Http::fake([
+        '*/v2/api/entity/branch/list*' => Http::response([
+            'data' => [
+                ['id' => 1, 'name' => 'Main Branch'],
+                ['id' => 2, 'name' => 'Branch 2'],
+            ],
+        ], 200),
+    ]);
+
+    $client = $this->app->make(DaftraApiClient::class);
+    $branches = $client->getBranches();
+
+    expect($branches)->toHaveCount(2);
+    expect($branches[0])->toBe(['id' => 1, 'name' => 'Main Branch']);
+    expect($branches[1])->toBe(['id' => 2, 'name' => 'Branch 2']);
+});
+
+it('returns empty array when branch list response has no data', function () {
+    Http::fake([
+        '*/v2/api/entity/branch/list*' => Http::response([], 200),
+    ]);
+
+    $client = $this->app->make(DaftraApiClient::class);
+    $branches = $client->getBranches();
+
+    expect($branches)->toBe([]);
+});
+
+it('throws exception when branch list request fails', function () {
+    Http::fake([
+        '*/v2/api/entity/branch/list*' => Http::response('Unauthorized', 401),
+        '*/oauth/token*' => Http::response([
+            'access_token' => 'new-token',
+            'expires_in' => 3600,
+        ], 200),
+    ]);
+
+    $client = $this->app->make(DaftraApiClient::class);
+    $client->getBranches();
+})->throws(RuntimeException::class, 'Daftra branch list request failed: HTTP 401');
+
+it('returns null from tryGetBranches when branch list request fails', function () {
+    Http::fake([
+        '*/v2/api/entity/branch/list*' => Http::response(['error' => 'Entity Not exists'], 200),
+        '*/oauth/token*' => Http::response([
+            'access_token' => 'new-token',
+            'expires_in' => 3600,
+        ], 200),
+    ]);
+
+    $client = $this->app->make(DaftraApiClient::class);
+    $branches = $client->tryGetBranches();
+
+    expect($branches)->toBeNull();
+});
+
+it('returns branches from tryGetBranches when request succeeds', function () {
+    Http::fake([
+        '*/v2/api/entity/branch/list*' => Http::response([
+            'data' => [
+                ['id' => 1, 'name' => 'Main Branch'],
+            ],
+        ], 200),
+    ]);
+
+    $client = $this->app->make(DaftraApiClient::class);
+    $branches = $client->tryGetBranches();
+
+    expect($branches)->toHaveCount(1);
+    expect($branches[0])->toBe(['id' => 1, 'name' => 'Main Branch']);
+});

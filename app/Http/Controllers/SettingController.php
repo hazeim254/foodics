@@ -4,14 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Enums\SettingKey;
 use App\Http\Requests\UpdateSettingsRequest;
+use App\Services\Daftra\DaftraApiClient;
 
 class SettingController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+
+        $branches = null;
+
+        if ($user->hasDaftraConnection()) {
+            $branches = app(DaftraApiClient::class)->tryGetBranches();
+        }
+
         return view('settings', [
-            'daftraDefaultClientId' => auth()->user()->setting(SettingKey::DaftraDefaultClientId),
-            'daftraDefaultBranchId' => auth()->user()->setting(SettingKey::DaftraDefaultBranchId),
+            'daftraDefaultClientId' => $user->setting(SettingKey::DaftraDefaultClientId),
+            'daftraDefaultBranchId' => $user->setting(SettingKey::DaftraDefaultBranchId),
+            'branches' => $branches,
         ]);
     }
 

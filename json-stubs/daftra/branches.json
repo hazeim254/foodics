@@ -1,0 +1,42 @@
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id": 1,
+            "name": "Main Branch",
+            "status": 1,
+            "created": "2026-04-26 20:20:49",
+            "modified": "2026-04-26 20:20:49"
+        }
+    ],
+    "first_page_url": "https:\/\/serpent995.daftra.com\/v2\/api\/entity\/branch\/list?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "https:\/\/serpent995.daftra.com\/v2\/api\/entity\/branch\/list?page=1",
+    "links": [
+        {
+            "url": null,
+            "label": "pagination.previous",
+            "page": null,
+            "active": false
+        },
+        {
+            "url": "https:\/\/serpent995.daftra.com\/v2\/api\/entity\/branch\/list?page=1",
+            "label": "1",
+            "page": 1,
+            "active": true
+        },
+        {
+            "url": null,
+            "label": "pagination.next",
+            "page": null,
+            "active": false
+        }
+    ],
+    "next_page_url": null,
+    "path": "https:\/\/serpent995.daftra.com\/v2\/api\/entity\/branch\/list",
+    "per_page": 20,
+    "prev_page_url": null,
+    "to": 1,
+    "total": 1
+}

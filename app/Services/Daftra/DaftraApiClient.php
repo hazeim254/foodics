@@ -47,6 +47,48 @@ class DaftraApiClient
         return $response;
     }
 
+    /**
+     * Fetch the list of branches from Daftra.
+     *
+     * @return array<int, array<string, mixed>>
+     *
+     * @throws \RuntimeException When the API request fails.
+     */
+    public function getBranches(): array
+    {
+        $response = $this->get('/v2/api/entity/branch/list');
+
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Daftra branch list request failed: HTTP '.$response->status().' '.$response->body()
+            );
+        }
+
+        if ($response->json('error') !== null) {
+            throw new \RuntimeException(
+                'Daftra branch list request failed: '.$response->body()
+            );
+        }
+
+        return $response->json('data') ?? [];
+    }
+
+    /**
+     * Attempt to fetch the list of branches from Daftra.
+     *
+     * Returns null when the API request fails (e.g. branches are disabled).
+     *
+     * @return array<int, array<string, mixed>>|null
+     */
+    public function tryGetBranches(): ?array
+    {
+        try {
+            return $this->getBranches();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     private function appendBranchIdToUrl(string $url): string
     {
         if ((string) $this->branchId === '' || (string) $this->branchId === '1') {
