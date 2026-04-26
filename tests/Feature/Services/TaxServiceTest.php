@@ -33,7 +33,9 @@ it('resolves tax id from local cache', function () {
     $mockClient->shouldNotReceive('get');
     $mockClient->shouldNotReceive('post');
 
-    $taxService = new TaxService($mockClient);
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $taxService = $this->app->make(TaxService::class);
     $daftraId = $taxService->resolveTaxId($foodicsTax);
 
     expect($daftraId)->toBe(12345);
@@ -48,7 +50,7 @@ it('searches daftra when not cached and creates mapping', function () {
 
     $taxFoundResponse = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
-            ['Tax' => ['id' => 67890]],
+            ['Tax' => ['id' => 67890, 'name' => 'VAT', 'value' => 5]],
         ],
     ]);
 
@@ -58,7 +60,9 @@ it('searches daftra when not cached and creates mapping', function () {
         ->once()
         ->andReturn($taxFoundResponse);
 
-    $taxService = new TaxService($mockClient);
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $taxService = $this->app->make(TaxService::class);
     $daftraId = $taxService->resolveTaxId($foodicsTax);
 
     expect($daftraId)->toBe(67890);
@@ -93,7 +97,9 @@ it('creates tax in daftra when not found and persists mapping', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
-    $taxService = new TaxService($mockClient);
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $taxService = $this->app->make(TaxService::class);
     $daftraId = $taxService->resolveTaxId($foodicsTax);
 
     expect($daftraId)->toBe(99999);
@@ -109,17 +115,19 @@ it('searches daftra by name when getting tax', function () {
 
     $taxFoundResponse = createMockHttpResponse(successful: true, status: 200, json: [
         'data' => [
-            ['Tax' => ['id' => 54321]],
+            ['Tax' => ['id' => 54321, 'name' => 'VAT', 'value' => 5]],
         ],
     ]);
 
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('get')
-        ->with('/api2/taxes.json', Mockery::on(fn (array $args) => $args['filter']['name'] === 'VAT'))
+        ->with('/api2/taxes.json', Mockery::on(fn (array $args) => ($args['filter']['name'] ?? null) === 'VAT'))
         ->once()
         ->andReturn($taxFoundResponse);
 
-    $taxService = new TaxService($mockClient);
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $taxService = $this->app->make(TaxService::class);
     $daftraId = $taxService->getTax($foodicsTax);
 
     expect($daftraId)->toBe(54321);
@@ -140,7 +148,9 @@ it('returns null when tax not found in daftra', function () {
         ->once()
         ->andReturn($taxNotFoundResponse);
 
-    $taxService = new TaxService($mockClient);
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $taxService = $this->app->make(TaxService::class);
     $daftraId = $taxService->getTax($foodicsTax);
 
     expect($daftraId)->toBeNull();
@@ -167,7 +177,9 @@ it('creates tax with correct payload', function () {
         ->once()
         ->andReturn($taxCreateResponse);
 
-    $taxService = new TaxService($mockClient);
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $taxService = $this->app->make(TaxService::class);
     $daftraId = $taxService->createTax($foodicsTax);
 
     expect($daftraId)->toBe(11111);
