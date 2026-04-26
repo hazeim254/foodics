@@ -110,6 +110,8 @@ return [
     |
     */
 
+    'contact_to' => env('CONTACT_MAIL_TO', 'admin@example.com'),
+
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),

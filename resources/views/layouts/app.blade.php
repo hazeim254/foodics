@@ -83,6 +83,15 @@
                     </svg>
                     Settings
                 </a>
+                <a
+                    href="{{ route('contact') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('contact') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                    </svg>
+                    Contact Us
+                </a>
             </nav>
 
             <div class="p-4 border-t border-[#e3e3e0] dark:border-[#3E3E3A]">
