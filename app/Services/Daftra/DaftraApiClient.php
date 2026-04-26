@@ -2,6 +2,7 @@
 
 namespace App\Services\Daftra;
 
+use App\Enums\SettingKey;
 use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
 
@@ -12,11 +13,13 @@ class DaftraApiClient
 {
     private PendingRequest $client;
 
+    private ?string $branchId = null;
+
     public function __construct(protected User $user)
     {
+        $this->branchId = $user->setting(SettingKey::DaftraDefaultBranchId);
         $this->client = \Http::asJson()
             ->acceptJson()
-//            ->baseUrl( 'https://' . $user->daftra_meta['subdomain'])
             ->baseUrl(config('services.daftra.base_url'))
             ->withToken($user->getDaftraToken()->token)
             ->withHeaders([
@@ -30,6 +33,10 @@ class DaftraApiClient
             return $this->client->$name(...$arguments);
         }
 
+        if (isset($arguments[0])) {
+            $arguments[0] = $this->appendBranchIdToUrl($arguments[0]);
+        }
+
         $response = $this->client->$name(...$arguments);
 
         if ($response->status() === 401) {
@@ -38,6 +45,63 @@ class DaftraApiClient
         }
 
         return $response;
+    }
+
+    /**
+     * Fetch the list of branches from Daftra.
+     *
+     * @return array<int, array<string, mixed>>
+     *
+     * @throws \RuntimeException When the API request fails.
+     */
+    public function getBranches(): array
+    {
+        $response = $this->get('/v2/api/entity/branch/list');
+
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Daftra branch list request failed: HTTP '.$response->status().' '.$response->body()
+            );
+        }
+
+        if ($response->json('error') !== null) {
+            throw new \RuntimeException(
+                'Daftra branch list request failed: '.$response->body()
+            );
+        }
+
+        return $response->json('data') ?? [];
+    }
+
+    /**
+     * Attempt to fetch the list of branches from Daftra.
+     *
+     * Returns null when the API request fails (e.g. branches are disabled).
+     *
+     * @return array<int, array<string, mixed>>|null
+     */
+    public function tryGetBranches(): ?array
+    {
+        try {
+            return $this->getBranches();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function appendBranchIdToUrl(string $url): string
+    {
+        if ((string) $this->branchId === '' || (string) $this->branchId === '1') {
+            return $url;
+        }
+
+        if (str_contains($url, 'request_branch_id=')) {
+            return $url;
+        }
+
+        $separator = str_contains($url, '?') ? '&' : '?';
+
+        return $url.$separator.'request_branch_id='.urlencode((string) $this->branchId);
     }
 
     private function refreshToken(): void

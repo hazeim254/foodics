@@ -16,6 +16,32 @@
         <div class="bg-white dark:bg-[#161615] rounded-lg shadow-sm border border-[#e3e3e0] dark:border-[#3E3E3A] p-6">
             <h2 class="text-lg font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-4">Daftra Integration</h2>
 
+            @if($branches !== null)
+                <div class="mb-4">
+                    <label for="daftra_default_branch_id" class="block text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-1">Default Branch</label>
+
+                    <select
+                        id="daftra_default_branch_id"
+                        name="daftra_default_branch_id"
+                        class="w-full rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#1b1b18] text-[#1b1b18] dark:text-[#EDEDEC] px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#4A90D9] focus:border-[#4A90D9] outline-none transition"
+                    >
+                        @foreach($branches as $branch)
+                            <option value="{{ $branch['id'] }}" {{ old('daftra_default_branch_id', $daftraDefaultBranchId ?? '') == $branch['id'] ? 'selected' : '' }}>
+                                {{ $branch['name'] }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    @error('daftra_default_branch_id')
+                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                    @enderror
+
+                    <p class="mt-1 text-xs text-[#706f6c] dark:text-[#A1A09A]">
+                        Daftra branch used for all API requests.
+                    </p>
+                </div>
+            @endif
+
             <div class="mb-4">
                 <label for="daftra_default_client_id" class="block text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-1">Default Client ID</label>
 
