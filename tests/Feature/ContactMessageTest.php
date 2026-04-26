@@ -193,6 +193,18 @@ it('rejects strings exceeding max length', function (string $field) {
     ])->assertSessionHasErrors($field);
 })->with(['name', 'email', 'subject']);
 
+it('rejects message exceeding 5000 characters', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post('/contact', [
+        'name' => 'John',
+        'email' => 'john@example.com',
+        'type' => 'inquiry',
+        'subject' => 'Test',
+        'message' => str_repeat('a', 1025),
+    ])->assertSessionHasErrors('message');
+});
+
 it('rate limits contact form submissions', function () {
     $user = User::factory()->create();
     $payload = [

@@ -24,7 +24,7 @@ class StoreContactMessageRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50', 'regex:/^[\d\s\+\-\(\)]+$/'],
             'type' => ['required', 'string', 'in:'.implode(',', ContactMessageType::values())],
             'subject' => ['required', 'string', 'max:255'],
-            'message' => ['required', 'string'],
+            'message' => ['required', 'string', 'max:1024'],
         ];
     }
 }
