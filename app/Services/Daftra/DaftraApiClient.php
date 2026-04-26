@@ -13,7 +13,7 @@ class DaftraApiClient
 {
     private PendingRequest $client;
 
-    protected ?string $branchId = null;
+    private ?string $branchId = null;
 
     public function __construct(protected User $user)
     {
@@ -49,13 +49,17 @@ class DaftraApiClient
 
     private function appendBranchIdToUrl(string $url): string
     {
-        if ($this->branchId === null || $this->branchId === '' || $this->branchId === '1') {
+        if ((string) $this->branchId === '' || (string) $this->branchId === '1') {
+            return $url;
+        }
+
+        if (str_contains($url, 'request_branch_id=')) {
             return $url;
         }
 
         $separator = str_contains($url, '?') ? '&' : '?';
 
-        return $url.$separator.'request_branch_id='.$this->branchId;
+        return $url.$separator.'request_branch_id='.urlencode((string) $this->branchId);
     }
 
     private function refreshToken(): void

@@ -17,13 +17,16 @@ it('redirects unauthenticated users from POST /settings to login', function () {
 it('shows the settings form with the current value pre-filled', function () {
     $user = User::factory()->create();
     $user->setSetting(SettingKey::DaftraDefaultClientId, '42');
+    $user->setSetting(SettingKey::DaftraDefaultBranchId, '7');
 
     $this->actingAs($user)
         ->get('/settings')
         ->assertOk()
         ->assertSee('value="42"', escape: false)
+        ->assertSee('value="7"', escape: false)
         ->assertSee('Save Settings')
-        ->assertSee('Default Client ID');
+        ->assertSee('Default Client ID')
+        ->assertSee('Default Branch ID');
 });
 
 it('shows an empty input when the setting is not set', function () {
@@ -90,4 +93,59 @@ it('displays the flash message on the settings page', function () {
     $this->actingAs($user)
         ->get('/settings')
         ->assertSee('Settings updated successfully.');
+});
+
+it('saves the daftra default branch id', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/settings', ['daftra_default_branch_id' => '5'])
+        ->assertRedirect(route('settings'));
+
+    expect($user->fresh()->setting(SettingKey::DaftraDefaultBranchId))->toBe('5');
+});
+
+it('normalizes branch id 1 to null on save', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/settings', ['daftra_default_branch_id' => '1'])
+        ->assertRedirect(route('settings'));
+
+    expect($user->fresh()->setting(SettingKey::DaftraDefaultBranchId))->toBeNull();
+});
+
+it('clears the branch id when submitting empty', function () {
+    $user = User::factory()->create();
+    $user->setSetting(SettingKey::DaftraDefaultBranchId, '5');
+
+    $this->actingAs($user)
+        ->post('/settings', ['daftra_default_branch_id' => ''])
+        ->assertRedirect(route('settings'));
+
+    expect($user->fresh()->setting(SettingKey::DaftraDefaultBranchId))->toBeNull();
+});
+
+it('rejects non-integer branch id values', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/settings', ['daftra_default_branch_id' => 'abc'])
+        ->assertSessionHasErrors('daftra_default_branch_id');
+});
+
+it('rejects negative branch id values', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/settings', ['daftra_default_branch_id' => '-1'])
+        ->assertSessionHasErrors('daftra_default_branch_id');
+});
+
+it('rejects zero as branch id', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/settings', ['daftra_default_branch_id' => '0'])
+        ->assertSessionHasErrors('daftra_default_branch_id');
 });

@@ -22,9 +22,11 @@ class SettingController extends Controller
             $request->input('daftra_default_client_id'),
         );
 
+        $branchId = $request->input('daftra_default_branch_id');
+
         $request->user()->setSetting(
             SettingKey::DaftraDefaultBranchId,
-            $request->input('daftra_default_branch_id'),
+            $branchId == 1 ? null : $branchId,
         );
 
         return redirect()->route('settings')
