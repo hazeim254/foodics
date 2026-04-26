@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Mail;
 
 class ContactMessageController extends Controller
 {
+    public function index()
+    {
+        return view('contact');
+    }
+
     public function store(StoreContactMessageRequest $request)
     {
         $contactMessage = ContactMessage::create([

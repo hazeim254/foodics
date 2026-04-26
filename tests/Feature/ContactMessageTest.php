@@ -8,7 +8,11 @@ use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
 
-it('redirects unauthenticated users to login', function () {
+it('redirects unauthenticated users from GET /contact to login', function () {
+    $this->get('/contact')->assertRedirect('/login');
+});
+
+it('redirects unauthenticated users from POST /contact to login', function () {
     $this->post('/contact', [
         'name' => 'John Doe',
         'email' => 'john@example.com',
@@ -16,6 +20,16 @@ it('redirects unauthenticated users to login', function () {
         'subject' => 'Test',
         'message' => 'Hello',
     ])->assertRedirect('/login');
+});
+
+it('shows the contact form to authenticated users', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/contact')
+        ->assertOk()
+        ->assertSee('Contact Us')
+        ->assertSee('Send Message');
 });
 
 it('creates a contact message for an authenticated user', function () {
@@ -196,4 +210,28 @@ it('rate limits contact form submissions', function () {
     $this->actingAs($user)
         ->post('/contact', $payload)
         ->assertTooManyRequests();
+});
+
+it('displays the contact us link in the sidebar', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/contact')
+        ->assertSee('Contact Us');
+});
+
+it('displays the flash message after successful submission', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post('/contact', [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'type' => 'inquiry',
+        'subject' => 'Test',
+        'message' => 'Hello',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/contact')
+        ->assertSee('Your message has been sent successfully.');
 });
