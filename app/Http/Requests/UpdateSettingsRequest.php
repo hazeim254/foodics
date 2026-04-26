@@ -15,6 +15,7 @@ class UpdateSettingsRequest extends FormRequest
     {
         return [
             'daftra_default_client_id' => ['nullable', 'string', 'max:255'],
+            'daftra_default_branch_id' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

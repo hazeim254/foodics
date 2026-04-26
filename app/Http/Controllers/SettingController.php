@@ -11,6 +11,7 @@ class SettingController extends Controller
     {
         return view('settings', [
             'daftraDefaultClientId' => auth()->user()->setting(SettingKey::DaftraDefaultClientId),
+            'daftraDefaultBranchId' => auth()->user()->setting(SettingKey::DaftraDefaultBranchId),
         ]);
     }
 
@@ -19,6 +20,11 @@ class SettingController extends Controller
         $request->user()->setSetting(
             SettingKey::DaftraDefaultClientId,
             $request->input('daftra_default_client_id'),
+        );
+
+        $request->user()->setSetting(
+            SettingKey::DaftraDefaultBranchId,
+            $request->input('daftra_default_branch_id'),
         );
 
         return redirect()->route('settings')

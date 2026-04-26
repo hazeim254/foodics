@@ -2,6 +2,7 @@
 
 namespace App\Services\Daftra;
 
+use App\Enums\SettingKey;
 use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
 
@@ -12,11 +13,13 @@ class DaftraApiClient
 {
     private PendingRequest $client;
 
+    protected ?string $branchId = null;
+
     public function __construct(protected User $user)
     {
+        $this->branchId = $user->setting(SettingKey::DaftraDefaultBranchId);
         $this->client = \Http::asJson()
             ->acceptJson()
-//            ->baseUrl( 'https://' . $user->daftra_meta['subdomain'])
             ->baseUrl(config('services.daftra.base_url'))
             ->withToken($user->getDaftraToken()->token)
             ->withHeaders([
@@ -30,6 +33,10 @@ class DaftraApiClient
             return $this->client->$name(...$arguments);
         }
 
+        if (isset($arguments[0])) {
+            $arguments[0] = $this->appendBranchIdToUrl($arguments[0]);
+        }
+
         $response = $this->client->$name(...$arguments);
 
         if ($response->status() === 401) {
@@ -38,6 +45,17 @@ class DaftraApiClient
         }
 
         return $response;
+    }
+
+    private function appendBranchIdToUrl(string $url): string
+    {
+        if ($this->branchId === null || $this->branchId === '' || $this->branchId === '1') {
+            return $url;
+        }
+
+        $separator = str_contains($url, '?') ? '&' : '?';
+
+        return $url.$separator.'request_branch_id='.$this->branchId;
     }
 
     private function refreshToken(): void

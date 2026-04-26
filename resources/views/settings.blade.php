@@ -17,6 +17,27 @@
             <h2 class="text-lg font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-4">Daftra Integration</h2>
 
             <div class="mb-4">
+                <label for="daftra_default_branch_id" class="block text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-1">Default Branch ID</label>
+
+                <input
+                    type="text"
+                    id="daftra_default_branch_id"
+                    name="daftra_default_branch_id"
+                    value="{{ old('daftra_default_branch_id', $daftraDefaultBranchId ?? '') }}"
+                    class="w-full rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#1b1b18] text-[#1b1b18] dark:text-[#EDEDEC] px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#4A90D9] focus:border-[#4A90D9] outline-none transition"
+                    placeholder="1"
+                />
+
+                @error('daftra_default_branch_id')
+                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                @enderror
+
+                <p class="mt-1 text-xs text-[#706f6c] dark:text-[#A1A09A]">
+                    Daftra branch ID used for all API requests.
+                </p>
+            </div>
+
+            <div class="mb-4">
                 <label for="daftra_default_client_id" class="block text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-1">Default Client ID</label>
 
                 <input
