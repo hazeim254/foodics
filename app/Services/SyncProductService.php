@@ -62,9 +62,10 @@ class SyncProductService
 
         $pendingData = [
             'foodics_name' => (string) ($foodicsProduct['name'] ?? 'Unknown Product'),
-            'foodics_sku' => isset($foodicsProduct['sku']) && trim($foodicsProduct['sku']) !== ''
+            'foodics_sku' => isset($foodicsProduct['sku']) && trim((string) $foodicsProduct['sku']) !== ''
                                         ? trim((string) $foodicsProduct['sku'])
                                         : null,
+            'price' => (float) ($foodicsProduct['price'] ?? 0),
             'status' => ProductSyncStatus::Pending,
             'foodics_metadata' => $this->buildFoodicsMetadata($foodicsProduct),
         ];
@@ -96,7 +97,6 @@ class SyncProductService
     protected function buildFoodicsMetadata(array $foodicsProduct): array
     {
         return [
-            'price' => (float) ($foodicsProduct['price'] ?? 0),
             'cost' => isset($foodicsProduct['cost']) ? (float) $foodicsProduct['cost'] : null,
             'is_active' => (bool) ($foodicsProduct['is_active'] ?? true),
             'barcode' => (string) ($foodicsProduct['barcode'] ?? ''),

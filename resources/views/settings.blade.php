@@ -13,7 +13,7 @@
     <form method="POST" action="{{ route('settings.update') }}">
         @csrf
 
-        <div class="bg-white dark:bg-[#161615] rounded-lg shadow-sm border border-[#e3e3e0] dark:border-[#3E3E3A] p-6">
+        <div class="bg-white dark:bg-[#161615] rounded-lg shadow-sm border border-[#e3e3e0] dark:border-[#3E3E3A] p-6 card-accent">
             <h2 class="text-lg font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-4">{{ __('Daftra Integration') }}</h2>
 
             @if($branches !== null)
@@ -64,7 +64,7 @@
             </div>
 
             <div class="flex justify-end">
-                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-[#4A90D9] text-white hover:bg-[#3A7BC8] transition-colors cursor-pointer">
+                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-[#4A90D9] text-white hover:bg-[#3A7BC8] transition-all duration-200 cursor-pointer btn-shadow">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>

@@ -28,7 +28,7 @@ $arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
     @endif
     @stack('styles')
 </head>
-<body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] dark:text-[#EDEDEC] min-h-screen">
+<body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] bg-dots text-[#1b1b18] dark:text-[#EDEDEC] min-h-screen">
     <div x-data="{ sidebarOpen: false, isDesktop: window.innerWidth >= 1024 }" x-init="window.addEventListener('resize', () => { isDesktop = window.innerWidth >= 1024 })" @keydown.escape="sidebarOpen = false">
         <div
             x-show="sidebarOpen && !isDesktop"
@@ -61,11 +61,11 @@ $arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
                     <span class="font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">Foodics</span>
                 </div>
             </div>
-
-            <nav class="flex-1 px-3 space-y-1">
+            <div class="mx-6 mb-3 h-px bg-gradient-to-r from-transparent via-[#e3e3e0] dark:via-[#3E3E3A] to-transparent"></div>
+            <nav class="flex-1 px-3 space-y-1 sidebar-scroll overflow-y-auto">
                 <a
                     href="{{ route('dashboard') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'nav-active bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -74,7 +74,7 @@ $arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
                 </a>
                 <a
                     href="{{ route('invoices') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('invoices') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('invoices') ? 'nav-active bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -83,7 +83,7 @@ $arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
                 </a>
                 <a
                     href="{{ route('products') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('products') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('products') ? 'nav-active bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -92,7 +92,7 @@ $arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
                 </a>
                 <a
                     href="{{ route('settings') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('settings') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('settings') ? 'nav-active bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -102,7 +102,7 @@ $arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
                 </a>
                 <a
                     href="{{ route('contact') }}"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('contact') ? 'bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 {{ request()->routeIs('contact') ? 'nav-active bg-[#F5F5F3] dark:bg-[#262625] text-[#1b1b18] dark:text-[#EDEDEC]' : 'text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]' }}"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
@@ -156,10 +156,11 @@ $arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
         </aside>
 
         <div class="lg:ps-64">
-            <header class="sticky top-0 z-20 bg-[#FDFDFC] dark:bg-[#0a0a0a] border-b border-[#e3e3e0] dark:border-[#3E3E3A]">
+            <header class="sticky top-0 z-20 bg-[#FDFDFC]/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-[#e3e3e0]/60 dark:border-[#3E3E3A]/60">
                 <div class="flex lg:hidden items-center justify-between px-4 py-3">
-<button
+                        <button
                             type="button"
+                            @click="sidebarOpen = !sidebarOpen"
                             class="p-2 -m-2 text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] cursor-pointer"
                         >
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +171,7 @@ $arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
                 </div>
             </header>
 
-            <main class="p-6 lg:p-8">
+            <main class="p-6 lg:p-8 page-content">
                 @yield('content')
             </main>
         </div>

@@ -3,22 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ProductSyncStatus;
+use App\Http\Requests\ProductFiltersRequest;
 use App\Jobs\RetryProductSyncJob;
 use App\Jobs\SyncProductsJob;
 use App\Models\Product;
+use App\Queries\ProductQueryBuilder;
 use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(ProductFiltersRequest $request)
     {
-        $products = auth()->user()->products()
-            ->orderByDesc('created_at')
-            ->paginate(50);
+        $filters = $request->validated();
+
+        $query = Product::query()->where('user_id', auth()->id());
+
+        $products = app(ProductQueryBuilder::class)
+            ->apply($query, $filters)
+            ->paginate(50)
+            ->withQueryString();
 
         $syncing = Cache::has('sync_products_in_progress:'.auth()->id());
 
-        return view('products', compact('products', 'syncing'));
+        return view('products', compact('products', 'syncing', 'filters'));
     }
 
     public function sync()

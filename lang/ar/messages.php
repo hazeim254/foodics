@@ -115,4 +115,11 @@ return [
     'Sync started.' => 'بدأت المزامنة.',
     'This invoice is already synced.' => 'هذه الفاتورة تمت مزامنتها بالفعل.',
     'Retrying sync for' => 'إعادة المحاولة لـ',
+
+    // Product Filters
+    'Name or SKU' => 'الاسم أو رمز المنتج',
+    'Price From' => 'السعر من',
+    'Price' => 'السعر',
+    'Name' => 'الاسم',
+    'Price must be greater than 0.' => 'يجب أن يكون السعر أكبر من 0.',
 ];

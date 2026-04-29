@@ -18,3 +18,104 @@ html[lang="fa"] body,
 html[lang="ur"] body {
     font-family: var(--font-arabic);
 }
+
+@keyframes page-enter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-content {
+    animation: page-enter 0.35s ease-out both;
+}
+
+.nav-active {
+    position: relative;
+}
+
+.nav-active::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #4A90D9, #3A7BC8);
+}
+
+.sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.bg-dots {
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.btn-shadow {
+    box-shadow: 0 1px 3px rgba(74, 144, 217, 0.25), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.btn-shadow:hover {
+    box-shadow: 0 3px 8px rgba(74, 144, 217, 0.35), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.card-accent {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-accent::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #4A90D9 0%, #7AB5E8 50%, #FF4433 100%);
+    z-index: 1;
+}
+
+.table-striped > thead > tr {
+    background-color: rgba(250, 250, 248, 0.6);
+}
+
+.table-striped > tbody > tr:nth-child(even):not(:hover) {
+    background-color: rgba(250, 250, 248, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+    .sidebar-scroll {
+        scrollbar-color: rgba(255, 255, 255, 0.06) transparent;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .bg-dots {
+        background-image: radial-gradient(circle, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    }
+
+    .table-striped > thead > tr {
+        background-color: rgba(28, 28, 27, 0.6);
+    }
+
+    .table-striped > tbody > tr:nth-child(even):not(:hover) {
+        background-color: rgba(38, 38, 37, 0.2);
+    }
+}

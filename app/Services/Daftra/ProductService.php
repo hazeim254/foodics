@@ -35,6 +35,7 @@ class ProductService
         $foodicsSku = isset($foodicsProduct['sku']) && trim((string) $foodicsProduct['sku']) !== ''
             ? trim((string) $foodicsProduct['sku'])
             : null;
+        $price = (float) ($foodicsProduct['price'] ?? 0);
 
         if ($daftraId === null) {
             $daftraId = $this->createProduct($foodicsProduct);
@@ -45,9 +46,10 @@ class ProductService
                 'daftra_id' => $daftraId,
                 'foodics_name' => $foodicsName,
                 'foodics_sku' => $foodicsSku,
+                'price' => $price,
             ])->save();
         } else {
-            $this->persistProduct($userId, $foodicsId, $daftraId, 'synced', $foodicsName, $foodicsSku);
+            $this->persistProduct($userId, $foodicsId, $daftraId, 'synced', $foodicsName, $foodicsSku, $price);
         }
 
         return $daftraId;
@@ -134,7 +136,7 @@ class ProductService
         return (int) $id;
     }
 
-    private function persistProduct(int $userId, string $foodicsId, int $daftraId, string $status = 'synced', ?string $foodicsName = null, ?string $foodicsSku = null): void
+    private function persistProduct(int $userId, string $foodicsId, int $daftraId, string $status = 'synced', ?string $foodicsName = null, ?string $foodicsSku = null, ?float $price = null): void
     {
         Product::query()->create([
             'user_id' => $userId,
@@ -142,6 +144,7 @@ class ProductService
             'foodics_name' => $foodicsName ?? 'Unknown Product',
             'foodics_sku' => $foodicsSku,
             'daftra_id' => $daftraId,
+            'price' => $price,
             'status' => $status,
         ]);
     }
