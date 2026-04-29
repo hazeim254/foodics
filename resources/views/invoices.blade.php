@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Invoices')
+@section('title', __('Invoices'))
 
 @section('content')
 <div class="max-w-7xl mx-auto" x-data="{ syncing: {{ $syncing ? 'true' : 'false' }} }" x-init="
@@ -16,14 +16,14 @@
     }
 ">
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-semibold">Invoices</h1>
+        <h1 class="text-2xl font-semibold">{{ __('Invoices') }}</h1>
         <template x-if="syncing">
             <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[#F5F5F3] dark:bg-[#262625] text-[#706f6c] dark:text-[#A1A09A]">
                 <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Syncing…
+                {{ __('Syncing…') }}
             </span>
         </template>
         <template x-if="!syncing">
@@ -33,7 +33,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.032 9.035a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                     </svg>
-                    Sync Now
+                    {{ __('Sync Now') }}
                 </button>
             </form>
         </template>
@@ -48,12 +48,12 @@
             <table class="w-full">
                 <thead>
                     <tr class="border-b border-[#e3e3e0] dark:border-[#3E3E3A]">
-                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Foodics Ref</th>
-                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Daftra Invoice</th>
-                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Total</th>
-                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Created</th>
-                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">{{ __('Foodics Ref') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">{{ __('Daftra Invoice') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">{{ __('Total') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">{{ __('Status') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">{{ __('Created') }}</th>
+                        <th class="px-6 py-3 text-start text-xs font-medium text-[#706f6c] dark:text-[#A1A09A] uppercase tracking-wider">{{ __('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[#e3e3e0] dark:divide-[#3E3E3A]">
@@ -93,7 +93,7 @@
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.032 9.035a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                                             </svg>
-                                            Retry Sync
+                                            {{ __('Retry Sync') }}
                                         </button>
                                     </form>
                                 @endif
@@ -109,8 +109,8 @@
         </div>
     @else
         <div class="bg-white dark:bg-[#161615] rounded-lg shadow-sm border border-[#e3e3e0] dark:border-[#3E3E3A] p-6">
-            <p class="text-[#706f6c] dark:text-[#A1A09A]">No invoices yet.</p>
-            <p class="text-sm text-[#706f6c] dark:text-[#A1A09A] mt-1">Sync your Foodics orders to see them here.</p>
+            <p class="text-[#706f6c] dark:text-[#A1A09A]">{{ __('No invoices yet.') }}</p>
+            <p class="text-sm text-[#706f6c] dark:text-[#A1A09A] mt-1">{{ __('Sync your Foodics orders to see them here.') }}</p>
         </div>
     @endif
 </div>

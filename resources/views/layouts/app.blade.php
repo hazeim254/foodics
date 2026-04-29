@@ -53,7 +53,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    Dashboard
+                    {{ __('Dashboard') }}
                 </a>
                 <a
                     href="{{ route('invoices') }}"
@@ -62,7 +62,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Invoices
+                    {{ __('Invoices') }}
                 </a>
                 <a
                     href="{{ route('products') }}"
@@ -71,7 +71,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
-                    Products
+                    {{ __('Products') }}
                 </a>
                 <a
                     href="{{ route('settings') }}"
@@ -81,7 +81,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    Settings
+                    {{ __('Settings') }}
                 </a>
                 <a
                     href="{{ route('contact') }}"
@@ -90,7 +90,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                     </svg>
-                    Contact Us
+                    {{ __('Contact Us') }}
                 </a>
             </nav>
 
@@ -102,7 +102,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                         </svg>
-                        {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+                        {{ app()->getLocale() === 'ar' ? __('English') : __('العربية') }}
                     </button>
                 </form>
             </div>
@@ -111,7 +111,7 @@
                 <div class="space-y-3">
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full {{ session('daftra_account') || auth()->user()?->hasDaftraConnection() ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
-                        <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">Daftra</span>
+                        <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">{{ __('Daftra') }}</span>
                     </div>
                     @if(session('daftra_account') && is_array(session('daftra_account')))
                         <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] ps-4">{{ session('daftra_account')['subdomain'] ?? '' }}</p>
@@ -127,7 +127,7 @@
 
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full {{ session('foodics_account') || auth()->user()?->hasFoodicsConnection() ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"></span>
-                        <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">Foodics</span>
+                        <span class="text-sm text-[#706f6c] dark:text-[#A1A09A]">{{ __('Foodics') }}</span>
                     </div>
                     @if(session('foodics_account') && is_array(session('foodics_account')))
                         <p class="text-xs text-[#706f6c] dark:text-[#A1A09A] ps-4">{{ session('foodics_account')['business_name'] ?? '' }}</p>
