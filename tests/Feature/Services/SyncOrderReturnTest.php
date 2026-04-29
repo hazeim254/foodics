@@ -421,6 +421,53 @@ it('does not create a credit note row when original is not synced', function () 
     expect($creditNote)->toBeNull();
 });
 
+it('emits combo products on credit notes for returned orders', function () {
+    $this->returnOrder['products'] = [];
+    $this->returnOrder['combos'] = [
+        [
+            'id' => 'combo-1',
+            'products' => [
+                [
+                    'id' => 'cp-1',
+                    'quantity' => 1,
+                    'unit_price' => 25,
+                    'discount_amount' => 0,
+                    'product' => ['id' => 'cp-1', 'name' => 'Medium Burger', 'sku' => 'MB1', 'price' => 25, 'cost' => null, 'is_active' => true, 'description' => '', 'barcode' => null],
+                    'taxes' => [],
+                ],
+                [
+                    'id' => 'cp-2',
+                    'quantity' => 1,
+                    'unit_price' => 6,
+                    'discount_amount' => 0,
+                    'product' => ['id' => 'cp-2', 'name' => 'Fries', 'sku' => 'FR1', 'price' => 6, 'cost' => null, 'is_active' => true, 'description' => '', 'barcode' => null],
+                    'taxes' => [],
+                ],
+            ],
+            'discount_type' => null,
+            'discount_amount' => 0,
+            'quantity' => 1,
+        ],
+    ];
+
+    $mockClient = setupDaftraMockForCreditNote();
+    $mockClient->shouldReceive('post')
+        ->with('/api2/credit_notes', Mockery::on(function (array $payload) {
+            expect($payload['InvoiceItem'])->toHaveCount(2);
+            expect($payload['InvoiceItem'][0]['item'])->toBe('Medium Burger');
+            expect($payload['InvoiceItem'][1]['item'])->toBe('Fries');
+
+            return true;
+        }))
+        ->once()
+        ->andReturn(mockReturnHttpResponse(successful: true, status: 200, json: ['id' => 55555]));
+
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+    $this->app->instance(FoodicsApiClient::class, Mockery::mock(FoodicsApiClient::class));
+
+    $this->app->make(SyncOrder::class)->handle($this->returnOrder);
+});
+
 function mockReturnHttpResponse(bool $successful, int $status, array $json): object
 {
     return new class($successful, $status, $json)
