@@ -23,6 +23,6 @@ class ContactMessageController extends Controller
 
         Mail::to(config('mail.contact_to'))->send(new ContactMessageSubmitted($contactMessage));
 
-        return back()->with('status', 'Your message has been sent successfully.');
+        return back()->with('status', __('Your message has been sent successfully.'));
     }
 }

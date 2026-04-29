@@ -74,4 +74,16 @@ return [
     'Inquiry' => 'استفسار',
     'Suggestion' => 'اقتراح',
     'Complaint' => 'شكوى',
+
+    // Flash Messages
+    'Your message has been sent successfully.' => 'تم إرسال رسالتك بنجاح.',
+    'Settings updated successfully.' => 'تم تحديث الإعدادات بنجاح.',
+    'Product sync is already in progress.' => 'المزامنة قيد التنفيذ بالفعل.',
+    'Product sync started.' => 'بدأت المزامنة.',
+    'This product is already synced.' => 'هذا المنتج تمت مزامنته بالفعل.',
+    'Resyncing product' => 'إعادة مزامنة المنتج',
+    'Sync is already in progress.' => 'المزامنة قيد التنفيذ بالفعل.',
+    'Sync started.' => 'بدأت المزامنة.',
+    'This invoice is already synced.' => 'هذه الفاتورة تمت مزامنتها بالفعل.',
+    'Retrying sync for' => 'إعادة المحاولة لـ',
 ];

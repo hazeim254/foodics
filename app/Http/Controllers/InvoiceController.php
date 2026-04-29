@@ -27,7 +27,7 @@ class InvoiceController extends Controller
 
         if (Cache::has($cacheKey)) {
             return redirect()->route('invoices')
-                ->with('status', 'Sync is already in progress.');
+                ->with('status', __('Sync is already in progress.'));
         }
 
         Cache::put($cacheKey, true, now()->addMinutes(5));
@@ -35,7 +35,7 @@ class InvoiceController extends Controller
         SyncInvoicesJob::dispatch(auth()->user());
 
         return redirect()->route('invoices')
-            ->with('status', 'Sync started.');
+            ->with('status', __('Sync started.'));
     }
 
     public function syncStatus()
@@ -53,7 +53,7 @@ class InvoiceController extends Controller
 
         if ($invoice->status === InvoiceSyncStatus::Synced) {
             return redirect()->route('invoices')
-                ->with('status', 'This invoice is already synced.');
+                ->with('status', __('This invoice is already synced.'));
         }
 
         $invoice->update(['status' => InvoiceSyncStatus::Failed]);
@@ -61,6 +61,6 @@ class InvoiceController extends Controller
         RetryInvoiceSyncJob::dispatch($invoice);
 
         return redirect()->route('invoices')
-            ->with('status', "Retrying sync for {$invoice->foodics_reference}…");
+            ->with('status', __('Retrying sync for').' '.$invoice->foodics_reference.'…');
     }
 }

@@ -27,7 +27,7 @@ class ProductController extends Controller
 
         if (Cache::has($cacheKey)) {
             return redirect()->route('products')
-                ->with('status', 'Product sync is already in progress.');
+                ->with('status', __('Product sync is already in progress.'));
         }
 
         Cache::put($cacheKey, true, now()->addMinutes(5));
@@ -35,7 +35,7 @@ class ProductController extends Controller
         SyncProductsJob::dispatch(auth()->user());
 
         return redirect()->route('products')
-            ->with('status', 'Product sync started.');
+            ->with('status', __('Product sync started.'));
     }
 
     public function syncStatus()
@@ -53,7 +53,7 @@ class ProductController extends Controller
 
         if ($product->status === ProductSyncStatus::Synced) {
             return redirect()->route('products')
-                ->with('status', 'This product is already synced.');
+                ->with('status', __('This product is already synced.'));
         }
 
         $product->update(['status' => ProductSyncStatus::Failed]);
@@ -61,6 +61,6 @@ class ProductController extends Controller
         RetryProductSyncJob::dispatch($product);
 
         return redirect()->route('products')
-            ->with('status', "Resyncing product {$product->foodics_name}…");
+            ->with('status', __('Resyncing product').' '.$product->foodics_name.'…');
     }
 }
