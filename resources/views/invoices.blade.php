@@ -60,15 +60,15 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Search') }}</label>
-                        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}"
+                        <label for="filter-search" class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Search') }}</label>
+                        <input id="filter-search" type="text" name="search" value="{{ $filters['search'] ?? '' }}"
                                placeholder="{{ __('Foodics Ref or Daftra No') }}"
                                class="w-full px-3 py-2 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
                     </div>
 
                     <div>
-                        <label class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Status') }}</label>
-                        <select name="status" class="w-full px-3 py-2 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
+                        <label for="filter-status" class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Status') }}</label>
+                        <select id="filter-status" name="status" class="w-full px-3 py-2 h-[38px] rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
                             <option value="">{{ __('All') }}</option>
                             <option value="pending" {{ ($filters['status'] ?? '') === 'pending' ? 'selected' : '' }}>{{ __('Pending') }}</option>
                             <option value="failed" {{ ($filters['status'] ?? '') === 'failed' ? 'selected' : '' }}>{{ __('Failed') }}</option>
@@ -77,8 +77,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Type') }}</label>
-                        <select name="type" class="w-full px-3 py-2 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
+                        <label for="filter-type" class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Type') }}</label>
+                        <select id="filter-type" name="type" class="w-full px-3 py-2 h-[38px] rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
                             <option value="">{{ __('All') }}</option>
                             <option value="invoice" {{ ($filters['type'] ?? '') === 'invoice' ? 'selected' : '' }}>{{ __('Invoice') }}</option>
                             <option value="credit_note" {{ ($filters['type'] ?? '') === 'credit_note' ? 'selected' : '' }}>{{ __('Credit Note') }}</option>
@@ -86,29 +86,29 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <div class="flex-1">
-                            <label class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('From') }}</label>
-                            <input type="number" name="amount_from" value="{{ $filters['amount_from'] ?? '' }}"
+                        <div class="flex-1 min-w-0">
+                            <label for="filter-amount-from" class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('From') }}</label>
+                            <input id="filter-amount-from" type="number" name="amount_from" value="{{ $filters['amount_from'] ?? '' }}"
                                    step="0.01" min="0" placeholder="0"
                                    class="w-full px-3 py-2 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
                         </div>
-                        <div class="flex-1">
-                            <label class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('To') }}</label>
-                            <input type="number" name="amount_to" value="{{ $filters['amount_to'] ?? '' }}"
+                        <div class="flex-1 min-w-0">
+                            <label for="filter-amount-to" class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('To') }}</label>
+                            <input id="filter-amount-to" type="number" name="amount_to" value="{{ $filters['amount_to'] ?? '' }}"
                                    step="0.01" min="0" placeholder="9999"
                                    class="w-full px-3 py-2 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
                         </div>
                     </div>
 
                     <div class="flex gap-2">
-                        <div class="flex-1">
-                            <label class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Date From') }}</label>
-                            <input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}"
+                        <div class="flex-1 min-w-0">
+                            <label for="filter-date-from" class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Date From') }}</label>
+                            <input id="filter-date-from" type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}"
                                    class="w-full px-3 py-2 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
                         </div>
-                        <div class="flex-1">
-                            <label class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Date To') }}</label>
-                            <input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}"
+                        <div class="flex-1 min-w-0">
+                            <label for="filter-date-to" class="block text-xs text-[#706f6c] dark:text-[#A1A09A] mb-1">{{ __('Date To') }}</label>
+                            <input id="filter-date-to" type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}"
                                    class="w-full px-3 py-2 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#161615] text-sm">
                         </div>
                     </div>
@@ -141,13 +141,13 @@
                 @endif
                 @if(($filters['amount_from'] ?? ''))
                     <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-[#F5F5F3] dark:bg-[#262625] text-[#706f6c] dark:text-[#A1A09A]">
-                        {{ __('Amount') }}: {{ $filters['amount_from'] }} - {{ $filters['amount_to'] ?? '&infin;' }}
+                        {{ __('Amount') }}: {{ $filters['amount_from'] }} - {{ $filters['amount_to'] ?? str('&infin;')->toHtmlString() }}
                         <a href="{{ request()->fullUrlWithQuery(['amount_from' => null, 'amount_to' => null]) }}" class="hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]">&times;</a>
                     </span>
                 @endif
                 @if(($filters['date_from'] ?? ''))
                     <span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-[#F5F5F3] dark:bg-[#262625] text-[#706f6c] dark:text-[#A1A09A]">
-                        {{ __('Date') }}: {{ $filters['date_from'] }} - {{ $filters['date_to'] ?? '&infin;' }}
+                        {{ __('Date') }}: {{ $filters['date_from'] }} - {{ $filters['date_to'] ?? str('&infin;')->toHtmlString() }}
                         <a href="{{ request()->fullUrlWithQuery(['date_from' => null, 'date_to' => null]) }}" class="hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]">&times;</a>
                     </span>
                 @endif
