@@ -12,7 +12,25 @@ use Illuminate\Support\Facades\Context;
  */
 class OrderService
 {
-    private const ORDER_INCLUDES = 'branch,charges,payments.payment_method,discount,products,products.taxes,charges.taxes,products.product,products.options,products.options.modifier_option,combos.products,combos.products.product,charges.charge,products.discount,combos.discount,combos.products.options.taxes,combos.products.taxes,products.options.taxes,customer';
+    private const ORDER_INCLUDES = [
+        'branch',
+        'charges.charge',
+        'charges.taxes',
+        'combos.discount',
+        'combos.products',
+        'combos.products.product',
+        'combos.products.options.taxes',
+        'combos.products.taxes',
+        'customer',
+        'discount',
+        'payments.payment_method',
+        'products.discount',
+        'products.options',
+        'products.options.modifier_option',
+        'products.options.taxes',
+        'products.product',
+        'products.taxes',
+    ];
 
     public function __construct(protected FoodicsApiClient $client) {}
 
@@ -55,7 +73,7 @@ class OrderService
     {
         $params = [
             'sort' => 'reference',
-            'include' => self::ORDER_INCLUDES,
+            'include' => implode(',', self::ORDER_INCLUDES),
             'filter[status]' => '4,5',
             'limit' => 50,
         ];
@@ -84,7 +102,7 @@ class OrderService
     public function getOrder(string $orderId): array
     {
         $response = $this->client->get('/v5/orders', [
-            'include' => self::ORDER_INCLUDES,
+            'include' => implode(',', self::ORDER_INCLUDES),
             'filter[id]' => $orderId,
         ]);
 
