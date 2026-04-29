@@ -33,6 +33,22 @@ return [
 
     // Dashboard
     'Welcome to your dashboard. Connect your Daftra and Foodics accounts to get started.' => 'مرحباً بك في لوحة التحكم. اربط حسابيك في دفترة وفوديكس للبدء.',
+    'Foodics to Daftra sync health at a glance.' => 'صحة مزامنة فوديكس مع دفترة في لمحة.',
+    'Invoice Sync' => 'مزامنة الفواتير',
+    'Product Sync' => 'مزامنة المنتجات',
+    'Total Invoices' => 'إجمالي الفواتير',
+    'Total Products' => 'إجمالي المنتجات',
+    'Success Rate' => 'نسبة النجاح',
+    'Sync Over Time' => 'المزامنة عبر الوقت',
+    'Invoice Synced' => 'فاتورة تمت مزامنتها',
+    'Invoice Failed' => 'فاتورة فشلت مزامنتها',
+    'Product Synced' => 'منتج تمت مزامنته',
+    'Product Failed' => 'منتج فشلت مزامنته',
+    'Default Settings' => 'الإعدادات الافتراضية',
+    'Default Client' => 'العميل الافتراضي',
+    'Not configured' => 'غير مُعد',
+    'Default branch (1)' => 'الفرع الافتراضي (1)',
+    'Update Settings' => 'تحديث الإعدادات',
 
     // Products Page
     'Syncing…' => 'جاري المزامنة…',
@@ -120,6 +136,5 @@ return [
     'Name or SKU' => 'الاسم أو رمز المنتج',
     'Price From' => 'السعر من',
     'Price' => 'السعر',
-    'Name' => 'الاسم',
     'Price must be greater than 0.' => 'يجب أن يكون السعر أكبر من 0.',
 ];
