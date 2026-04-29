@@ -1294,6 +1294,59 @@ it('ignores modifier options on combo products', function () {
     expect($items[0]['item'])->toBe('Combo Item');
 });
 
+it('propagates discount_amount and discount_type from combo product lines', function () {
+    $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
+
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(100);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+    $reflection = new ReflectionClass($syncOrder);
+
+    $order = [
+        'products' => [],
+        'combos' => [
+            [
+                'products' => [
+                    [
+                        'id' => 'cp-fixed',
+                        'quantity' => 1,
+                        'unit_price' => 50,
+                        'discount_amount' => 7.5,
+                        'discount_type' => 2,
+                        'product' => ['id' => 'cp-fixed', 'name' => 'Discounted Combo Item', 'sku' => 'DCI1', 'price' => 50, 'cost' => null, 'is_active' => true],
+                        'taxes' => [],
+                    ],
+                    [
+                        'id' => 'cp-percent',
+                        'quantity' => 2,
+                        'unit_price' => 20,
+                        'discount_amount' => 10,
+                        'discount_type' => 1,
+                        'product' => ['id' => 'cp-percent', 'name' => 'Percent Combo Item', 'sku' => 'PCI1', 'price' => 20, 'cost' => null, 'is_active' => true],
+                        'taxes' => [],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $method = $reflection->getMethod('getOrderProductLines');
+    $method->setAccessible(true);
+    $productLines = $method->invoke($syncOrder, $order);
+
+    $items = $syncOrder->getInvoiceItems($productLines);
+
+    expect($items)->toHaveCount(2);
+    expect($items[0]['item'])->toBe('Discounted Combo Item');
+    expect($items[0]['discount'])->toBe(7.5);
+    expect($items[0]['discount_type'])->toBe(2);
+    expect($items[1]['item'])->toBe('Percent Combo Item');
+    expect($items[1]['discount'])->toBe(10);
+    expect($items[1]['discount_type'])->toBe(1);
+});
+
 function mockHttpResponse(bool $successful, int $status, array $json): object
 {
     return new class($successful, $status, $json)
