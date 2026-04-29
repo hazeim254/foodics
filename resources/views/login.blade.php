@@ -1,21 +1,37 @@
+<?php
+$fontMap = [
+    'en' => [
+        'inter' => 'Inter',
+        'instrument-sans' => 'Instrument Sans',
+        'noto' => 'Noto Sans',
+    ],
+    'ar' => [
+        'cairo' => 'Cairo',
+        'ibm-plex-arabic' => 'IBM Plex Sans Arabic',
+        'noto-arabic' => 'Noto Sans Arabic',
+    ],
+];
+$enFont = $fontMap['en'][request()->get('en_font')] ?? 'Noto Sans';
+$arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
+?>
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa', 'ur']) ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa', 'ur']) ? 'rtl' : 'ltr' }}" style="--en-font: '{{ $enFont }}'; --ar-font: '{{ $arFont }}';">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>{{ config('app.name', 'Laravel') }} — {{ __('Connect Accounts') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
-    <body class="min-h-screen bg-white dark:bg-[#0a0a0a] font-[Instrument_Sans,ui-sans-serif,system-ui,sans-serif] antialiased">
+    <body class="min-h-screen bg-white dark:bg-[#0a0a0a] antialiased">
 
         <div class="flex min-h-screen">
             <div class="absolute top-4 end-4 z-10">
