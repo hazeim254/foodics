@@ -43,11 +43,27 @@ it('stores foodics_reference when syncing an order', function () {
         ->with('/api2/products', ['product_code' => '8d90d06e'])
         ->once()
         ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'P001'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '8d90b7dd'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'P003'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '9ca37d4e-cbba-4d73-bdd9-ea4f2fb85d79'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = mockResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
         ->with('/api2/products', Mockery::any())
-        ->twice()
+        ->times(4)
         ->andReturn($productCreateResponse);
 
     $clientNotFoundResponse = mockResponse(successful: true, status: 200, json: ['data' => []]);

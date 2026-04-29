@@ -114,6 +114,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
             expect($payload['Invoice']['client_id'])->toBe(11111);
             expect($payload['Invoice']['date'])->toBe('2019-11-28');
             expect($payload['Invoice']['discount_amount'])->toBe(5);
+            expect($payload['Invoice']['discount_type'])->toBe(2);
             expect($payload['Invoice']['notes'])->toBe('Some Kitchen Notes 73664');
             expect($payload)->toHaveKey('InvoiceItem');
             expect($payload['InvoiceItem'])->toHaveCount(5);

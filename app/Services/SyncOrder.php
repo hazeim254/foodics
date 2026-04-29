@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\DaftraDiscountType;
 use App\Enums\InvoiceSyncStatus;
 use App\Exceptions\InvoiceAlreadyExistsException;
 use App\Models\Invoice;
@@ -129,6 +130,7 @@ class SyncOrder
                 'client_id' => $clientId,
                 'date' => $order['business_date'],
                 'discount_amount' => $order['discount_amount'] ?? 0,
+                'discount_type' => DaftraDiscountType::Fixed->value,
                 'notes' => $order['kitchen_notes'] ?? null,
             ],
             'InvoiceItem' => $invoiceItems,
