@@ -147,11 +147,10 @@ it('shows green dot and foodics metadata from database when token exists', funct
 it('shows gray dots when no provider tokens exist and no session data', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)
+    $this->actingAs($user)
         ->get('/')
-        ->assertOk();
-
-    expect($response->content())->not->toContain('bg-green-500');
+        ->assertOk()
+        ->assertSee('bg-gray-300 dark:bg-gray-600');
 });
 
 it('invoices page extends layouts and shows title', function () {
