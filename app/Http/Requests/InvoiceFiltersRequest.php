@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\InvoiceSyncStatus;
+use App\Enums\InvoiceType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InvoiceFiltersRequest extends FormRequest
 {
@@ -12,7 +15,7 @@ class InvoiceFiltersRequest extends FormRequest
     }
 
     /**
-     * @return array<string, string[]>
+     * @return array<string, mixed[]>
      */
     public function rules(): array
     {
@@ -21,13 +24,22 @@ class InvoiceFiltersRequest extends FormRequest
             'foodics_ref' => ['nullable', 'string', 'max:100'],
             'daftra_no' => ['nullable', 'string', 'max:50'],
             'amount_from' => ['nullable', 'numeric', 'min:0'],
-            'amount_to' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['nullable', 'string', 'in:pending,failed,synced'],
-            'type' => ['nullable', 'string', 'in:invoice,credit_note'],
+            'amount_to' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                Rule::when($this->filled('amount_from'), ['gte:amount_from']),
+            ],
+            'status' => ['nullable', Rule::in(InvoiceSyncStatus::values())],
+            'type' => ['nullable', Rule::in(InvoiceType::values())],
             'date_from' => ['nullable', 'date'],
-            'date_to' => ['nullable', 'date'],
-            'sort_by' => ['nullable', 'string', 'in:foodics_reference,daftra_no,total_price,status,created_at'],
-            'sort_dir' => ['nullable', 'string', 'in:asc,desc'],
+            'date_to' => [
+                'nullable',
+                'date',
+                Rule::when($this->filled('date_from'), ['after_or_equal:date_from']),
+            ],
+            'sort_by' => ['nullable', Rule::in(['foodics_reference', 'daftra_no', 'total_price', 'status', 'type', 'created_at'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ];
     }
 
@@ -37,8 +49,8 @@ class InvoiceFiltersRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'amount_to.min' => __('Amount must be greater than 0.'),
-            'date_to.after_or_equal' => __('End date must be after start date.'),
+            'amount_to.gte' => __('The max amount must be greater than or equal to the min amount.'),
+            'date_to.after_or_equal' => __('The end date must be after or equal to the start date.'),
         ];
     }
 }

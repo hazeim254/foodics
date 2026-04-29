@@ -1,19 +1,3 @@
-<?php
-$fontMap = [
-    'en' => [
-        'inter' => 'Inter',
-        'instrument-sans' => 'Instrument Sans',
-        'noto' => 'Noto Sans',
-    ],
-    'ar' => [
-        'cairo' => 'Cairo',
-        'ibm-plex-arabic' => 'IBM Plex Sans Arabic',
-        'noto-arabic' => 'Noto Sans Arabic',
-    ],
-];
-$enFont = $fontMap['en'][request()->get('en_font')] ?? 'Noto Sans';
-$arFont = $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic';
-?>
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa', 'ur']) ? 'rtl' : 'ltr' }}" class="scroll-smooth" style="--en-font: '{{ $enFont }}'; --ar-font: '{{ $arFont }}';">
 <head>

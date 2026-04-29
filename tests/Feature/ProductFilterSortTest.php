@@ -260,3 +260,30 @@ it('does not show other users products in filtered results', function () {
         ->assertSee('My Product')
         ->assertDontSee('Other Product');
 });
+
+it('rejects price_to less than price_from', function () {
+    $this->get('/products?price_from=100&price_to=50')
+        ->assertRedirect()
+        ->assertSessionHasErrors('price_to');
+});
+
+it('allows price_to equal to price_from', function () {
+    $this->get('/products?price_from=50&price_to=50')
+        ->assertOk();
+});
+
+it('allows price_to without price_from', function () {
+    $this->get('/products?price_to=100')
+        ->assertOk();
+});
+
+it('rejects date_to before date_from', function () {
+    $this->get('/products?date_from=2026-01-15&date_to=2026-01-10')
+        ->assertRedirect()
+        ->assertSessionHasErrors('date_to');
+});
+
+it('allows date_to equal to date_from', function () {
+    $this->get('/products?date_from=2026-01-15&date_to=2026-01-15')
+        ->assertOk();
+});
