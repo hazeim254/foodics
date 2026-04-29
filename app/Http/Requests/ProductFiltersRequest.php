@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ProductSyncStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProductFiltersRequest extends FormRequest
 {
@@ -12,19 +14,28 @@ class ProductFiltersRequest extends FormRequest
     }
 
     /**
-     * @return array<string, string[]>
+     * @return array<string, mixed[]>
      */
     public function rules(): array
     {
         return [
             'search' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'string', 'in:pending,failed,synced'],
+            'status' => ['nullable', Rule::in(ProductSyncStatus::values())],
             'price_from' => ['nullable', 'numeric', 'min:0'],
-            'price_to' => ['nullable', 'numeric', 'min:0'],
+            'price_to' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                Rule::when($this->filled('price_from'), ['gte:price_from']),
+            ],
             'date_from' => ['nullable', 'date'],
-            'date_to' => ['nullable', 'date'],
-            'sort_by' => ['nullable', 'string', 'in:foodics_name,foodics_sku,price,daftra_id,status,created_at'],
-            'sort_dir' => ['nullable', 'string', 'in:asc,desc'],
+            'date_to' => [
+                'nullable',
+                'date',
+                Rule::when($this->filled('date_from'), ['after_or_equal:date_from']),
+            ],
+            'sort_by' => ['nullable', Rule::in(['foodics_name', 'foodics_sku', 'price', 'daftra_id', 'status', 'created_at'])],
+            'sort_dir' => ['nullable', Rule::in(['asc', 'desc'])],
         ];
     }
 
@@ -34,8 +45,8 @@ class ProductFiltersRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'price_to.min' => __('Price must be greater than 0.'),
-            'date_to.after_or_equal' => __('End date must be after start date.'),
+            'price_to.gte' => __('The max price must be greater than or equal to the min price.'),
+            'date_to.after_or_equal' => __('The end date must be after or equal to the start date.'),
         ];
     }
 }

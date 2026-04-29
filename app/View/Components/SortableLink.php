@@ -22,7 +22,7 @@ class SortableLink extends Component
         $currentDir = request('sort_dir', 'desc');
         $this->isActive = $currentSort === $column;
         $this->newDir = $this->isActive && $currentDir === 'asc' ? 'desc' : 'asc';
-        $this->url = '?'.http_build_query(array_merge(request()->query(), ['sort_by' => $column, 'sort_dir' => $this->newDir]));
+        $this->url = '?'.http_build_query(array_filter(array_merge(request()->query(), ['sort_by' => $column, 'sort_dir' => $this->newDir, 'page' => null]), fn ($v) => ! is_null($v)));
     }
 
     public function render(): View|Closure|string

@@ -17,6 +17,9 @@ enum InvoiceType: string
 
     public function label(): string
     {
-        return ucfirst(__($this->value));
+        return match ($this) {
+            self::Invoice => __('Invoice'),
+            self::CreditNote => __('Credit Note'),
+        };
     }
 }

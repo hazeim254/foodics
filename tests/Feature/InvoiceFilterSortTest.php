@@ -203,3 +203,35 @@ it('passes filters to the view', function () {
         ->assertOk()
         ->assertViewHas('filters', fn ($filters) => $filters['status'] === 'synced' && $filters['search'] === 'foo');
 });
+
+it('rejects amount_to less than amount_from', function () {
+    $this->actingAs($this->user)
+        ->get('/invoices?amount_from=100&amount_to=50')
+        ->assertRedirect()
+        ->assertSessionHasErrors('amount_to');
+});
+
+it('allows amount_to equal to amount_from', function () {
+    $this->actingAs($this->user)
+        ->get('/invoices?amount_from=50&amount_to=50')
+        ->assertOk();
+});
+
+it('allows amount_to without amount_from', function () {
+    $this->actingAs($this->user)
+        ->get('/invoices?amount_to=100')
+        ->assertOk();
+});
+
+it('rejects date_to before date_from', function () {
+    $this->actingAs($this->user)
+        ->get('/invoices?date_from=2026-01-15&date_to=2026-01-10')
+        ->assertRedirect()
+        ->assertSessionHasErrors('date_to');
+});
+
+it('allows date_to equal to date_from', function () {
+    $this->actingAs($this->user)
+        ->get('/invoices?date_from=2026-01-15&date_to=2026-01-15')
+        ->assertOk();
+});

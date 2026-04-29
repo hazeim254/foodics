@@ -6,6 +6,7 @@ use App\Services\Daftra\DaftraApiClient;
 use App\Services\Foodics\FoodicsApiClient;
 use App\Services\Http\CurlCommandBuilder;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -46,6 +47,17 @@ class AppServiceProvider extends ServiceProvider
             $request = $this->transferStats?->getRequest();
 
             return $request ? CurlCommandBuilder::build($request) : '';
+        });
+
+        View::composer(['layouts.app', 'login'], function ($view) {
+            $fontMap = [
+                'en' => ['inter' => 'Inter', 'instrument-sans' => 'Instrument Sans', 'noto' => 'Noto Sans'],
+                'ar' => ['cairo' => 'Cairo', 'ibm-plex-arabic' => 'IBM Plex Sans Arabic', 'noto-arabic' => 'Noto Sans Arabic'],
+            ];
+            $view->with([
+                'enFont' => $fontMap['en'][request()->get('en_font')] ?? 'Noto Sans',
+                'arFont' => $fontMap['ar'][request()->get('ar_font')] ?? 'Noto Sans Arabic',
+            ]);
         });
     }
 }
