@@ -123,8 +123,8 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
                 'item' => 'Tuna Sandwich',
                 'quantity' => 2,
                 'unit_price' => 14,
-                'discount' => 20,
-                'discount_type' => 1,
+                'discount' => 10,
+                'discount_type' => 2,
                 'tax1' => 54321,
                 'tax2' => null,
             ]);
@@ -1295,7 +1295,7 @@ it('ignores modifier options on combo products', function () {
     expect($items[0]['item'])->toBe('Combo Item');
 });
 
-it('propagates discount_amount and discount_type from combo product lines', function () {
+it('emits combo line discounts as per-unit fixed amounts', function () {
     $this->app->instance(DaftraApiClient::class, Mockery::mock(DaftraApiClient::class));
 
     $mockProductService = Mockery::mock(ProductService::class);
@@ -1311,21 +1311,21 @@ it('propagates discount_amount and discount_type from combo product lines', func
             [
                 'products' => [
                     [
-                        'id' => 'cp-fixed',
+                        'id' => 'cp-single',
                         'quantity' => 1,
                         'unit_price' => 50,
                         'discount_amount' => 7.5,
                         'discount_type' => 2,
-                        'product' => ['id' => 'cp-fixed', 'name' => 'Discounted Combo Item', 'sku' => 'DCI1', 'price' => 50, 'cost' => null, 'is_active' => true],
+                        'product' => ['id' => 'cp-single', 'name' => 'Single Combo Item', 'sku' => 'DCI1', 'price' => 50, 'cost' => null, 'is_active' => true],
                         'taxes' => [],
                     ],
                     [
-                        'id' => 'cp-percent',
+                        'id' => 'cp-multi',
                         'quantity' => 2,
                         'unit_price' => 20,
                         'discount_amount' => 10,
                         'discount_type' => 1,
-                        'product' => ['id' => 'cp-percent', 'name' => 'Percent Combo Item', 'sku' => 'PCI1', 'price' => 20, 'cost' => null, 'is_active' => true],
+                        'product' => ['id' => 'cp-multi', 'name' => 'Multi Combo Item', 'sku' => 'PCI1', 'price' => 20, 'cost' => null, 'is_active' => true],
                         'taxes' => [],
                     ],
                 ],
@@ -1340,12 +1340,12 @@ it('propagates discount_amount and discount_type from combo product lines', func
     $items = $syncOrder->getInvoiceItems($productLines);
 
     expect($items)->toHaveCount(2);
-    expect($items[0]['item'])->toBe('Discounted Combo Item');
+    expect($items[0]['item'])->toBe('Single Combo Item');
     expect($items[0]['discount'])->toBe(7.5);
     expect($items[0]['discount_type'])->toBe(2);
-    expect($items[1]['item'])->toBe('Percent Combo Item');
-    expect($items[1]['discount'])->toBe(10);
-    expect($items[1]['discount_type'])->toBe(1);
+    expect($items[1]['item'])->toBe('Multi Combo Item');
+    expect($items[1]['discount'])->toBe(5);
+    expect($items[1]['discount_type'])->toBe(2);
 });
 
 function mockHttpResponse(bool $successful, int $status, array $json): object
