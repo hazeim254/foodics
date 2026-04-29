@@ -14,4 +14,9 @@ enum InvoiceType: string
     {
         return array_map(fn ($case) => $case->value, self::cases());
     }
+
+    public function label(): string
+    {
+        return ucfirst(__($this->value));
+    }
 }

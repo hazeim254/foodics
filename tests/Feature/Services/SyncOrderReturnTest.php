@@ -30,7 +30,8 @@ beforeEach(function () {
         'foodics_reference' => '00200',
         'daftra_id' => $this->originalDaftraId,
         'status' => InvoiceSyncStatus::Synced,
-        'daftra_metadata' => ['no' => 'INV-001', 'client_id' => 42],
+        'daftra_no' => 'INV-001',
+        'daftra_metadata' => ['client_id' => 42],
     ]);
 
     $this->returnOrder = makeReturnOrder();
@@ -295,7 +296,7 @@ it('falls back to the original invoices daftra client_id when the return has no 
 });
 
 it('falls back to the default client when neither the return nor the original has a client', function () {
-    $this->original->update(['daftra_metadata' => ['no' => 'INV-001']]);
+    $this->original->update(['daftra_metadata' => []]);
 
     $mockClient = setupDaftraMockForCreditNote();
     $mockClient->shouldReceive('post')

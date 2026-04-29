@@ -137,9 +137,8 @@ class SyncCreditNote
             $creditNote->fill([
                 'foodics_reference' => $order['reference'],
                 'status' => InvoiceSyncStatus::Pending,
-                'foodics_metadata' => [
-                    'total_price' => (float) ($order['total_price'] ?? 0),
-                ],
+                'total_price' => (float) ($order['total_price'] ?? 0),
+                'foodics_metadata' => [],
             ])->save();
 
             return $creditNote;
@@ -153,9 +152,8 @@ class SyncCreditNote
             'type' => InvoiceType::CreditNote,
             'original_invoice_id' => $original->id,
             'status' => InvoiceSyncStatus::Pending,
-            'foodics_metadata' => [
-                'total_price' => (float) ($order['total_price'] ?? 0),
-            ],
+            'total_price' => (float) ($order['total_price'] ?? 0),
+            'foodics_metadata' => [],
         ]);
     }
 }

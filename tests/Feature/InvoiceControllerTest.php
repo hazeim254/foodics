@@ -165,7 +165,7 @@ it('displays daftra invoice number as clickable link with subdomain', function (
     $invoice = Invoice::factory()->create([
         'user_id' => $user->id,
         'daftra_id' => 12345,
-        'daftra_metadata' => ['no' => 'INV-001'],
+        'daftra_no' => 'INV-001',
         'status' => 'synced',
     ]);
 
@@ -200,7 +200,7 @@ it('displays daftra as plain text when subdomain is missing', function () {
     $invoice = Invoice::factory()->create([
         'user_id' => $user->id,
         'daftra_id' => 12345,
-        'daftra_metadata' => ['no' => 'INV-001'],
+        'daftra_no' => 'INV-001',
         'status' => 'synced',
     ]);
 
@@ -211,11 +211,11 @@ it('displays daftra as plain text when subdomain is missing', function () {
         ->assertSee('INV-001');
 });
 
-it('displays total price from foodics_metadata', function () {
+it('displays total price from column', function () {
     $user = User::factory()->create();
     $invoice = Invoice::factory()->create([
         'user_id' => $user->id,
-        'foodics_metadata' => ['total_price' => 24.15],
+        'total_price' => 24.15,
         'status' => 'synced',
     ]);
 
@@ -229,7 +229,7 @@ it('displays dash when total price is missing', function () {
     $user = User::factory()->create();
     $invoice = Invoice::factory()->create([
         'user_id' => $user->id,
-        'foodics_metadata' => null,
+        'total_price' => null,
         'status' => 'synced',
     ]);
 

@@ -21,6 +21,8 @@ class Invoice extends Model
         'type',
         'original_invoice_id',
         'status',
+        'total_price',
+        'daftra_no',
         'foodics_metadata',
         'daftra_metadata',
     ];
@@ -33,6 +35,7 @@ class Invoice extends Model
         return [
             'status' => InvoiceSyncStatus::class,
             'type' => InvoiceType::class,
+            'total_price' => 'decimal:2',
             'foodics_metadata' => 'array',
             'daftra_metadata' => 'array',
         ];

@@ -37,7 +37,6 @@ return [
     // Products Page
     'Syncing…' => 'جاري المزامنة…',
     'Sync Now' => 'مزامنة الآن',
-    'Name' => 'الاسم',
     'SKU' => 'رمز المنتج',
     'Daftra ID' => 'معرف دفترة',
     'Status' => 'الحالة',
@@ -54,6 +53,36 @@ return [
     'Retry Sync' => 'إعادة المحاولة',
     'No invoices yet.' => 'لا توجد فواتير بعد.',
     'Sync your Foodics orders to see them here.' => 'زامن طلبات فوديكس لرؤيتها هنا.',
+
+    // Invoice Filters
+    'Filters' => 'التصفية',
+    'Clear' => 'مسح',
+    'Search' => 'البحث',
+    'Foodics Ref or Daftra No' => 'مرجع فوديكس أو رقم فاتورة دفترة',
+    'All' => 'الكل',
+    'Pending' => 'قيد الانتظار',
+    'Failed' => 'فشل',
+    'Synced' => 'تمت المزامنة',
+    'pending' => 'قيد الانتظار',
+    'failed' => 'فشل',
+    'synced' => 'تمت المزامنة',
+    'Invoice' => 'فاتورة',
+    'Credit Note' => 'إشعار دائن',
+    'invoice' => 'فاتورة',
+    'credit_note' => 'إشعار دائن',
+    'From' => 'من',
+    'To' => 'إلى',
+    'Date From' => 'تاريخ من',
+    'Date To' => 'تاريخ إلى',
+    'Apply Filters' => 'تطبيق التصفية',
+    'Amount' => 'المبلغ',
+    'Date' => 'التاريخ',
+
+    // Enum Values
+    'processed' => 'تمت المعالجة',
+    'inquiry' => 'استفسار',
+    'suggestion' => 'اقتراح',
+    'complaint' => 'شكوى',
 
     // Settings Page
     'Save Settings' => 'حفظ الإعدادات',
