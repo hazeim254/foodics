@@ -149,6 +149,21 @@ trait BuildsInvoiceItems
         return $invoiceItems;
     }
 
+    protected function getOrderProductLines(array $order): array
+    {
+        $products = $order['products'] ?? [];
+
+        foreach ($order['combos'] ?? [] as $combo) {
+            foreach ($combo['products'] ?? [] as $comboProduct) {
+                unset($comboProduct['options']);
+
+                $products[] = $comboProduct;
+            }
+        }
+
+        return $products;
+    }
+
     protected function resolveUniqueTaxes(array $order): void
     {
         $allTaxes = collect();
@@ -157,6 +172,12 @@ trait BuildsInvoiceItems
             $allTaxes = $allTaxes->merge($product['taxes'] ?? []);
             foreach ($product['options'] ?? [] as $option) {
                 $allTaxes = $allTaxes->merge($option['taxes'] ?? []);
+            }
+        }
+
+        foreach ($order['combos'] ?? [] as $combo) {
+            foreach ($combo['products'] ?? [] as $comboProduct) {
+                $allTaxes = $allTaxes->merge($comboProduct['taxes'] ?? []);
             }
         }
 

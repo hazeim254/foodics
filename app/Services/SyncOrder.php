@@ -111,7 +111,7 @@ class SyncOrder
             return (int) $existing['id'];
         }
 
-        $invoiceItems = $this->getInvoiceItems($order['products']);
+        $invoiceItems = $this->getInvoiceItems($this->getOrderProductLines($order));
         $invoiceItems = $this->addChargeInvoiceItems($invoiceItems, $order['charges'] ?? []);
 
         $clientId = null;

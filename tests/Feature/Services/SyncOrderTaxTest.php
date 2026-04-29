@@ -49,11 +49,27 @@ it('syncs an order with taxes end-to-end', function () {
         ->with('/api2/products', ['product_code' => '8d90d06e'])
         ->once()
         ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'P001'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '8d90b7dd'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'P003'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '9ca37d4e-cbba-4d73-bdd9-ea4f2fb85d79'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = createMockHttpResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
         ->with('/api2/products', Mockery::any())
-        ->twice()
+        ->times(4)
         ->andReturn($productCreateResponse);
 
     // Client lookup
@@ -102,8 +118,8 @@ it('syncs an order with taxes end-to-end', function () {
             expect($payload)->toHaveKey('Invoice');
             expect($payload)->toHaveKey('InvoiceItem');
 
-            // 1 product + 1 option + 1 charge = 3
-            expect($payload['InvoiceItem'])->toHaveCount(3);
+            // 1 product + 1 option + 2 combo products + 1 charge = 5
+            expect($payload['InvoiceItem'])->toHaveCount(5);
 
             // First item: product with tax
             expect($payload['InvoiceItem'][0]['item'])->toBe('Tuna Sandwich');
@@ -115,11 +131,19 @@ it('syncs an order with taxes end-to-end', function () {
             expect($payload['InvoiceItem'][1]['tax1'])->toBe(54321);
             expect($payload['InvoiceItem'][1]['tax2'])->toBeNull();
 
-            // Third item: Service Charge with tax
-            expect($payload['InvoiceItem'][2]['item'])->toBe('Service Charge');
-            expect($payload['InvoiceItem'][2]['unit_price'])->toBe(8);
+            // Third item: combo product (Burger) with tax
+            expect($payload['InvoiceItem'][2]['item'])->toBe('Burger');
             expect($payload['InvoiceItem'][2]['tax1'])->toBe(54321);
-            expect($payload['InvoiceItem'][2]['tax2'])->toBeNull();
+
+            // Fourth item: combo product (Salad) with tax
+            expect($payload['InvoiceItem'][3]['item'])->toBe('Salad');
+            expect($payload['InvoiceItem'][3]['tax1'])->toBe(54321);
+
+            // Fifth item: Service Charge with tax
+            expect($payload['InvoiceItem'][4]['item'])->toBe('Service Charge');
+            expect($payload['InvoiceItem'][4]['unit_price'])->toBe(8);
+            expect($payload['InvoiceItem'][4]['tax1'])->toBe(54321);
+            expect($payload['InvoiceItem'][4]['tax2'])->toBeNull();
 
             return true;
         }))
@@ -199,11 +223,27 @@ it('uses cached tax mapping when available', function () {
         ->with('/api2/products', ['product_code' => '8d90d06e'])
         ->once()
         ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'P001'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '8d90b7dd'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => 'P003'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/products', ['product_code' => '9ca37d4e-cbba-4d73-bdd9-ea4f2fb85d79'])
+        ->once()
+        ->andReturn($productNotFoundResponse);
 
     $productCreateResponse = createMockHttpResponse(successful: true, status: 202, json: ['id' => 67890]);
     $mockClient->shouldReceive('post')
         ->with('/api2/products', Mockery::any())
-        ->twice()
+        ->times(4)
         ->andReturn($productCreateResponse);
 
     $clientNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
@@ -344,6 +384,96 @@ it('resolves option taxes into taxMap before getInvoiceItems runs', function () 
         ->with('/api2/invoices/999')
         ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
             'data' => ['Invoice' => ['id' => 999, 'no' => 'INV-002']],
+        ]));
+
+    $mockDaftraClient->shouldReceive('get')
+        ->with('/v2/api/entity/invoice_payment/list', ['filter[invoice_id]' => 999])
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
+    $clientNotFoundResponse = createMockHttpResponse(successful: true, status: 200, json: ['data' => []]);
+    $mockDaftraClient->shouldReceive('get')
+        ->with('/v2/api/entity/client/list', Mockery::any())
+        ->andReturn($clientNotFoundResponse);
+
+    $paymentGatewayResponse = createMockHttpResponse(successful: true, status: 200, json: [
+        'data' => [['id' => 1, 'label' => 'Cash', 'payment_gateway' => 'cash']],
+    ]);
+    $mockDaftraClient->shouldReceive('get')
+        ->with('/v2/api/entity/site_payment_gateway/list?per_page=100')
+        ->andReturn($paymentGatewayResponse);
+
+    $this->app->instance(DaftraApiClient::class, $mockDaftraClient);
+
+    $syncOrder = $this->app->make(SyncOrder::class);
+
+    $reflection = new ReflectionClass($syncOrder);
+    $runSync = $reflection->getMethod('runSync');
+    $runSync->setAccessible(true);
+
+    $runSync->invoke($syncOrder, $order, $invoice);
+});
+
+it('resolves combo product taxes into taxMap before invoice items are built', function () {
+    $mockDaftraClient = Mockery::mock(DaftraApiClient::class);
+
+    $mockProductService = Mockery::mock(ProductService::class);
+    $mockProductService->shouldReceive('getProductByFoodicsData')->andReturn(100);
+    $this->app->instance(ProductService::class, $mockProductService);
+
+    $mockTaxService = Mockery::mock(TaxService::class);
+    $mockTaxService->shouldReceive('resolveTaxId')->andReturnUsing(fn (array $tax) => match ($tax['id']) {
+        'combo-tax-1' => 444,
+        default => 555,
+    });
+    $this->app->instance(TaxService::class, $mockTaxService);
+
+    $order = [
+        'id' => 'test-combo-tax-order',
+        'reference' => '00500',
+        'business_date' => '2026-01-01',
+        'products' => [],
+        'combos' => [
+            [
+                'id' => 'combo-1',
+                'products' => [
+                    [
+                        'id' => 'cp-1',
+                        'quantity' => 1,
+                        'unit_price' => 50,
+                        'discount_amount' => 0,
+                        'product' => ['id' => 'cp-1', 'name' => 'Burger', 'sku' => 'B1', 'price' => 50, 'cost' => null, 'is_active' => true],
+                        'taxes' => [['id' => 'combo-tax-1', 'name' => 'Combo VAT', 'rate' => 15]],
+                    ],
+                ],
+            ],
+        ],
+        'charges' => [],
+    ];
+
+    $invoice = Invoice::factory()->create([
+        'user_id' => $this->user->id,
+        'foodics_id' => $order['id'],
+        'foodics_reference' => $order['reference'],
+        'daftra_id' => null,
+    ]);
+
+    $mockDaftraClient->shouldReceive('get')
+        ->with('/api2/invoices', Mockery::any())
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+    $mockDaftraClient->shouldReceive('post')
+        ->with('/api2/invoices', Mockery::on(function (array $payload) {
+            $comboLine = collect($payload['InvoiceItem'])->first(fn ($i) => $i['item'] === 'Burger');
+            expect($comboLine)->not->toBeNull();
+            expect($comboLine['tax1'])->toBe(444);
+            expect($comboLine['tax1'])->toBeInt();
+
+            return true;
+        }))
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['id' => 999]));
+    $mockDaftraClient->shouldReceive('get')
+        ->with('/api2/invoices/999')
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 999, 'no' => 'INV-003']],
         ]));
 
     $mockDaftraClient->shouldReceive('get')

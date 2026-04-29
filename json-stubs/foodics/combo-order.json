@@ -1,0 +1,219 @@
+{
+    "data": [
+        {
+            "customer": null,
+            "charges": [],
+            "payments": [
+                {
+                    "payment_method": {
+                        "id": "a020cc23-4174-4f8d-801d-8a6162400b3e",
+                        "name": "Cash",
+                        "name_localized": "Cash",
+                        "type": 1,
+                        "code": null,
+                        "auto_open_drawer": true,
+                        "is_active": true,
+                        "created_at": "2025-10-16 15:07:22",
+                        "updated_at": "2025-10-16 15:07:22",
+                        "deleted_at": null,
+                        "index": 0
+                    },
+                    "meta": [],
+                    "id": "5729171b-af0f-4143-869d-1568dc2115c3",
+                    "amount": 56,
+                    "tendered": 56,
+                    "tips": 0,
+                    "business_date": "2026-04-28",
+                    "added_at": "2026-04-28 16:36:08"
+                }
+            ],
+            "products": [],
+            "combos": [
+                {
+                    "products": [
+                        {
+                            "product": {
+                                "ingredients": [],
+                                "id": "a04648bb-911f-4f58-a058-aa5fc68d9015",
+                                "sku": "sk-0001",
+                                "barcode": null,
+                                "name": "Medium Burger",
+                                "name_localized": null,
+                                "description": null,
+                                "description_localized": null,
+                                "image": null,
+                                "is_active": true,
+                                "is_stock_product": false,
+                                "is_non_revenue": false,
+                                "is_ready": true,
+                                "pricing_method": 1,
+                                "selling_method": 1,
+                                "costing_method": 1,
+                                "preparation_time": null,
+                                "price": 50,
+                                "cost": 40,
+                                "calories": null,
+                                "walking_minutes_to_burn_calories": null,
+                                "is_high_salt": false,
+                                "created_at": "2025-11-04 06:21:24",
+                                "updated_at": "2025-11-04 06:24:11",
+                                "deleted_at": null,
+                                "meta": null
+                            },
+                            "id": "a1a72eee-edbc-4ea2-b851-5366288f068b",
+                            "discount_type": null,
+                            "quantity": 1,
+                            "returned_quantity": 0,
+                            "unit_price": 50,
+                            "discount_amount": 0,
+                            "total_price": 50,
+                            "total_cost": 40,
+                            "tax_exclusive_discount_amount": 0,
+                            "tax_exclusive_unit_price": 50,
+                            "tax_exclusive_total_price": 50,
+                            "status": 3,
+                            "is_ingredients_wasted": 0,
+                            "delay_in_seconds": null,
+                            "kitchen_notes": null,
+                            "meta": {
+                                "foodics": {
+                                    "uuid": "2bcf41fd-7075-4995-8cc7-05faa588318b"
+                                }
+                            },
+                            "added_at": "2026-04-28 16:35:48",
+                            "closed_at": "2026-04-28 16:36:08"
+                        },
+                        {
+                            "product": {
+                                "ingredients": [],
+                                "id": "a1a34a7a-eecb-4647-ae5a-56b8f973b422",
+                                "sku": "sk-0003",
+                                "barcode": null,
+                                "name": "Fries",
+                                "name_localized": null,
+                                "description": null,
+                                "description_localized": null,
+                                "image": null,
+                                "is_active": true,
+                                "is_stock_product": false,
+                                "is_non_revenue": false,
+                                "is_ready": true,
+                                "pricing_method": 1,
+                                "selling_method": 1,
+                                "costing_method": 1,
+                                "preparation_time": null,
+                                "price": 9,
+                                "cost": 6,
+                                "calories": null,
+                                "walking_minutes_to_burn_calories": null,
+                                "is_high_salt": false,
+                                "created_at": "2026-04-26 18:10:13",
+                                "updated_at": "2026-04-28 16:13:45",
+                                "deleted_at": null,
+                                "meta": null
+                            },
+                            "id": "a1a72eee-edc3-4da5-8d60-8629a309d4ec",
+                            "discount_type": null,
+                            "quantity": 1,
+                            "returned_quantity": 0,
+                            "unit_price": 6,
+                            "discount_amount": 0,
+                            "total_price": 6,
+                            "total_cost": 6,
+                            "tax_exclusive_discount_amount": 0,
+                            "tax_exclusive_unit_price": 6,
+                            "tax_exclusive_total_price": 6,
+                            "status": 3,
+                            "is_ingredients_wasted": 0,
+                            "delay_in_seconds": null,
+                            "kitchen_notes": null,
+                            "meta": {
+                                "foodics": {
+                                    "uuid": "2be75341-a917-4db0-968e-988470bc4acc"
+                                }
+                            },
+                            "added_at": "2026-04-28 16:35:48",
+                            "closed_at": "2026-04-28 16:36:08"
+                        }
+                    ],
+                    "id": "a1a72eee-edb1-46e2-9933-cdf28f8e0916",
+                    "discount_type": null,
+                    "discount_amount": 0,
+                    "quantity": 1
+                }
+            ],
+            "id": "e9f85e8f-cf95-4d53-b6fd-22fe6c5249af",
+            "app_id": "8f9eb3f6-7987-4f66-aa8c-478c34d0c568",
+            "promotion_id": null,
+            "discount_type": null,
+            "reference_x": null,
+            "number": 4,
+            "type": 2,
+            "source": 1,
+            "status": 4,
+            "delivery_status": null,
+            "guests": 1,
+            "kitchen_notes": null,
+            "customer_notes": null,
+            "business_date": "2026-04-28",
+            "subtotal_price": 56,
+            "discount_amount": 0,
+            "rounding_amount": 0,
+            "total_price": 56,
+            "tax_exclusive_discount_amount": 0,
+            "delay_in_seconds": null,
+            "meta": {
+                "foodics": {
+                    "device_id": "a020cc23-3f68-4136-8a7e-cf86bf9b4fdb",
+                    "auto_closed": false,
+                    "products_kitchen": [],
+                    "business_date_in_utc": "2026-04-28"
+                }
+            },
+            "opened_at": "2026-04-28 16:35:48",
+            "accepted_at": null,
+            "due_at": null,
+            "driver_assigned_at": null,
+            "dispatched_at": null,
+            "driver_collected_at": null,
+            "delivered_at": null,
+            "closed_at": "2026-04-28 16:36:08",
+            "created_at": "2026-04-28 16:36:30",
+            "updated_at": "2026-04-28 16:36:30",
+            "reference": 20,
+            "check_number": 100016
+        }
+    ],
+    "links": {
+        "first": "https://api-sandbox.foodics.com/v5/orders?page=1",
+        "last": "https://api-sandbox.foodics.com/v5/orders?page=1",
+        "prev": null,
+        "next": null
+    },
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 1,
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "active": false
+            },
+            {
+                "url": "https://api-sandbox.foodics.com/v5/orders?page=1",
+                "label": "1",
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Next &raquo;",
+                "active": false
+            }
+        ],
+        "path": "https://api-sandbox.foodics.com/v5/orders",
+        "per_page": 50,
+        "to": 1,
+        "total": 1
+    }
+}
