@@ -2,6 +2,7 @@
 
 namespace App\Services\Concerns;
 
+use App\Enums\DaftraDiscountType;
 use App\Enums\SettingKey;
 use App\Exceptions\InvalidOrderLineException;
 use App\Models\User;
@@ -48,8 +49,8 @@ trait BuildsInvoiceItems
                 'item' => $enrichedProduct['name'] ?? 'Foodics Product',
                 'quantity' => $orderProduct['quantity'],
                 'unit_price' => $orderProduct['unit_price'],
-                'discount' => $orderProduct['discount_amount'] ?? 0,
-                'discount_type' => $orderProduct['discount_type'] ?? 2,
+                'discount' => $this->perUnitDiscount($orderProduct['discount_amount'] ?? 0, $orderProduct['quantity'] ?? 1),
+                'discount_type' => DaftraDiscountType::Fixed->value,
                 'tax1' => $daftraTaxIds->get(0),
                 'tax2' => $daftraTaxIds->get(1),
             ];
@@ -112,13 +113,15 @@ trait BuildsInvoiceItems
             ?? $option['tax_exclusive_discount_amount']
             ?? 0;
 
+        $quantity = $option['quantity'] ?? 1;
+
         return [
             'product_id' => $daftraProductId,
             'item' => $enriched['name'],
-            'quantity' => $option['quantity'] ?? 1,
+            'quantity' => $quantity,
             'unit_price' => $option['unit_price'] ?? 0,
-            'discount' => $discount,
-            'discount_type' => 2,
+            'discount' => $this->perUnitDiscount($discount, $quantity),
+            'discount_type' => DaftraDiscountType::Fixed->value,
             'tax1' => $daftraTaxIds->get(0),
             'tax2' => $daftraTaxIds->get(1),
         ];
@@ -140,7 +143,7 @@ trait BuildsInvoiceItems
                 'quantity' => 1,
                 'unit_price' => $charge['amount'],
                 'discount' => 0,
-                'discount_type' => 2,
+                'discount_type' => DaftraDiscountType::Fixed->value,
                 'tax1' => $daftraTaxIds->get(0),
                 'tax2' => $daftraTaxIds->get(1),
             ];
@@ -192,6 +195,16 @@ trait BuildsInvoiceItems
                 $this->taxMap[$foodicsId] = $this->taxService->resolveTaxId($tax);
             }
         }
+    }
+
+    /**
+     * Foodics emits discount as a total fixed amount on the line, but Daftra
+     * multiplies the line discount by quantity. Convert to per-unit so the
+     * total Daftra applies matches what Foodics intended.
+     */
+    protected function perUnitDiscount(float|int $discount, float|int $quantity): float|int
+    {
+        return $quantity > 0 ? $discount / $quantity : $discount;
     }
 
     protected function resolveDefaultClientId(): ?int
