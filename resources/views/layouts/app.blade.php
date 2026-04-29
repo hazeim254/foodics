@@ -94,6 +94,19 @@
                 </a>
             </nav>
 
+            <div class="px-3 py-4">
+                <form method="POST" action="{{ route('language.switch') }}">
+                    @csrf
+                    <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
+                    <button type="submit" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:bg-[#F5F5F3] dark:hover:bg-[#262625] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                        </svg>
+                        {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+                    </button>
+                </form>
+            </div>
+
             <div class="p-4 border-t border-[#e3e3e0] dark:border-[#3E3E3A]">
                 <div class="space-y-3">
                     <div class="flex items-center gap-2">
@@ -127,33 +140,16 @@
 
         <div class="lg:ps-64">
             <header class="sticky top-0 z-20 bg-[#FDFDFC] dark:bg-[#0a0a0a] border-b border-[#e3e3e0] dark:border-[#3E3E3A]">
-                <div class="hidden lg:flex items-center justify-end px-8 py-3">
-                    <form method="POST" action="{{ route('language.switch') }}" class="inline-flex">
-                        @csrf
-                        <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
-                        <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]">
-                            {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
-                        </button>
-                    </form>
-                </div>
                 <div class="flex lg:hidden items-center justify-between px-4 py-3">
-                    <button
-                        type="button"
-                        class="p-2 -m-2 text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]"
-                        @click="sidebarOpen = !sidebarOpen"
-                    >
+<button
+                            type="button"
+                            class="p-2 -m-2 text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] cursor-pointer"
+                        >
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                     <span class="font-medium text-sm">@yield('title', 'Dashboard')</span>
-                    <form method="POST" action="{{ route('language.switch') }}" class="inline-flex">
-                        @csrf
-                        <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
-                        <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC]">
-                            {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
-                        </button>
-                    </form>
                 </div>
             </header>
 

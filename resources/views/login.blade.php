@@ -22,7 +22,7 @@
                 <form method="POST" action="{{ route('language.switch') }}" class="inline-flex">
                     @csrf
                     <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
-                    <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] bg-white/80 dark:bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A]">
+                    <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] bg-white/80 dark:bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] cursor-pointer">
                         {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
                     </button>
                 </form>
