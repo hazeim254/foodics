@@ -40,6 +40,6 @@ class SettingController extends Controller
         );
 
         return redirect()->route('settings')
-            ->with('status', 'Settings updated successfully.');
+            ->with('status', __('Settings updated successfully.'));
     }
 }

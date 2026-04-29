@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Settings')
+@section('title', __('Settings'))
 
 @section('content')
 <div class="max-w-3xl mx-auto">
-    <h1 class="text-2xl font-semibold mb-6">Settings</h1>
+    <h1 class="text-2xl font-semibold mb-6">{{ __('Settings') }}</h1>
 
     @if(session('status'))
         <x-alert type="success">{{ session('status') }}</x-alert>
@@ -13,12 +13,12 @@
     <form method="POST" action="{{ route('settings.update') }}">
         @csrf
 
-        <div class="bg-white dark:bg-[#161615] rounded-lg shadow-sm border border-[#e3e3e0] dark:border-[#3E3E3A] p-6">
-            <h2 class="text-lg font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-4">Daftra Integration</h2>
+        <div class="bg-white dark:bg-[#161615] rounded-lg shadow-sm border border-[#e3e3e0] dark:border-[#3E3E3A] p-6 card-accent">
+            <h2 class="text-lg font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-4">{{ __('Daftra Integration') }}</h2>
 
             @if($branches !== null)
                 <div class="mb-4">
-                    <label for="daftra_default_branch_id" class="block text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-1">Default Branch</label>
+                    <label for="daftra_default_branch_id" class="block text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-1">{{ __('Default Branch') }}</label>
 
                     <select
                         id="daftra_default_branch_id"
@@ -37,13 +37,13 @@
                     @enderror
 
                     <p class="mt-1 text-xs text-[#706f6c] dark:text-[#A1A09A]">
-                        Daftra branch used for all API requests.
+                        {{ __('Daftra branch used for all API requests.') }}
                     </p>
                 </div>
             @endif
 
             <div class="mb-4">
-                <label for="daftra_default_client_id" class="block text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-1">Default Client ID</label>
+                <label for="daftra_default_client_id" class="block text-sm font-medium text-[#1b1b18] dark:text-[#EDEDEC] mb-1">{{ __('Default Client ID') }}</label>
 
                 <input
                     type="text"
@@ -59,13 +59,16 @@
                 @enderror
 
                 <p class="mt-1 text-xs text-[#706f6c] dark:text-[#A1A09A]">
-                    Client used when a Foodics order has no customer (walk-in).
+                    {{ __('Client used when a Foodics order has no customer (walk-in).') }}
                 </p>
             </div>
 
             <div class="flex justify-end">
-                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-[#4A90D9] text-white hover:bg-[#3A7BC8] transition-colors">
-                    Save Settings
+                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-[#4A90D9] text-white hover:bg-[#3A7BC8] transition-all duration-200 cursor-pointer btn-shadow">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    {{ __('Save Settings') }}
                 </button>
             </div>
         </div>

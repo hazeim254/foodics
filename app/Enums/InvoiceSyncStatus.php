@@ -16,9 +16,11 @@ enum InvoiceSyncStatus: string
         return array_map(fn ($case) => $case->value, self::cases());
     }
 
-    /**
-     * Tailwind classes for the status pill in the invoices view.
-     */
+    public function label(): string
+    {
+        return ucfirst(__($this->value));
+    }
+
     public function badgeClasses(): string
     {
         return match ($this) {

@@ -18,6 +18,7 @@ class Product extends Model
         'status',
         'foodics_name',
         'foodics_sku',
+        'price',
         'foodics_metadata',
         'daftra_metadata',
     ];
@@ -26,6 +27,7 @@ class Product extends Model
     {
         return [
             'daftra_id' => 'integer',
+            'price' => 'decimal:2',
             'status' => ProductSyncStatus::class,
             'foodics_metadata' => 'array',
             'daftra_metadata' => 'array',

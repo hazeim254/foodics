@@ -1,29 +1,29 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa', 'ur']) ? 'rtl' : 'ltr' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar', 'he', 'fa', 'ur']) ? 'rtl' : 'ltr' }}" style="--en-font: '{{ $enFont }}'; --ar-font: '{{ $arFont }}';">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>{{ config('app.name', 'Laravel') }} — Connect Accounts</title>
+        <title>{{ config('app.name', 'Laravel') }} — {{ __('Connect Accounts') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
-    <body class="min-h-screen bg-white dark:bg-[#0a0a0a] font-[Instrument_Sans,ui-sans-serif,system-ui,sans-serif] antialiased">
+    <body class="min-h-screen bg-white dark:bg-[#0a0a0a] antialiased">
 
         <div class="flex min-h-screen">
             <div class="absolute top-4 end-4 z-10">
                 <form method="POST" action="{{ route('language.switch') }}" class="inline-flex">
                     @csrf
                     <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
-                    <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] bg-white/80 dark:bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A]">
-                        {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
+                    <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] bg-white/80 dark:bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] cursor-pointer">
+                        {{ app()->getLocale() === 'ar' ? __('English') : __('العربية') }}
                     </button>
                 </form>
             </div>
@@ -69,7 +69,7 @@
                         >
                     </div>
 
-                    <p class="mt-4 text-center text-sm text-white/40">Seamless integration between your platforms</p>
+                    <p class="mt-4 text-center text-sm text-white/40">{{ __('Seamless integration between your platforms') }}</p>
                 </div>
             </div>
 
@@ -79,8 +79,8 @@
 
                     {{-- Header --}}
                     <div class="mb-10 text-center">
-                        <h1 class="text-2xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">Connect your accounts</h1>
-                        <p class="mt-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">Connect both accounts to get started</p>
+                        <h1 class="text-2xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{{ __('Connect your accounts') }}</h1>
+                        <p class="mt-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">{{ __('Connect both accounts to get started') }}</p>
                     </div>
 
                     {{-- Provider cards --}}
@@ -96,7 +96,7 @@
                                         </svg>
                                     </span>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">Daftra Connected</p>
+                                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">{{ __('Daftra Connected') }}</p>
                                         <p class="truncate text-xs text-green-600 dark:text-green-500">{{ session('daftra_account.subdomain') }}</p>
                                     </div>
                                 </div>
@@ -110,7 +110,7 @@
                                         class="h-4 w-auto shrink-0"
                                         style="filter: brightness(0) invert(1);"
                                     >
-                                    <span>Connect</span>
+                                    <span>{{ __('Connect') }}</span>
                                 </a>
                             @endif
                         </div>
@@ -125,7 +125,7 @@
                                         </svg>
                                     </span>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">Foodics Connected</p>
+                                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">{{ __('Foodics Connected') }}</p>
                                         <p class="truncate text-xs text-green-600 dark:text-green-500">{{ session('foodics_account.business_name') }}</p>
                                     </div>
                                 </div>
@@ -139,9 +139,9 @@
                                         class="h-4 w-auto shrink-0"
                                         style="filter: brightness(0) invert(1);"
                                     >
-                                    <span>Connect</span>
-                                </a>
-                            @endif
+<span>{{ __('Connect') }}</span>
+                                    </a>
+                                @endif
                         </div>
 
                     </div>

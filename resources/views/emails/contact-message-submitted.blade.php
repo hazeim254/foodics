@@ -24,7 +24,7 @@
         @endif
         <tr>
             <td><strong>Type:</strong></td>
-            <td>{{ $contactMessage->type->value }}</td>
+            <td>{{ $contactMessage->type->label() }}</td>
         </tr>
         <tr>
             <td><strong>Subject:</strong></td>

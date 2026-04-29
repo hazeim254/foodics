@@ -27,6 +27,8 @@ class InvoiceFactory extends Factory
             'daftra_id' => fake()->randomNumber(5),
             'status' => 'synced',
             'foodics_reference' => fake()->randomNumber(5),
+            'total_price' => fake()->randomFloat(2, 10, 1000),
+            'daftra_no' => fake()->optional()->numerify('INV-#####'),
         ];
     }
 

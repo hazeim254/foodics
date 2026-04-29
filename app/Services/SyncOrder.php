@@ -86,8 +86,8 @@ class SyncOrder
         $daftraInvoice = $this->invoiceService->getInvoiceById($daftraInvoiceId);
         if ($daftraInvoice !== null) {
             $invoice->update([
+                'daftra_no' => $daftraInvoice['no'] ?? null,
                 'daftra_metadata' => [
-                    'no' => $daftraInvoice['no'] ?? null,
                     'client_id' => $daftraInvoice['client_id'] ?? null,
                 ],
             ]);
@@ -227,9 +227,8 @@ class SyncOrder
             $invoice->fill([
                 'foodics_reference' => $order['reference'],
                 'status' => InvoiceSyncStatus::Pending,
-                'foodics_metadata' => [
-                    'total_price' => (float) ($order['total_price'] ?? 0),
-                ],
+                'total_price' => (float) ($order['total_price'] ?? 0),
+                'foodics_metadata' => [],
             ])->save();
 
             return $invoice;
@@ -241,9 +240,8 @@ class SyncOrder
             'foodics_reference' => $order['reference'],
             'daftra_id' => null,
             'status' => InvoiceSyncStatus::Pending,
-            'foodics_metadata' => [
-                'total_price' => (float) ($order['total_price'] ?? 0),
-            ],
+            'total_price' => (float) ($order['total_price'] ?? 0),
+            'foodics_metadata' => [],
         ]);
     }
 }

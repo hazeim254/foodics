@@ -289,3 +289,9 @@ $pages = visit(['/', '/about', '/contact']);
 $pages->assertNoJavascriptErrors()->assertNoConsoleLogs();
 </code-snippet>
 </laravel-boost-guidelines>
+
+## Translations
+
+- Every user-facing string added to a view or message (UI text, validation messages, flash messages, etc.) must be wrapped for translation and given an Arabic translation.
+- Use the full English string itself as the translation key — no prefixes, suffixes, or dot-namespacing. Example: `__('Save changes')`, not `__('save_changes')` or `__('messages.save')`.
+- Add the Arabic entry to the Arabic translation file (`lang/ar.json`). Do not create or maintain an English translation file — Laravel falls back to the key, which is already the English copy.
