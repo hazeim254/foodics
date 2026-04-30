@@ -44,7 +44,7 @@
 
             <div
                 x-data="{
-                    selectedId: '{{ $daftraDefaultClientId ?? '' }}',
+                    selectedId: @js($daftraDefaultClientId ?? ''),
                     selectedName: @js($daftraDefaultClient['name'] ?? ''),
                     selectedAvatar: @js($daftraDefaultClient['avatar'] ?? ''),
                     query: '',

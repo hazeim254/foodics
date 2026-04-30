@@ -9,6 +9,7 @@ use App\Services\Daftra\ClientService;
 use App\Services\Daftra\DaftraApiClient;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
+use RuntimeException;
 
 class SettingController extends Controller
 {
@@ -34,8 +35,12 @@ class SettingController extends Controller
 
     public function searchClients(SearchClientsRequest $request): JsonResponse
     {
-        $results = app(ClientService::class)
-            ->searchClients($request->input('query'));
+        try {
+            $results = app(ClientService::class)
+                ->searchClients($request->input('query'));
+        } catch (RuntimeException) {
+            return response()->json(['data' => []], 503);
+        }
 
         return response()->json(['data' => $results]);
     }

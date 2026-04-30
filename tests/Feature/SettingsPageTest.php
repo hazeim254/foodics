@@ -75,6 +75,38 @@ it('shows search input when no saved client exists', function () {
         ->assertSee('Search for a client…');
 });
 
+it('shows saved client name when a default client is configured', function () {
+    $user = createUserWithDaftraConnection();
+    $user->setSetting(SettingKey::DaftraDefaultClientId, '42');
+
+    Http::fake([
+        '*/v2/api/entity/branch/list*' => Http::response(['data' => []]),
+        '*/v2/api/entity/client/list*' => Http::response([
+            'data' => [
+                ['id' => 42, 'name' => 'Acme Corp', 'avatar' => ''],
+            ],
+        ]),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/settings')
+        ->assertOk()
+        ->assertSee('Acme Corp');
+});
+
+it('returns 503 json when daftra search fails', function () {
+    $user = createUserWithDaftraConnection();
+
+    Http::fake([
+        '*/v2/api/entity/client/filter-auto-suggest*' => Http::response([], 500),
+    ]);
+
+    $this->actingAs($user)
+        ->getJson('/settings/search-clients?query=acme')
+        ->assertStatus(503)
+        ->assertJson(['data' => []]);
+});
+
 it('saves the daftra default client id', function () {
     $user = User::factory()->create();
 
