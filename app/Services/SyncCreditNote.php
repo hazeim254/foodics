@@ -110,7 +110,7 @@ class SyncCreditNote
         }
 
         $payload = [
-            'Invoice' => [
+            'CreditNote' => [
                 'po_number' => $order['id'],
                 'client_id' => $clientId,
                 'subscription_id' => (int) $original->daftra_id,

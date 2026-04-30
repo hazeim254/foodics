@@ -30,6 +30,7 @@ class OrderService
         'products.options.taxes',
         'products.product',
         'products.taxes',
+        'original_order',
     ];
 
     public function __construct(protected FoodicsApiClient $client) {}
