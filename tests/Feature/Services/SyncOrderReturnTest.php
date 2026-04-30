@@ -109,7 +109,7 @@ it('posts the credit note to Daftra with subscription_id equal to the original d
     $mockClient = setupDaftraMockForCreditNote();
     $mockClient->shouldReceive('post')
         ->with('/api2/credit_notes', Mockery::on(function (array $payload) {
-            expect($payload['Invoice']['subscription_id'])->toBe($this->originalDaftraId);
+            expect($payload['CreditNote']['subscription_id'])->toBe($this->originalDaftraId);
 
             return true;
         }))
@@ -265,7 +265,7 @@ it('uses the returns customer for client_id when present', function () {
 
     $mockClient->shouldReceive('post')
         ->with('/api2/credit_notes', Mockery::on(function (array $payload) {
-            expect($payload['Invoice']['client_id'])->toBe(777);
+            expect($payload['CreditNote']['client_id'])->toBe(777);
 
             return true;
         }))
@@ -282,7 +282,7 @@ it('falls back to the original invoices daftra client_id when the return has no 
     $mockClient = setupDaftraMockForCreditNote();
     $mockClient->shouldReceive('post')
         ->with('/api2/credit_notes', Mockery::on(function (array $payload) {
-            expect($payload['Invoice']['client_id'])->toBe(42);
+            expect($payload['CreditNote']['client_id'])->toBe(42);
 
             return true;
         }))
@@ -301,7 +301,7 @@ it('falls back to the default client when neither the return nor the original ha
     $mockClient = setupDaftraMockForCreditNote();
     $mockClient->shouldReceive('post')
         ->with('/api2/credit_notes', Mockery::on(function (array $payload) {
-            expect($payload['Invoice']['client_id'])->toBeNull();
+            expect($payload['CreditNote']['client_id'])->toBeNull();
 
             return true;
         }))
@@ -321,8 +321,8 @@ it('sends discount_amount and notes from the return payload', function () {
     $mockClient = setupDaftraMockForCreditNote();
     $mockClient->shouldReceive('post')
         ->with('/api2/credit_notes', Mockery::on(function (array $payload) {
-            expect($payload['Invoice']['discount_amount'])->toBe(5);
-            expect($payload['Invoice']['notes'])->toBe('Returned items');
+            expect($payload['CreditNote']['discount_amount'])->toBe(5);
+            expect($payload['CreditNote']['notes'])->toBe('Returned items');
 
             return true;
         }))

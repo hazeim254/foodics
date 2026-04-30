@@ -76,11 +76,38 @@ class ClientService
 
     public function deleteClient() {}
 
-    /**
-     * @param  array<string, mixed>  $foodicsCustomer
-     *
-     * @throws DaftraClientCreationFailedException
-     */
+    public function searchClients(string $query): array
+    {
+        $response = $this->daftraClient->get(
+            '/v2/api/entity/client/filter-auto-suggest',
+            ['filter' => ['business_name' => ['like' => $query]]],
+        );
+
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Daftra client search failed: HTTP '.$response->status()
+            );
+        }
+
+        return $response->json('data') ?? [];
+    }
+
+    public function findClientById(int $id): ?array
+    {
+        $response = $this->daftraClient->get(
+            '/v2/api/entity/client/list',
+            ['filter' => ['id' => $id]],
+        );
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $rows = $response->json('data') ?? [];
+
+        return $rows[0] ?? null;
+    }
+
     public function getClientUsingFoodicsData(array $foodicsCustomer): int
     {
         $foodicsId = (string) $foodicsCustomer['id'];
