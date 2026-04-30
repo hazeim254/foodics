@@ -3,26 +3,46 @@
 namespace App\Http\Controllers;
 
 use App\Enums\SettingKey;
+use App\Http\Requests\SearchClientsRequest;
 use App\Http\Requests\UpdateSettingsRequest;
+use App\Services\Daftra\ClientService;
 use App\Services\Daftra\DaftraApiClient;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use RuntimeException;
 
 class SettingController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $user = auth()->user();
+        $daftraDefaultClient = null;
 
-        $branches = null;
+        $branches = app(DaftraApiClient::class)->tryGetBranches();
 
-        if ($user->hasDaftraConnection()) {
-            $branches = app(DaftraApiClient::class)->tryGetBranches();
+        $clientId = $user->setting(SettingKey::DaftraDefaultClientId);
+        if ($clientId !== null && $clientId !== '') {
+            $daftraDefaultClient = app(ClientService::class)->findClientById((int) $clientId);
         }
 
         return view('settings', [
-            'daftraDefaultClientId' => $user->setting(SettingKey::DaftraDefaultClientId),
+            'daftraDefaultClientId' => $clientId,
+            'daftraDefaultClient' => $daftraDefaultClient,
             'daftraDefaultBranchId' => $user->setting(SettingKey::DaftraDefaultBranchId),
             'branches' => $branches,
         ]);
+    }
+
+    public function searchClients(SearchClientsRequest $request): JsonResponse
+    {
+        try {
+            $results = app(ClientService::class)
+                ->searchClients($request->input('query'));
+        } catch (RuntimeException) {
+            return response()->json(['data' => []], 503);
+        }
+
+        return response()->json(['data' => $results]);
     }
 
     public function update(UpdateSettingsRequest $request)

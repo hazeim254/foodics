@@ -5,13 +5,18 @@ use App\Models\ProviderToken;
 use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
-function mockDaftraWithBranches(array $branches): DaftraApiClient
+function mockDaftraWithBranches(array $branches, bool $withGet = true): DaftraApiClient
 {
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldReceive('tryGetBranches')->andReturn($branches);
+
+    if ($withGet) {
+        $mockClient->shouldReceive('get')->andReturn(Http::response(['data' => []]));
+    }
 
     app()->instance(DaftraApiClient::class, $mockClient);
 
@@ -40,9 +45,8 @@ it('redirects unauthenticated users from POST /settings to login', function () {
     $this->post('/settings', ['daftra_default_client_id' => '123'])->assertRedirect('/login');
 });
 
-it('shows the settings form with the current value pre-filled', function () {
+it('shows the settings form with branches', function () {
     $user = createUserWithDaftraConnection();
-    $user->setSetting(SettingKey::DaftraDefaultClientId, '42');
     $user->setSetting(SettingKey::DaftraDefaultBranchId, '7');
 
     mockDaftraWithBranches([
@@ -53,25 +57,54 @@ it('shows the settings form with the current value pre-filled', function () {
     $this->actingAs($user)
         ->get('/settings')
         ->assertOk()
-        ->assertSee('value="42"', escape: false)
         ->assertSee('Main Branch')
         ->assertSee('Branch 2')
         ->assertSee('Save Settings')
-        ->assertSee('Default Client ID')
+        ->assertSee('Default Client')
         ->assertSee('Default Branch');
 });
 
-it('shows an empty input when the setting is not set', function () {
-    $user = User::factory()->create();
+it('shows search input when no saved client exists', function () {
+    $user = createUserWithDaftraConnection();
 
-    $mockClient = Mockery::mock(DaftraApiClient::class);
-    $mockClient->shouldNotReceive('tryGetBranches');
-    $this->app->instance(DaftraApiClient::class, $mockClient);
+    mockDaftraWithBranches([['id' => 1, 'name' => 'Main Branch']]);
 
     $this->actingAs($user)
         ->get('/settings')
         ->assertOk()
-        ->assertSee('value=""', escape: false);
+        ->assertSee('Search for a client…');
+});
+
+it('shows saved client name when a default client is configured', function () {
+    $user = createUserWithDaftraConnection();
+    $user->setSetting(SettingKey::DaftraDefaultClientId, '42');
+
+    Http::fake([
+        '*/v2/api/entity/branch/list*' => Http::response(['data' => []]),
+        '*/v2/api/entity/client/list*' => Http::response([
+            'data' => [
+                ['id' => 42, 'name' => 'Acme Corp', 'avatar' => ''],
+            ],
+        ]),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/settings')
+        ->assertOk()
+        ->assertSee('Acme Corp');
+});
+
+it('returns 503 json when daftra search fails', function () {
+    $user = createUserWithDaftraConnection();
+
+    Http::fake([
+        '*/v2/api/entity/client/filter-auto-suggest*' => Http::response([], 500),
+    ]);
+
+    $this->actingAs($user)
+        ->getJson('/settings/search-clients?query=acme')
+        ->assertStatus(503)
+        ->assertJson(['data' => []]);
 });
 
 it('saves the daftra default client id', function () {
@@ -233,4 +266,42 @@ it('selects the current branch in the dropdown', function () {
         ->get('/settings')
         ->assertOk()
         ->assertSee('value="2" selected', escape: false);
+});
+
+it('searches clients via GET /settings/search-clients', function () {
+    $user = createUserWithDaftraConnection();
+
+    Http::fake([
+        '*/v2/api/entity/client/filter-auto-suggest*' => Http::response([
+            'data' => [
+                ['id' => 1, 'name' => 'Acme Corp', 'avatar' => 'https://example.com/avatar.png'],
+            ],
+        ]),
+    ]);
+
+    $this->actingAs($user)
+        ->get('/settings/search-clients?query=acme')
+        ->assertOk()
+        ->assertJson(['data' => [['id' => 1, 'name' => 'Acme Corp', 'avatar' => 'https://example.com/avatar.png']]]);
+});
+
+it('search requires query parameter', function () {
+    $user = createUserWithDaftraConnection();
+
+    $this->actingAs($user)
+        ->getJson('/settings/search-clients')
+        ->assertUnprocessable();
+});
+
+it('search requires minimum 2 characters', function () {
+    $user = createUserWithDaftraConnection();
+
+    $this->actingAs($user)
+        ->getJson('/settings/search-clients?query=a')
+        ->assertUnprocessable();
+});
+
+it('redirects guest from search endpoint', function () {
+    $this->get('/settings/search-clients?query=acme')
+        ->assertRedirect('/login');
 });

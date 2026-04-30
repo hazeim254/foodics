@@ -5,6 +5,7 @@ namespace App\Services\Daftra;
 use App\Exceptions\DaftraClientCreationFailedException;
 use App\Models\Client;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class ClientService
 {
@@ -15,7 +16,7 @@ class ClientService
      *
      * @param  array<string, mixed>  $foodicsCustomer
      *
-     * @throws \RuntimeException When the Daftra list request fails.
+     * @throws RuntimeException When the Daftra list request fails.
      */
     public function getClient(array $foodicsCustomer): ?int
     {
@@ -28,7 +29,7 @@ class ClientService
         ]);
 
         if (! $listResponse->successful()) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'Daftra client list request failed: HTTP '.$listResponse->status().' '.$listResponse->body()
             );
         }
@@ -76,11 +77,38 @@ class ClientService
 
     public function deleteClient() {}
 
-    /**
-     * @param  array<string, mixed>  $foodicsCustomer
-     *
-     * @throws DaftraClientCreationFailedException
-     */
+    public function searchClients(string $query): array
+    {
+        $response = $this->daftraClient->get(
+            '/v2/api/entity/client/filter-auto-suggest',
+            ['filter' => ['business_name' => ['like' => $query]]],
+        );
+
+        if (! $response->successful()) {
+            throw new RuntimeException(
+                'Daftra client search failed: HTTP '.$response->status()
+            );
+        }
+
+        return $response->json('data') ?? [];
+    }
+
+    public function findClientById(int $id): ?array
+    {
+        $response = $this->daftraClient->get(
+            '/v2/api/entity/client/list',
+            ['filter' => ['id' => $id]],
+        );
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $rows = $response->json('data') ?? [];
+
+        return $rows[0] ?? null;
+    }
+
     public function getClientUsingFoodicsData(array $foodicsCustomer): int
     {
         $foodicsId = (string) $foodicsCustomer['id'];
@@ -115,7 +143,7 @@ class ClientService
     {
         $id = $row['id'] ?? null;
         if ($id === null || $id === '') {
-            throw new \RuntimeException('Daftra client list row missing id.');
+            throw new RuntimeException('Daftra client list row missing id.');
         }
 
         return (int) $id;

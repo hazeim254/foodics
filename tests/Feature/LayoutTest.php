@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\Daftra\DaftraApiClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -50,6 +51,10 @@ it('allows authenticated users to access products', function () {
 
 it('allows authenticated users to access settings', function () {
     $user = User::factory()->create();
+
+    $mockDaftra = Mockery::mock(DaftraApiClient::class);
+    $mockDaftra->shouldReceive('tryGetBranches')->andReturn(null);
+    $this->app->instance(DaftraApiClient::class, $mockDaftra);
 
     $this->actingAs($user)
         ->get('/settings')
@@ -174,6 +179,10 @@ it('products page extends layouts and shows title', function () {
 it('settings page extends layouts and shows title', function () {
     $user = User::factory()->create();
 
+    $mockDaftra = Mockery::mock(DaftraApiClient::class);
+    $mockDaftra->shouldReceive('tryGetBranches')->andReturn(null);
+    $this->app->instance(DaftraApiClient::class, $mockDaftra);
+
     $this->actingAs($user)
         ->get('/settings')
         ->assertOk()
@@ -241,6 +250,10 @@ it('products page uses rtl direction for arabic locale', function () {
 
 it('settings page uses rtl direction for arabic locale', function () {
     $user = User::factory()->create();
+
+    $mockDaftra = Mockery::mock(DaftraApiClient::class);
+    $mockDaftra->shouldReceive('tryGetBranches')->andReturn(null);
+    $this->app->instance(DaftraApiClient::class, $mockDaftra);
 
     app()->setLocale('ar');
 
