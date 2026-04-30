@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\SettingKey;
+use App\Http\Requests\SearchClientsRequest;
 use App\Http\Requests\UpdateSettingsRequest;
 use App\Services\Daftra\ClientService;
 use App\Services\Daftra\DaftraApiClient;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $user = auth()->user();
         $daftraDefaultClient = null;
@@ -31,10 +32,8 @@ class SettingController extends Controller
         ]);
     }
 
-    public function searchClients(Request $request): JsonResponse
+    public function searchClients(SearchClientsRequest $request): JsonResponse
     {
-        $request->validate(['query' => 'required|string|min:2|max:255']);
-
         $results = app(ClientService::class)
             ->searchClients($request->input('query'));
 

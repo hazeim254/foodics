@@ -45,13 +45,16 @@
             <div
                 x-data="{
                     selectedId: '{{ $daftraDefaultClientId ?? '' }}',
-                    selectedName: '{{ $daftraDefaultClient['name'] ?? '' }}',
-                    selectedAvatar: '{{ $daftraDefaultClient['avatar'] ?? '' }}',
+                    selectedName: @js($daftraDefaultClient['name'] ?? ''),
+                    selectedAvatar: @js($daftraDefaultClient['avatar'] ?? ''),
                     query: '',
                     results: [],
                     loading: false,
                     open: false,
-                    debounceTimer: null,
+                    error: false,
+                    noResultsText: @js(__('No clients found.')),
+                    minCharsText: @js(__('Type at least 2 characters to search…')),
+                    searchFailedText: @js(__('Search failed. Try again.')),
                     search() {
                         if (this.query.length < 2) {
                             this.results = [];
@@ -62,10 +65,12 @@
                         fetch(`/settings/search-clients?query=${encodeURIComponent(this.query)}`)
                             .then(res => res.json())
                             .then(data => {
+                                this.error = false;
                                 this.results = data.data;
                                 this.open = true;
                             })
                             .catch(() => {
+                                this.error = true;
                                 this.results = [];
                                 this.open = true;
                             })
@@ -109,7 +114,7 @@
                             @input.debounce.300ms="search()"
                             @focus="query.length >= 2 && (open = true)"
                             @click.away="open = false"
-                            placeholder="Search for a client…"
+                            placeholder="{{ __('Search for a client…') }}"
                             class="w-full rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] bg-white dark:bg-[#1b1b18] text-[#1b1b18] dark:text-[#EDEDEC] px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#4A90D9] focus:border-[#4A90D9] outline-none transition"
                         >
                         <template x-if="loading">
@@ -121,7 +126,7 @@
                             </div>
                         </template>
                         <template x-if="!loading && query.length < 2 && query.length > 0">
-                            <p class="mt-1 text-xs text-[#706f6c] dark:text-[#A1A09A]">Type at least 2 characters to search…</p>
+                            <p class="mt-1 text-xs text-[#706f6c] dark:text-[#A1A09A]" x-text="minCharsText"></p>
                         </template>
 
                         <div
@@ -130,8 +135,11 @@
                             class="absolute z-50 w-full mt-1 bg-white dark:bg-[#161615] border border-[#e3e3e0] dark:border-[#3E3E3A] rounded-lg shadow-lg max-h-60 overflow-y-auto"
                             style="display: none;"
                         >
-                            <template x-if="results.length === 0">
-                                <div class="px-4 py-2.5 text-sm text-[#706f6c] dark:text-[#A1A09A]">No clients found.</div>
+                            <template x-if="error">
+                                <div class="px-4 py-2.5 text-sm text-red-600 dark:text-red-400" x-text="searchFailedText"></div>
+                            </template>
+                            <template x-if="!error && results.length === 0">
+                                <div class="px-4 py-2.5 text-sm text-[#706f6c] dark:text-[#A1A09A]" x-text="noResultsText"></div>
                             </template>
                             <template x-for="client in results" :key="client.id">
                                 <div
