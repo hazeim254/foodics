@@ -26,22 +26,22 @@ class Alert extends Component
     public function containerClasses(): string
     {
         return match ($this->type) {
-            'success' => 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300',
-            'error' => 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300',
-            'warning' => 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300',
-            'info' => 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300',
-            default => 'bg-[#F5F5F3] dark:bg-[#262625] border-[#e3e3e0] dark:border-[#3E3E3A] text-[#1b1b18] dark:text-[#EDEDEC]',
+            'success' => 'border-tone-success-border bg-tone-success-soft text-ink',
+            'error' => 'border-tone-danger-border bg-tone-danger-soft text-ink',
+            'warning' => 'border-tone-warn-border bg-tone-warn-soft text-ink',
+            'info' => 'border-tone-info-border bg-tone-info-soft text-ink',
+            default => 'bg-surface-2 border-line text-ink',
         };
     }
 
     public function iconClasses(): string
     {
         return match ($this->type) {
-            'success' => 'text-green-500 dark:text-green-400',
-            'error' => 'text-red-500 dark:text-red-400',
-            'warning' => 'text-yellow-500 dark:text-yellow-400',
-            'info' => 'text-blue-500 dark:text-blue-400',
-            default => 'text-[#706f6c] dark:text-[#A1A09A]',
+            'success' => 'text-tone-success',
+            'error' => 'text-tone-danger',
+            'warning' => 'text-tone-warn',
+            'info' => 'text-tone-info',
+            default => 'text-ink-muted',
         };
     }
 

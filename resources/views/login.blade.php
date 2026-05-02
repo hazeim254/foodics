@@ -15,33 +15,33 @@
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @endif
     </head>
-    <body class="min-h-screen bg-white dark:bg-[#0a0a0a] antialiased">
+    <body class="min-h-screen bg-surface-0 antialiased">
 
         <div class="flex min-h-screen">
             <div class="absolute top-4 end-4 z-10">
                 <form method="POST" action="{{ route('language.switch') }}" class="inline-flex">
                     @csrf
                     <input type="hidden" name="locale" value="{{ app()->getLocale() === 'ar' ? 'en' : 'ar' }}">
-                    <button type="submit" class="text-sm font-medium text-[#706f6c] dark:text-[#A1A09A] hover:text-[#1b1b18] dark:hover:text-[#EDEDEC] bg-white/80 dark:bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#e3e3e0] dark:border-[#3E3E3A] cursor-pointer">
+                    <button type="submit" class="text-sm font-medium text-ink-muted hover:text-ink bg-surface-1/85 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-line cursor-pointer">
                         {{ app()->getLocale() === 'ar' ? __('English') : __('العربية') }}
                     </button>
                 </form>
             </div>
 
             {{-- Left decorative panel (hidden on mobile) --}}
-            <div class="hidden lg:flex lg:w-2/5 flex-col items-center justify-center relative overflow-hidden bg-[#1b1b18] dark:bg-[#161615]">
+            <div class="hidden lg:flex lg:w-2/5 flex-col items-center justify-center relative overflow-hidden bg-surface-auth-feature">
 
                 {{-- Background glow blobs --}}
                 <div class="absolute inset-0 pointer-events-none">
-                    <div class="absolute top-1/4 left-1/4 w-72 h-72 rounded-full opacity-20" style="background: radial-gradient(circle, #4A90D9 0%, transparent 70%);"></div>
-                    <div class="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full opacity-20" style="background: radial-gradient(circle, #FF4433 0%, transparent 70%);"></div>
+                    <div class="absolute top-1/4 left-1/4 w-72 h-72 rounded-full opacity-[0.18] bg-accent" style="mask-image: radial-gradient(circle, black 0%, transparent 70%); -webkit-mask-image: radial-gradient(circle, black 0%, transparent 70%);"></div>
+                    <div class="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full opacity-[0.16] bg-brand-foodics" style="mask-image: radial-gradient(circle, black 0%, transparent 70%); -webkit-mask-image: radial-gradient(circle, black 0%, transparent 70%);"></div>
                 </div>
 
                 {{-- Brand logos connected by a line --}}
                 <div class="relative z-10 flex flex-col items-center gap-5 px-12 w-full max-w-xs">
 
                     {{-- Daftra logo card --}}
-                    <div class="w-full flex items-center justify-center rounded-2xl px-8 py-5 shadow-lg" style="background-color: #4A90D9;">
+                    <div class="w-full flex items-center justify-center rounded-2xl px-8 py-5 shadow-lg bg-brand-daftra">
                         <img
                             src="https://www.daftra.com/themed/multi_language/images/logos/daftra-ar.svg"
                             alt="Daftra"
@@ -60,7 +60,7 @@
                     </div>
 
                     {{-- Foodics logo card --}}
-                    <div class="w-full flex items-center justify-center rounded-2xl px-8 py-5 shadow-lg" style="background-color: #FF4433;">
+                    <div class="w-full flex items-center justify-center rounded-2xl px-8 py-5 shadow-lg bg-brand-foodics">
                         <img
                             src="https://www.foodics.com/wp-content/uploads/2021/12/foodics-logo.svg"
                             alt="Foodics"
@@ -79,8 +79,8 @@
 
                     {{-- Header --}}
                     <div class="mb-10 text-center">
-                        <h1 class="text-2xl font-semibold text-[#1b1b18] dark:text-[#EDEDEC]">{{ __('Connect your accounts') }}</h1>
-                        <p class="mt-2 text-sm text-[#706f6c] dark:text-[#A1A09A]">{{ __('Connect both accounts to get started') }}</p>
+                        <h1 class="text-2xl font-semibold text-ink">{{ __('Connect your accounts') }}</h1>
+                        <p class="mt-2 text-sm text-ink-muted">{{ __('Connect both accounts to get started') }}</p>
                     </div>
 
                     {{-- Provider cards --}}
@@ -89,21 +89,20 @@
                         {{-- Daftra --}}
                         <div>
                             @if (session()->has('daftra_account'))
-                                <div class="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-4 dark:border-green-800/50 dark:bg-green-900/20">
-                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-800/40">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-green-600 dark:text-green-400">
+                                <div class="flex items-center gap-3 rounded-xl border border-tone-success-border bg-tone-success-soft px-5 py-4">
+                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-tone-success-border bg-surface-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-tone-success">
                                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
                                         </svg>
                                     </span>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">{{ __('Daftra Connected') }}</p>
-                                        <p class="truncate text-xs text-green-600 dark:text-green-500">{{ session('daftra_account.subdomain') }}</p>
+                                        <p class="text-sm font-semibold text-tone-success">{{ __('Daftra Connected') }}</p>
+                                        <p class="truncate text-xs text-ink-muted">{{ session('daftra_account.subdomain') }}</p>
                                     </div>
                                 </div>
                             @else
                                 <a href="{{ route('daftra.auth') }}"
-                                   class="flex w-full items-center justify-center gap-3 rounded-xl px-5 py-4 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                   style="background-color: #4A90D9;">
+                                   class="flex w-full items-center justify-center gap-3 rounded-xl px-5 py-4 text-sm font-semibold text-label-on-brand shadow-sm transition-all hover:brightness-[0.94] focus:outline-none focus:ring-2 focus:ring-accent-ring focus:ring-offset-2 focus:ring-offset-surface-0 bg-brand-daftra">
                                     <img
                                         src="https://www.daftra.com/themed/multi_language/images/logos/daftra-ar.svg"
                                         alt="Daftra"
@@ -118,29 +117,28 @@
                         {{-- Foodics --}}
                         <div>
                             @if (session()->has('foodics_account'))
-                                <div class="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-4 dark:border-green-800/50 dark:bg-green-900/20">
-                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-800/40">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-green-600 dark:text-green-400">
+                                <div class="flex items-center gap-3 rounded-xl border border-tone-success-border bg-tone-success-soft px-5 py-4">
+                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-tone-success-border bg-surface-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-tone-success">
                                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
                                         </svg>
                                     </span>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-green-800 dark:text-green-300">{{ __('Foodics Connected') }}</p>
-                                        <p class="truncate text-xs text-green-600 dark:text-green-500">{{ session('foodics_account.business_name') }}</p>
+                                        <p class="text-sm font-semibold text-tone-success">{{ __('Foodics Connected') }}</p>
+                                        <p class="truncate text-xs text-ink-muted">{{ session('foodics_account.business_name') }}</p>
                                     </div>
                                 </div>
                             @else
                                 <a href="{{ route('foodics.auth') }}"
-                                   class="flex w-full items-center justify-center gap-3 rounded-xl px-5 py-4 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-                                   style="background-color: #FF4433;">
+                                   class="flex w-full items-center justify-center gap-3 rounded-xl px-5 py-4 text-sm font-semibold text-label-on-brand shadow-sm transition-all hover:brightness-[0.96] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-ring focus:ring-offset-surface-0 bg-brand-foodics">
                                     <img
                                         src="https://www.foodics.com/wp-content/uploads/2021/12/foodics-logo.svg"
                                         alt="Foodics"
                                         class="h-4 w-auto shrink-0"
                                         style="filter: brightness(0) invert(1);"
                                     >
-<span>{{ __('Connect') }}</span>
-                                    </a>
+                                    <span>{{ __('Connect') }}</span>
+                                </a>
                                 @endif
                         </div>
 
