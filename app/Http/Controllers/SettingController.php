@@ -13,16 +13,20 @@ use RuntimeException;
 
 class SettingController extends Controller
 {
-    public function index(): View
+    public function index(DaftraApiClient $daftraApiClient, ClientService $clientService): View
     {
         $user = auth()->user();
         $daftraDefaultClient = null;
 
-        $branches = app(DaftraApiClient::class)->tryGetBranches();
+        $branches = $daftraApiClient->tryGetBranches();
 
         $clientId = $user->setting(SettingKey::DaftraDefaultClientId);
         if ($clientId !== null && $clientId !== '') {
-            $daftraDefaultClient = app(ClientService::class)->findClientById((int) $clientId);
+            try {
+                $daftraDefaultClient = $clientService->getDefaultClient((int) $clientId);
+            } catch (RuntimeException) {
+                $daftraDefaultClient = null;
+            }
         }
 
         return view('settings', [
@@ -33,11 +37,10 @@ class SettingController extends Controller
         ]);
     }
 
-    public function searchClients(SearchClientsRequest $request): JsonResponse
+    public function searchClients(SearchClientsRequest $request, ClientService $clientService): JsonResponse
     {
         try {
-            $results = app(ClientService::class)
-                ->searchClients($request->input('query'));
+            $results = $clientService->searchClients($request->input('query'));
         } catch (RuntimeException) {
             return response()->json(['data' => []], 503);
         }
