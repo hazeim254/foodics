@@ -22,7 +22,7 @@ class SettingController extends Controller
 
         $clientId = $user->setting(SettingKey::DaftraDefaultClientId);
         if ($clientId !== null && $clientId !== '') {
-            $daftraDefaultClient = app(ClientService::class)->findClientById((int) $clientId);
+            $daftraDefaultClient = app(ClientService::class)->getDefaultClient((int) $clientId);
         }
 
         return view('settings', [

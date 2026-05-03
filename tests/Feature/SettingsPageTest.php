@@ -81,10 +81,8 @@ it('shows saved client name when a default client is configured', function () {
 
     Http::fake([
         '*/v2/api/entity/branch/list*' => Http::response(['data' => []]),
-        '*/v2/api/entity/client/list*' => Http::response([
-            'data' => [
-                ['id' => 42, 'name' => 'Acme Corp', 'avatar' => ''],
-            ],
+        '*/v2/api/entity/client/filter-auto-suggest*' => Http::response([
+            ['id' => 42, 'text' => 'Acme Corp', 'avatar' => ''],
         ]),
     ]);
 
@@ -273,16 +271,14 @@ it('searches clients via GET /settings/search-clients', function () {
 
     Http::fake([
         '*/v2/api/entity/client/filter-auto-suggest*' => Http::response([
-            'data' => [
-                ['id' => 1, 'name' => 'Acme Corp', 'avatar' => 'https://example.com/avatar.png'],
-            ],
+            ['id' => 1, 'text' => 'Acme Corp', 'avatar' => 'https://example.com/avatar.png'],
         ]),
     ]);
 
     $this->actingAs($user)
         ->get('/settings/search-clients?query=acme')
         ->assertOk()
-        ->assertJson(['data' => [['id' => 1, 'name' => 'Acme Corp', 'avatar' => 'https://example.com/avatar.png']]]);
+        ->assertJson(['data' => [['id' => 1, 'text' => 'Acme Corp', 'avatar' => 'https://example.com/avatar.png']]]);
 });
 
 it('search requires query parameter', function () {

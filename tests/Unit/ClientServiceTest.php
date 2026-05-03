@@ -24,10 +24,8 @@ beforeEach(function () {
 it('searchClients returns array from Daftra API response', function () {
     Http::fake([
         '*/v2/api/entity/client/filter-auto-suggest*' => Http::response([
-            'data' => [
-                ['id' => 1, 'name' => 'Acme Corp', 'avatar' => 'https://example.com/avatar1.png'],
-                ['id' => 2, 'name' => 'Acme Inc', 'avatar' => 'https://example.com/avatar2.png'],
-            ],
+            ['id' => 1, 'text' => 'Acme Corp', 'avatar' => 'https://example.com/avatar1.png'],
+            ['id' => 2, 'text' => 'Acme Inc', 'avatar' => 'https://example.com/avatar2.png'],
         ]),
     ]);
 
@@ -36,8 +34,8 @@ it('searchClients returns array from Daftra API response', function () {
 
     expect($results)->toBeArray()
         ->and(count($results))->toBe(2)
-        ->and($results[0]['name'])->toBe('Acme Corp')
-        ->and($results[1]['name'])->toBe('Acme Inc');
+        ->and($results[0]['text'])->toBe('Acme Corp')
+        ->and($results[1]['text'])->toBe('Acme Inc');
 });
 
 it('searchClients throws RuntimeException on failed response', function () {
@@ -47,6 +45,41 @@ it('searchClients throws RuntimeException on failed response', function () {
 
     $client = app(ClientService::class);
     $client->searchClients('acme');
+})->throws(RuntimeException::class, 'Daftra client search failed: HTTP 500');
+
+it('getDefaultClient returns first client from Daftra API response', function () {
+    Http::fake([
+        '*/v2/api/entity/client/filter-auto-suggest*' => Http::response([
+            ['id' => 42, 'text' => 'Acme Corp', 'avatar' => 'https://example.com/avatar.png'],
+        ]),
+    ]);
+
+    $client = app(ClientService::class);
+    $result = $client->getDefaultClient(42);
+
+    expect($result)->toBeArray()
+        ->and($result['id'])->toBe(42)
+        ->and($result['text'])->toBe('Acme Corp');
+});
+
+it('getDefaultClient returns empty array when no client is found', function () {
+    Http::fake([
+        '*/v2/api/entity/client/filter-auto-suggest*' => Http::response([]),
+    ]);
+
+    $client = app(ClientService::class);
+    $result = $client->getDefaultClient(999);
+
+    expect($result)->toBe([]);
+});
+
+it('getDefaultClient throws RuntimeException on failed response', function () {
+    Http::fake([
+        '*/v2/api/entity/client/filter-auto-suggest*' => Http::response(['error' => 'Server Error'], 500),
+    ]);
+
+    $client = app(ClientService::class);
+    $client->getDefaultClient(42);
 })->throws(RuntimeException::class, 'Daftra client search failed: HTTP 500');
 
 it('findClientById returns client array when found', function () {

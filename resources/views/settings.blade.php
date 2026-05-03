@@ -45,7 +45,7 @@
             <div
                 x-data="{
                     selectedId: @js($daftraDefaultClientId ?? ''),
-                    selectedName: @js($daftraDefaultClient['name'] ?? ''),
+                    selectedName: @js($daftraDefaultClient['text'] ?? ''),
                     selectedAvatar: @js($daftraDefaultClient['avatar'] ?? ''),
                     query: '',
                     results: [],
@@ -143,7 +143,7 @@
                             </template>
                             <template x-for="client in results" :key="client.id">
                                 <div
-                                    @click="selectedId = client.id; selectedName = client.name; selectedAvatar = client.avatar || ''; open = false"
+                                    @click="selectedId = client.id; selectedName = client.text; selectedAvatar = client.avatar || ''; open = false"
                                     class="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-surface-2"
                                 >
                                     <template x-if="client.avatar">
@@ -156,7 +156,7 @@
                                             </svg>
                                         </div>
                                     </template>
-                                    <span class="text-sm text-ink" x-text="client.name"></span>
+                                    <span class="text-sm text-ink" x-text="client.text"></span>
                                 </div>
                             </template>
                         </div>

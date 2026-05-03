@@ -90,7 +90,23 @@ class ClientService
             );
         }
 
-        return $response->json('data') ?? [];
+        return $response->json() ?? [];
+    }
+
+    public function getDefaultClient(int $id): array
+    {
+        $response = $this->daftraClient->get(
+            '/v2/api/entity/client/filter-auto-suggest',
+            ['filter' => ['id' => $id]],
+        );
+
+        if (! $response->successful()) {
+            throw new RuntimeException(
+                'Daftra client search failed: HTTP '.$response->status()
+            );
+        }
+
+        return $response->json()[0] ?? [];
     }
 
     public function findClientById(int $id): ?array
