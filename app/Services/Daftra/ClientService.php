@@ -93,6 +93,13 @@ class ClientService
         return $response->json() ?? [];
     }
 
+    /**
+     * Look up a single client by id via the auto-suggest endpoint, used to render the saved default client.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws RuntimeException When the Daftra request fails.
+     */
     public function getDefaultClient(int $id): array
     {
         $response = $this->daftraClient->get(
@@ -102,27 +109,11 @@ class ClientService
 
         if (! $response->successful()) {
             throw new RuntimeException(
-                'Daftra client search failed: HTTP '.$response->status()
+                'Daftra default client lookup failed: HTTP '.$response->status()
             );
         }
 
         return $response->json()[0] ?? [];
-    }
-
-    public function findClientById(int $id): ?array
-    {
-        $response = $this->daftraClient->get(
-            '/v2/api/entity/client/list',
-            ['filter' => ['id' => $id]],
-        );
-
-        if (! $response->successful()) {
-            return null;
-        }
-
-        $rows = $response->json('data') ?? [];
-
-        return $rows[0] ?? null;
     }
 
     public function getClientUsingFoodicsData(array $foodicsCustomer): int

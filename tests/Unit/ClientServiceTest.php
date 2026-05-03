@@ -80,43 +80,4 @@ it('getDefaultClient throws RuntimeException on failed response', function () {
 
     $client = app(ClientService::class);
     $client->getDefaultClient(42);
-})->throws(RuntimeException::class, 'Daftra client search failed: HTTP 500');
-
-it('findClientById returns client array when found', function () {
-    Http::fake([
-        '*/v2/api/entity/client/list*' => Http::response([
-            'data' => [
-                ['id' => 42, 'name' => 'Test Client', 'avatar' => 'https://example.com/avatar.png'],
-            ],
-        ]),
-    ]);
-
-    $client = app(ClientService::class);
-    $result = $client->findClientById(42);
-
-    expect($result)->toBeArray()
-        ->and($result['id'])->toBe(42)
-        ->and($result['name'])->toBe('Test Client');
-});
-
-it('findClientById returns null when not found', function () {
-    Http::fake([
-        '*/v2/api/entity/client/list*' => Http::response(['data' => []]),
-    ]);
-
-    $client = app(ClientService::class);
-    $result = $client->findClientById(999);
-
-    expect($result)->toBeNull();
-});
-
-it('findClientById returns null on failed response', function () {
-    Http::fake([
-        '*/v2/api/entity/client/list*' => Http::response(['error' => 'Server Error'], 500),
-    ]);
-
-    $client = app(ClientService::class);
-    $result = $client->findClientById(42);
-
-    expect($result)->toBeNull();
-});
+})->throws(RuntimeException::class, 'Daftra default client lookup failed: HTTP 500');
