@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\DaftraDiscountType;
 use App\Enums\InvoiceSyncStatus;
+use App\Enums\SalesReconciliationStatus;
 use App\Exceptions\InvoiceAlreadyExistsException;
 use App\Models\Invoice;
 use App\Services\Concerns\BuildsInvoiceItems;
@@ -12,7 +13,9 @@ use App\Services\Daftra\InvoiceService;
 use App\Services\Daftra\PaymentMethodService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
+use App\Services\Reconciliation\SalesReconciliationService;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SyncOrder
@@ -26,6 +29,7 @@ class SyncOrder
         protected TaxService $taxService,
         protected PaymentMethodService $paymentMethodService,
         protected SyncCreditNote $syncCreditNote,
+        protected SalesReconciliationService $reconciliationService,
     ) {}
 
     /** @var array<string, string> */
@@ -75,23 +79,30 @@ class SyncOrder
         $this->paymentMethodMap = [];
         $this->resolveUniquePaymentMethods($order);
 
-        $daftraInvoiceId = $this->resolveDaftraInvoiceId($order, $invoice);
+        $daftraPayload = null;
+
+        $daftraInvoiceId = $this->resolveDaftraInvoiceId($order, $invoice, $daftraPayload);
 
         if ($invoice->daftra_id !== $daftraInvoiceId) {
             $invoice->update(['daftra_id' => $daftraInvoiceId]);
         }
 
-        $this->syncPaymentsIfMissing($order['payments'] ?? [], $daftraInvoiceId);
+        $paymentData = $this->syncPaymentsIfMissing($order['payments'] ?? [], $daftraInvoiceId);
 
+        $daftraDocument = null;
         $daftraInvoice = $this->invoiceService->getInvoiceById($daftraInvoiceId);
         if ($daftraInvoice !== null) {
+            $daftraDocument = $daftraInvoice;
             $invoice->update([
                 'daftra_no' => $daftraInvoice['no'] ?? null,
-                'daftra_metadata' => [
-                    'client_id' => $daftraInvoice['client_id'] ?? null,
-                ],
+                'daftra_metadata' => array_merge(
+                    $invoice->daftra_metadata ?? [],
+                    ['client_id' => $daftraInvoice['client_id'] ?? null],
+                ),
             ]);
         }
+
+        $this->persistReconciliation($order, $invoice, $daftraPayload, $daftraDocument, $paymentData);
 
         $invoice->update(['status' => InvoiceSyncStatus::Synced]);
     }
@@ -100,8 +111,11 @@ class SyncOrder
      * Resolve the Daftra invoice id to use for this order, preferring an
      * existing id on the local row, then an invoice already present on
      * Daftra, and finally creating a new one.
+     *
+     * When a new invoice is created, the payload is captured into
+     * `$daftraPayload` for reconciliation without side effects.
      */
-    protected function resolveDaftraInvoiceId(array $order, Invoice $invoice): int
+    protected function resolveDaftraInvoiceId(array $order, Invoice $invoice, ?array &$daftraPayload = null): int
     {
         if ($invoice->daftra_id !== null) {
             return (int) $invoice->daftra_id;
@@ -112,6 +126,22 @@ class SyncOrder
             return (int) $existing['id'];
         }
 
+        $invoiceData = $this->buildDaftraInvoicePayload($order);
+        $daftraPayload = $invoiceData;
+
+        return $this->invoiceService->createInvoice($invoiceData);
+    }
+
+    /**
+     * Build the Daftra invoice payload from a Foodics order.
+     *
+     * This method extracts payload construction so that the same data can be
+     * used for reconciliation without calling external services.
+     *
+     * @return array{Invoice: array<string, mixed>, InvoiceItem: array<int, array<string, mixed>>}
+     */
+    public function buildDaftraInvoicePayload(array $order): array
+    {
         $invoiceItems = $this->getInvoiceItems($this->getOrderProductLines($order));
         $invoiceItems = $this->addChargeInvoiceItems($invoiceItems, $order['charges'] ?? []);
 
@@ -124,7 +154,7 @@ class SyncOrder
             $clientId = $this->resolveDefaultClientId();
         }
 
-        $invoiceData = [
+        return [
             'Invoice' => [
                 'po_number' => $order['id'],
                 'client_id' => $clientId,
@@ -135,8 +165,54 @@ class SyncOrder
             ],
             'InvoiceItem' => $invoiceItems,
         ];
+    }
 
-        return $this->invoiceService->createInvoice($invoiceData);
+    protected function buildMinimalInvoicePayload(array $order): array
+    {
+        return [
+            'Invoice' => [
+                'discount_amount' => $order['discount_amount'] ?? 0,
+            ],
+            'InvoiceItem' => [],
+        ];
+    }
+
+    protected function persistReconciliation(array $order, Invoice $invoice, ?array $daftraPayload = null, ?array $daftraDocument = null, array $paymentData = []): void
+    {
+        try {
+            if ($daftraPayload === null) {
+                $daftraPayload = $this->buildMinimalInvoicePayload($order);
+            }
+
+            if ($paymentData !== []) {
+                $daftraPayload['InvoicePayment'] = $paymentData;
+            }
+
+            $result = $this->reconciliationService->compare($order, $daftraPayload, $daftraDocument);
+
+            $invoice->update([
+                'foodics_metadata' => array_merge(
+                    $invoice->foodics_metadata ?? [],
+                    ['sales_reconciliation' => $result->toArray()],
+                ),
+            ]);
+
+            if ($result->status === SalesReconciliationStatus::Mismatch) {
+                Log::warning('Sales reconciliation mismatch', [
+                    'order_id' => $order['id'],
+                    'invoice_id' => $invoice->id,
+                    'invoice_type' => 'invoice',
+                    'status' => $result->status->value,
+                    'differences' => array_map(fn ($d) => $d->toArray(), $result->differences),
+                ]);
+            }
+        } catch (Throwable $e) {
+            Log::error('Reconciliation failed after sync', [
+                'order_id' => $order['id'],
+                'invoice_id' => $invoice->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     protected function resolveUniquePaymentMethods(array $order): void
@@ -162,29 +238,42 @@ class SyncOrder
      * sync is considered payment-complete (per spec 017: no Foodics-side
      * correlation, presence of any payments is treated as done).
      *
+     * Returns normalised payment data for reconciliation: existing Daftra
+     * payment rows when already present, or the created InvoicePayment
+     * payloads when payments were just created.
+     *
      * @param  array<int, array<string, mixed>>  $payments
+     * @return array<int, array<string, mixed>>
      */
-    public function syncPaymentsIfMissing(array $payments, int $daftraInvoiceId): void
+    public function syncPaymentsIfMissing(array $payments, int $daftraInvoiceId): array
     {
         $existing = $this->invoiceService->listInvoicePayments($daftraInvoiceId);
 
         if ($existing !== []) {
-            return;
+            return $existing;
         }
+
+        $createdPayments = [];
 
         foreach ($payments as $payment) {
             $foodicsPaymentMethodId = (string) ($payment['payment_method']['id'] ?? '');
             $daftraPaymentMethodId = $this->paymentMethodMap[$foodicsPaymentMethodId] ?? null;
 
-            $this->invoiceService->createPayment([
+            $paymentPayload = [
                 'InvoicePayment' => [
                     'invoice_id' => $daftraInvoiceId,
                     'payment_method' => $daftraPaymentMethodId,
                     'amount' => $payment['amount'],
                     'date' => $payment['added_at'],
                 ],
-            ]);
+            ];
+
+            $this->invoiceService->createPayment($paymentPayload);
+
+            $createdPayments[] = $paymentPayload;
         }
+
+        return $createdPayments;
     }
 
     /**
