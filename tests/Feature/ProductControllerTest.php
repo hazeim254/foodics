@@ -311,7 +311,7 @@ it('displays Pending badge with correct styling', function () {
     $this->actingAs($user)
         ->get('/products')
         ->assertOk()
-        ->assertSee('bg-amber-50')
+        ->assertSee('bg-tone-warn-soft')
         ->assertSee('Pending');
 });
 
@@ -325,7 +325,7 @@ it('displays Failed badge with correct styling', function () {
     $this->actingAs($user)
         ->get('/products')
         ->assertOk()
-        ->assertSee('bg-red-50')
+        ->assertSee('bg-tone-danger-soft')
         ->assertSee('Failed');
 });
 
@@ -339,6 +339,6 @@ it('displays Synced badge with correct styling', function () {
     $this->actingAs($user)
         ->get('/products')
         ->assertOk()
-        ->assertSee('bg-green-50')
+        ->assertSee('bg-tone-success-soft')
         ->assertSee('Synced');
 });

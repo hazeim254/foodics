@@ -124,5 +124,9 @@
     "Search for a client…": "ابحث عن عميل…",
     "Type at least 2 characters to search…": "أدخل حرفين على الأقل للبحث…",
     "No clients found.": "لم يتم العثور على عملاء.",
-    "Search failed. Try again.": "فشل البحث. حاول مرة أخرى."
+    "Search failed. Try again.": "فشل البحث. حاول مرة أخرى.",
+
+    "Starting sync…": "جاري بدء المزامنة…",
+    "Saving…": "جاري الحفظ…",
+    "Retrying…": "جاري إعادة المحاولة…"
 }

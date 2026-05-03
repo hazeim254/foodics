@@ -104,7 +104,7 @@ it('dashboard shows disconnected status when no providers in session', function 
         ->assertSee('Foodics');
 });
 
-it('shows green dot and daftra metadata from database when token exists', function () {
+it('shows connected indicator and daftra metadata from database when token exists', function () {
     $user = User::factory()->create([
         'daftra_meta' => [
             'subdomain' => 'myshop',
@@ -122,12 +122,12 @@ it('shows green dot and daftra metadata from database when token exists', functi
     $this->actingAs($user)
         ->get('/')
         ->assertOk()
-        ->assertSee('bg-green-500')
+        ->assertSee('bg-indicator-on')
         ->assertSee('myshop')
         ->assertSee('My Daftra Business');
 });
 
-it('shows green dot and foodics metadata from database when token exists', function () {
+it('shows connected indicator and foodics metadata from database when token exists', function () {
     $user = User::factory()->create([
         'foodics_meta' => [
             'business_name' => 'My Foodics Business',
@@ -145,17 +145,17 @@ it('shows green dot and foodics metadata from database when token exists', funct
     $this->actingAs($user)
         ->get('/')
         ->assertOk()
-        ->assertSee('bg-green-500')
+        ->assertSee('bg-indicator-on')
         ->assertSee('My Foodics Business');
 });
 
-it('shows gray dots when no provider tokens exist and no session data', function () {
+it('shows muted indicator dots when no provider tokens exist and no session data', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->get('/')
         ->assertOk()
-        ->assertSee('bg-gray-300 dark:bg-gray-600');
+        ->assertSee('bg-indicator-off');
 });
 
 it('invoices page extends layouts and shows title', function () {
