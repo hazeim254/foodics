@@ -11,7 +11,13 @@
 
     {{-- Invoice Sync Summary --}}
     <div class="mb-6">
-        <h2 class="text-lg font-medium text-ink mb-3">{{ __('Invoice Sync') }}</h2>
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-medium text-ink">{{ __('Invoice Sync') }}</h2>
+            <a href="{{ route('invoices') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover transition-colors duration-200">
+                {{ __('View All') }}
+                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+            </a>
+        </div>
         @php
             $invoiceRateClass = $invoiceStats['success_rate'] >= 95
                 ? 'text-tone-success'
@@ -45,7 +51,13 @@
 
     {{-- Product Sync Summary --}}
     <div class="mb-6">
-        <h2 class="text-lg font-medium text-ink mb-3">{{ __('Product Sync') }}</h2>
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-medium text-ink">{{ __('Product Sync') }}</h2>
+            <a href="{{ route('products') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover transition-colors duration-200">
+                {{ __('View All') }}
+                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+            </a>
+        </div>
         @php
             $productRateClass = $productStats['success_rate'] >= 95
                 ? 'text-tone-success'
@@ -142,7 +154,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-ink">{{ __('Default Client') }}</p>
-                        <p class="text-sm text-ink-muted">{{ $defaultSettings['client_id'] ?? __('Not configured') }}</p>
+                        <p class="text-sm text-ink-muted">{{ $defaultSettings['client_name'] ?? $defaultSettings['client_id'] ?? __('Not configured') }}</p>
                     </div>
                 </div>
                 <div class="h-px bg-line"></div>

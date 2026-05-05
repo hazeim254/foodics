@@ -6,10 +6,12 @@ use App\Enums\InvoiceSyncStatus;
 use App\Enums\ProductSyncStatus;
 use App\Enums\SettingKey;
 use App\Models\User;
+use App\Services\Daftra\ClientService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class DashboardService
 {
@@ -75,9 +77,21 @@ class DashboardService
     {
         $clientId = $user->setting(SettingKey::DaftraDefaultClientId);
         $branchId = $user->setting(SettingKey::DaftraDefaultBranchId);
+        $clientName = null;
+
+        if ($clientId !== null && $clientId !== '') {
+            try {
+                $clientService = app(ClientService::class);
+                $clientData = $clientService->getDefaultClient((int) $clientId);
+                $clientName = $clientData['text'] ?? null;
+            } catch (RuntimeException|\Throwable) {
+                $clientName = null;
+            }
+        }
 
         return [
             'client_id' => $clientId,
+            'client_name' => $clientName,
             'branch_id' => $branchId,
         ];
     }
