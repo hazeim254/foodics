@@ -2,18 +2,61 @@
 
 namespace App\Webhooks\Handlers;
 
+use App\Models\User;
 use App\Models\WebhookLog;
+use App\Services\Foodics\FoodicsApiClient;
+use App\Services\Foodics\OrderService;
+use App\Services\SyncOrder;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 
 class OrderCancelledHandler implements WebhookHandlerInterface
 {
     public function handle(WebhookLog $webhookLog, array $payload): void
     {
-        // TODO: Implement order cancellation logic
-        Log::info('Processing order.cancelled event', [
-            'webhook_log_id' => $webhookLog->id,
-            'order_id' => $webhookLog->order_id,
-            'business_reference' => $webhookLog->business_reference,
-        ]);
+        $orderId = data_get($payload, 'order.id');
+
+        if (! $orderId) {
+            Log::warning('OrderCancelledHandler: Missing order ID in webhook payload', [
+                'webhook_log_id' => $webhookLog->id,
+            ]);
+
+            return;
+        }
+
+        $user = $webhookLog->user;
+
+        if (! $user) {
+            Log::warning('OrderCancelledHandler: No user associated with webhook', [
+                'webhook_log_id' => $webhookLog->id,
+                'business_reference' => $webhookLog->business_reference,
+            ]);
+
+            return;
+        }
+
+        if (! $user->getFoodicsToken()) {
+            Log::warning('OrderCancelledHandler: User has no Foodics token', [
+                'user_id' => $user->id,
+                'webhook_log_id' => $webhookLog->id,
+            ]);
+
+            return;
+        }
+
+        Context::add('user', $user);
+
+        $order = $this->resolveOrderService($user)->getOrder($orderId);
+
+        if (empty($order)) {
+            throw new \RuntimeException("Failed to fetch order {$orderId} from Foodics API");
+        }
+
+        app(SyncOrder::class)->handle($order);
+    }
+
+    protected function resolveOrderService(User $user): OrderService
+    {
+        return new OrderService(new FoodicsApiClient($user));
     }
 }
