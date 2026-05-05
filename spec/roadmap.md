@@ -12,7 +12,7 @@ Since Foodics does not provide webhook signature verification, secure the endpoi
 The `order.updated` and `order.cancelled` handlers currently only log and do nothing.
 
 - [ ] **Implement `order.updated` handler** — Re-fetch the order from Foodics, find the existing local invoice by `foodics_reference`, and re-sync it (update invoice in Daftra or create credit note if status changed to returned).
-- [ ] **Implement `order.cancelled` handler** — Find the existing local invoice, void/cancel it in Daftra if supported, and update local status to `cancelled`.
+- [x] **Implement `order.cancelled` handler** — Find the existing local invoice, void/cancel it in Daftra if supported, and update local status to `cancelled`.
 - [ ] **Write tests for both handlers** — Cover happy path, missing invoice, and API failure cases.
 
 ## 3. Inventory Sync
@@ -37,11 +37,12 @@ The Foodics Accounting guide requires syncing inventory data. This is the larges
 
 The Foodics guide recommends syncing branches, warehouses, suppliers, and customers as accounting master data.
 
-- [ ] **Sync branches from Foodics** — Fetch from `/branches`, store locally, and map to Daftra entities. Add `branches` table and `BranchService`.
+- [x] **Sync branches from Foodics** — Fetch from `/v5/branches` on demand (cursor-based pagination via `Foodics\BranchService`), map to Daftra branches using `entity_mappings` table, with a dedicated `/mappings` UI page. Per-order branch resolution in `SyncOrder` uses the mapping to set Daftra branch context. No local `branches` table needed — data is fetched on demand and stored in session.
 - [ ] **Sync warehouses from Foodics** — Fetch from `/warehouses`, store locally, and map. Add `warehouses` table.
+- [x] **Sync taxes from Foodics and Daftra** — Fetch from `/v5/taxes` (Foodics) and `/api2/taxes.json` (Daftra) on demand, map via `entity_mappings` table with auto-matching by name/rate and manual override on `/mappings` page. `Foodics\TaxService` and `Daftra\TaxService::listTaxes()` added.
 - [ ] **Sync suppliers from Foodics** — Fetch from `/suppliers`, store locally, and map to Daftra suppliers. Add `suppliers` table.
 - [ ] **Full customer sync with house accounts** — Sync customer debit/credit payments from `/customers` and house account transactions.
-- [ ] **Write tests for each master data sync** — Cover creation, update, and deletion handling.
+- [ ] **Write tests for each master data sync** — Cover creation, update, and deletion handling (branches and taxes already covered; remaining: warehouses, suppliers, customers).
 
 ## 5. Operational Hardening
 
