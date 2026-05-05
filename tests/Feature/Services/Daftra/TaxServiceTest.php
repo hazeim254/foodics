@@ -221,3 +221,51 @@ it('sends limit=100 on the tax list request', function () {
     $service = $this->app->make(TaxService::class);
     $service->getTax(['name' => 'VAT', 'rate' => 15]);
 });
+
+it('lists all Daftra taxes', function () {
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/taxes.json', Mockery::on(fn (array $args) => isset($args['limit']) && $args['limit'] === 100))
+        ->once()
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: [
+            'data' => [
+                ['Tax' => ['id' => 1, 'name' => 'VAT', 'value' => 15]],
+                ['Tax' => ['id' => 2, 'name' => 'VAT', 'value' => 5]],
+            ],
+        ]));
+
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $service = $this->app->make(TaxService::class);
+    $taxes = $service->listTaxes();
+
+    expect($taxes)->toHaveCount(2);
+    expect($taxes[0])->toBe(['id' => 1, 'name' => 'VAT', 'value' => 15.0]);
+    expect($taxes[1])->toBe(['id' => 2, 'name' => 'VAT', 'value' => 5.0]);
+});
+
+it('returns empty array when Daftra has no taxes', function () {
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/taxes.json', Mockery::any())
+        ->once()
+        ->andReturn(createMockHttpResponse(successful: true, status: 200, json: ['data' => []]));
+
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $service = $this->app->make(TaxService::class);
+    expect($service->listTaxes())->toBe([]);
+});
+
+it('throws when Daftra tax list request fails', function () {
+    $mockClient = Mockery::mock(DaftraApiClient::class);
+    $mockClient->shouldReceive('get')
+        ->with('/api2/taxes.json', Mockery::any())
+        ->once()
+        ->andReturn(createMockHttpResponse(successful: false, status: 500, json: ['error' => 'Server error']));
+
+    $this->app->instance(DaftraApiClient::class, $mockClient);
+
+    $service = $this->app->make(TaxService::class);
+    expect(fn () => $service->listTaxes())->toThrow(\RuntimeException::class);
+});

@@ -120,6 +120,34 @@ class TaxService
         return (int) $id;
     }
 
+    /**
+     * @return array<int, array{id: int, name: string, value: float}>
+     */
+    public function listTaxes(): array
+    {
+        $response = $this->daftraClient->get('/api2/taxes.json', [
+            'limit' => 100,
+        ]);
+
+        if (! $response->successful()) {
+            throw new \RuntimeException(
+                'Daftra tax list request failed: HTTP '.$response->status().' '.$response->body()
+            );
+        }
+
+        $rows = $response->json('data') ?? [];
+
+        return array_map(function (array $row): array {
+            $tax = $row['Tax'] ?? [];
+
+            return [
+                'id' => (int) ($tax['id'] ?? 0),
+                'name' => (string) ($tax['name'] ?? ''),
+                'value' => (float) ($tax['value'] ?? 0),
+            ];
+        }, $rows);
+    }
+
     private function buildCreatePayload(array $foodicsTax): array
     {
         $tax = [

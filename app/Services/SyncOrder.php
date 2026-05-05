@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\DaftraDiscountType;
 use App\Enums\InvoiceSyncStatus;
 use App\Exceptions\InvoiceAlreadyExistsException;
+use App\Models\EntityMapping;
 use App\Models\Invoice;
 use App\Services\Concerns\BuildsInvoiceItems;
 use App\Services\Daftra\ClientService;
@@ -75,6 +76,11 @@ class SyncOrder
         $this->paymentMethodMap = [];
         $this->resolveUniquePaymentMethods($order);
 
+        $mappedBranchId = $this->resolveDaftraBranchId($order);
+        if ($mappedBranchId !== null) {
+            $this->invoiceService->setBranchOverride($mappedBranchId);
+        }
+
         $daftraInvoiceId = $this->resolveDaftraInvoiceId($order, $invoice);
 
         if ($invoice->daftra_id !== $daftraInvoiceId) {
@@ -94,6 +100,8 @@ class SyncOrder
         }
 
         $invoice->update(['status' => InvoiceSyncStatus::Synced]);
+
+        $this->invoiceService->clearBranchOverride();
     }
 
     /**
@@ -206,6 +214,25 @@ class SyncOrder
         throw_if($blocking, new InvoiceAlreadyExistsException('Order already synced or in progress locally'));
     }
 
+    protected function resolveDaftraBranchId(array $order): ?int
+    {
+        $foodicsBranchId = $order['branch']['id'] ?? null;
+
+        if ($foodicsBranchId === null) {
+            return null;
+        }
+
+        $userId = Context::get('user')?->id;
+
+        $mapping = EntityMapping::query()
+            ->where('user_id', $userId)
+            ->where('type', 'branch')
+            ->where('foodics_id', $foodicsBranchId)
+            ->first();
+
+        return $mapping?->daftra_id;
+    }
+
     /**
      * Insert or revive the single local row that tracks this Foodics order.
      *
@@ -223,12 +250,16 @@ class SyncOrder
             ->where('foodics_id', $order['id'])
             ->first();
 
+        $branchId = $order['branch']['id'] ?? null;
+
         if ($invoice !== null) {
             $invoice->fill([
                 'foodics_reference' => $order['reference'],
                 'status' => InvoiceSyncStatus::Pending,
                 'total_price' => (float) ($order['total_price'] ?? 0),
-                'foodics_metadata' => [],
+                'foodics_metadata' => [
+                    'branch_id' => $branchId,
+                ],
             ])->save();
 
             return $invoice;
@@ -241,7 +272,9 @@ class SyncOrder
             'daftra_id' => null,
             'status' => InvoiceSyncStatus::Pending,
             'total_price' => (float) ($order['total_price'] ?? 0),
-            'foodics_metadata' => [],
+            'foodics_metadata' => [
+                'branch_id' => $branchId,
+            ],
         ]);
     }
 }
