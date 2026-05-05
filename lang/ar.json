@@ -129,5 +129,25 @@
     "Starting sync…": "جاري بدء المزامنة…",
     "Saving…": "جاري الحفظ…",
     "Retrying…": "جاري إعادة المحاولة…",
-    "View All": "عرض الكل"
+    "View All": "عرض الكل",
+
+    "Mappings": "التعيينات",
+    "Branch Mappings": "تعيينات الفروع",
+    "Sync Branches": "مزامنة الفروع",
+    "Daftra branches plugin is not enabled. All Foodics branches will sync to the single default Daftra branch. You can configure the default branch in Settings.": "إضافة الفروع في دفترة غير مفعّلة. سيتم مزامنة جميع فروع فوديكس إلى الفرع الافتراضي الوحيد في دفترة. يمكنك ضبط الفرع الافتراضي في الإعدادات.",
+    "-- Not mapped --": "-- غير معيّن --",
+    "Save Branch Mappings": "حفظ تعيينات الفروع",
+    "Click \"Sync Branches\" to fetch branches from Foodics and Daftra.": "اضغط \"مزامنة الفروع\" لجلب الفروع من فوديكس ودفترة.",
+    "Saved Branch Mappings": "تعيينات الفروع المحفوظة",
+    "Daftra Branch": "فرع دفترة",
+    "Tax Mappings": "تعيينات الضرائب",
+    "Sync Taxes": "مزامنة الضرائب",
+    "Tax auto-matching is active: taxes are automatically matched by name and rate. Use manual mapping below to override.": "المطابقة التلقائية للضرائب مفعّلة: يتم مطابقة الضرائب تلقائياً بالاسم والنسبة. استخدم التعيين اليدوي أدناه لتجاوز ذلك.",
+    "-- Auto-match --": "-- مطابقة تلقائية --",
+    "Save Tax Mappings": "حفظ تعيينات الضرائب",
+    "Click \"Sync Taxes\" to fetch taxes from Foodics and Daftra.": "اضغط \"مزامنة الضرائب\" لجلب الضرائب من فوديكس ودفترة.",
+    "Saved Tax Mappings": "تعيينات الضرائب المحفوظة",
+    "Daftra Tax": "ضريبة دفترة",
+    "Branch mappings saved successfully.": "تم حفظ تعيينات الفروع بنجاح.",
+    "Tax mappings saved successfully.": "تم حفظ تعيينات الضرائب بنجاح."
 }

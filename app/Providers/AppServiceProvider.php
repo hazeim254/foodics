@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(FoodicsApiClient::class, function ($app) {
-            $user = \Context::get('user');
+            $user = \Context::get('user') ?? auth()->user();
             if (! $user) {
                 throw new \Exception('User not found in context');
             }
