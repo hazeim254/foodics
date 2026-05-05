@@ -30,13 +30,20 @@ class MappingController extends Controller
             ->get()
             ->keyBy('foodics_id');
 
+        $foodicsBranches = session('foodics_branches', []);
+        $daftraBranches = session('daftra_branches', []);
+        $daftraBranchesDisabled = session('daftra_branches_disabled', false);
+        $foodicsTaxes = session('foodics_taxes', []);
+        $daftraTaxes = session('daftra_taxes', []);
+
         return view('mappings', [
             'branchMappings' => $branchMappings,
             'taxMappings' => $taxMappings,
-            'foodicsBranches' => session('foodics_branches', []),
-            'daftraBranches' => session('daftra_branches'),
-            'foodicsTaxes' => session('foodics_taxes', []),
-            'daftraTaxes' => session('daftra_taxes', []),
+            'foodicsBranches' => $foodicsBranches,
+            'daftraBranchesDisabled' => $daftraBranchesDisabled,
+            'daftraBranches' => $daftraBranches,
+            'foodicsTaxes' => $foodicsTaxes,
+            'daftraTaxes' => $daftraTaxes,
         ]);
     }
 
@@ -45,11 +52,20 @@ class MappingController extends Controller
         $foodicsBranches = $branchService->fetchBranches();
         $daftraBranches = $daftraClient->tryGetBranches();
 
-        return redirect()
-            ->route('mappings')
-            ->withInput()
-            ->with('foodics_branches', $foodicsBranches)
-            ->with('daftra_branches', $daftraBranches);
+        $sessionData = [
+            'foodics_branches' => $foodicsBranches,
+        ];
+
+        if ($daftraBranches === null) {
+            $sessionData['daftra_branches_disabled'] = true;
+        } else {
+            $sessionData['daftra_branches'] = $daftraBranches;
+            $sessionData['daftra_branches_disabled'] = false;
+        }
+
+        session($sessionData);
+
+        return redirect()->route('mappings');
     }
 
     public function syncTaxes(FoodicsTaxService $foodicsTaxService, TaxService $daftraTaxService): RedirectResponse
@@ -57,11 +73,12 @@ class MappingController extends Controller
         $foodicsTaxes = $foodicsTaxService->fetchTaxes();
         $daftraTaxes = $daftraTaxService->listTaxes();
 
-        return redirect()
-            ->route('mappings')
-            ->withInput()
-            ->with('foodics_taxes', $foodicsTaxes)
-            ->with('daftra_taxes', $daftraTaxes);
+        session([
+            'foodics_taxes' => $foodicsTaxes,
+            'daftra_taxes' => $daftraTaxes,
+        ]);
+
+        return redirect()->route('mappings');
     }
 
     public function storeBranchMapping(StoreBranchMappingRequest $request): RedirectResponse
