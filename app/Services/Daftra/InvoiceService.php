@@ -10,6 +10,22 @@ class InvoiceService
 {
     public function __construct(protected DaftraApiClient $daftraClient) {}
 
+    private ?int $branchOverride = null;
+
+    public function setBranchOverride(int $branchId): void
+    {
+        $this->branchOverride = $branchId;
+        $this->daftraClient->setBranchOverride($branchId);
+    }
+
+    public function clearBranchOverride(): void
+    {
+        if ($this->branchOverride !== null) {
+            $this->daftraClient->clearBranchOverride();
+            $this->branchOverride = null;
+        }
+    }
+
     public function getInvoice(string $foodicsId): ?array
     {
         $response = $this->daftraClient->get('/api2/invoices', [

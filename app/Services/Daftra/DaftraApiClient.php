@@ -15,6 +15,8 @@ class DaftraApiClient
 
     private ?string $branchId = null;
 
+    private ?int $branchOverride = null;
+
     public function __construct(protected User $user)
     {
         $this->branchId = $user->setting(SettingKey::DaftraDefaultBranchId);
@@ -89,9 +91,21 @@ class DaftraApiClient
         }
     }
 
+    public function setBranchOverride(int $branchId): void
+    {
+        $this->branchOverride = $branchId;
+    }
+
+    public function clearBranchOverride(): void
+    {
+        $this->branchOverride = null;
+    }
+
     private function appendBranchIdToUrl(string $url): string
     {
-        if ((string) $this->branchId === '' || (string) $this->branchId === '1') {
+        $effectiveBranchId = $this->branchOverride ?? $this->branchId;
+
+        if ((string) $effectiveBranchId === '' || (string) $effectiveBranchId === '1') {
             return $url;
         }
 
@@ -101,7 +115,7 @@ class DaftraApiClient
 
         $separator = str_contains($url, '?') ? '&' : '?';
 
-        return $url.$separator.'request_branch_id='.urlencode((string) $this->branchId);
+        return $url.$separator.'request_branch_id='.urlencode((string) $effectiveBranchId);
     }
 
     private function refreshToken(): void

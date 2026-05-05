@@ -194,7 +194,7 @@ it('syncs an order end-to-end with mocked Daftra API', function () {
     expect($invoice->status)->toBe(InvoiceSyncStatus::Synced);
     expect(Client::where('foodics_id', '8d831d65')->where('daftra_id', 11111)->exists())->toBeTrue();
     expect(Product::where('foodics_id', '8d90b8d1')->where('daftra_id', 67890)->exists())->toBeTrue();
-    expect($invoice->foodics_metadata)->toBe([]);
+    expect($invoice->foodics_metadata)->toBe(['branch_id' => '8d82ff0c']);
     expect($invoice->total_price)->toEqual(24.15);
     expect($invoice->daftra_no)->toBe('INV-001');
     expect($invoice->daftra_metadata)->toBe([
@@ -471,7 +471,7 @@ it('stores foodics_metadata and daftra_metadata on invoice', function () {
 
     $invoice = Invoice::where('foodics_id', $this->order['id'])->first();
 
-    expect($invoice->foodics_metadata)->toBe([]);
+    expect($invoice->foodics_metadata)->toBe(['branch_id' => '8d82ff0c']);
     expect($invoice->total_price)->toEqual(24.15);
 
     expect($invoice->daftra_no)->toBe('INV-001');
