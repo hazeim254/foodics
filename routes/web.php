@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\MappingController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\WebhooksController;
 use App\Http\Middleware\FoodicsWebhook;
@@ -32,6 +33,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     Route::get('/settings/search-clients', [SettingController::class, 'searchClients'])->name('settings.search-clients');
+    Route::get('/mappings', [MappingController::class, 'index'])->name('mappings');
+    Route::post('/mappings/branches/sync', [MappingController::class, 'syncBranches'])->name('mappings.branches.sync');
+    Route::post('/mappings/taxes/sync', [MappingController::class, 'syncTaxes'])->name('mappings.taxes.sync');
+    Route::post('/mappings/branches', [MappingController::class, 'storeBranchMapping'])->name('mappings.branches.store');
+    Route::post('/mappings/taxes', [MappingController::class, 'storeTaxMapping'])->name('mappings.taxes.store');
     Route::get('/contact', [ContactMessageController::class, 'index'])->name('contact');
     Route::post('/contact', [ContactMessageController::class, 'store'])
         ->middleware('throttle:5,1')
