@@ -179,18 +179,18 @@ shapes from `json-stubs/foodics/get-order.json` if helpful.
 
 ## TODO List
 
-- [ ] Create migration `create_user_settings_table` with `(user_id, key)` unique index
-- [ ] Create `App\Enums\SettingKey` with `DaftraDefaultClientId`
-- [ ] Create `App\Models\UserSetting` with enum cast on `key`
-- [ ] Create `App\Models\Concerns\HasSettings` trait
-- [ ] Create `UserSettingFactory`
-- [ ] Apply `HasSettings` trait on `User`
-- [ ] Write `tests/Feature/UserSettingsTest.php` covering get/set/update/null/forget/cascade/uniqueness
-- [ ] Update `SyncOrder::handle()` to use the setting as walk-in fallback
-- [ ] Write `tests/Feature/SyncOrder/WalkInDefaultClientTest.php`
-- [ ] `php artisan migrate`
-- [ ] `php artisan test --compact --filter="UserSettings|WalkInDefaultClient"`
-- [ ] `vendor/bin/pint --dirty --format agent`
+- [x] Create migration `create_user_settings_table` with `(user_id, key)` unique index
+- [x] Create `App\Enums\SettingKey` with `DaftraDefaultClientId`
+- [x] Create `App\Models\UserSetting` with enum cast on `key`
+- [x] Create `App\Models\Concerns\HasSettings` trait
+- [x] Create `UserSettingFactory`
+- [x] Apply `HasSettings` trait on `User`
+- [x] Write `tests/Feature/UserSettingsTest.php` covering get/set/update/null/forget/cascade/uniqueness
+- [x] Update `SyncOrder::handle()` to use the setting as walk-in fallback
+- [x] Write `tests/Feature/SyncOrder/WalkInDefaultClientTest.php`
+- [x] `php artisan migrate`
+- [x] `php artisan test --compact --filter="UserSettings|WalkInDefaultClient"`
+- [x] `vendor/bin/pint --dirty --format agent`
 
 ---
 

@@ -108,12 +108,12 @@ No behaviour change tests are required for `SyncOrder` — extra payload fields 
 
 ## Tasks
 
-- [ ] Add `ORDER_INCLUDES` constant and use it in `fetchPage()` and `getOrder()` in `app/Services/Foodics/OrderService.php`.
-- [ ] Add `filter[status] => '4'` to `fetchPage()` only.
-- [ ] Update existing tests in `tests/Feature/Services/Foodics/OrderServiceTest.php` to assert against the new include string (via substring checks) and new status filter.
-- [ ] Add the two new tests listed above.
-- [ ] Run `php artisan test --compact tests/Feature/Services/Foodics/OrderServiceTest.php`.
-- [ ] Run `vendor/bin/pint --dirty --format agent`.
+- [x] Add `ORDER_INCLUDES` constant and use it in `fetchPage()` and `getOrder()` in `app/Services/Foodics/OrderService.php`.
+- [x] Add `filter[status] => '4'` to `fetchPage()` only. Later superseded by spec 026 to fetch `4,5`.
+- [x] Update existing tests in `tests/Feature/Services/Foodics/OrderServiceTest.php` to assert against the new include string (via substring checks) and new status filter.
+- [x] Add the two new tests listed above.
+- [x] Run `php artisan test --compact tests/Feature/Services/Foodics/OrderServiceTest.php`.
+- [x] Run `vendor/bin/pint --dirty --format agent`.
 
 ## References
 

@@ -343,17 +343,17 @@ public function invoices(): HasMany
 
 ## Tasks
 
-- [ ] Create `app/Jobs/SyncInvoicesJob.php` (queued, ShouldBeUnique, per-order error handling, cache clear in finally)
-- [ ] Modify `app/Http/Controllers/InvoiceController.php` (change from invokable to `index`, `sync`, `syncStatus` methods)
-- [ ] Modify `resources/views/invoices.blade.php` (table with pagination, sync button, syncing state with auto-polling, empty state)
-- [ ] Create `resources/views/pagination/tailwind-custom.blade.php` (custom pagination matching app design)
-- [ ] Modify `routes/web.php` (update invoices routes, add sync and sync-status routes)
-- [ ] Add `invoices()` relationship to `User` model
-- [ ] Add `user()` relationship to `Invoice` model
-- [ ] Write feature test for `GET /invoices` (listing, empty state, syncing state)
-- [ ] Write feature test for `POST /invoices/sync` (dispatch, duplicate prevention, auth required)
-- [ ] Write feature test for `GET /invoices/sync-status` (returns correct JSON)
-- [ ] Run `vendor/bin/pint --dirty --format agent`
+- [x] Create `app/Jobs/SyncInvoicesJob.php` (queued, ShouldBeUnique, per-order error handling, cache clear in finally)
+- [x] Modify `app/Http/Controllers/InvoiceController.php` (change from invokable to `index`, `sync`, `syncStatus` methods)
+- [x] Modify `resources/views/invoices.blade.php` (table with pagination, sync button, syncing state with auto-polling, empty state)
+- [x] Create `resources/views/pagination/tailwind-custom.blade.php` (custom pagination matching app design)
+- [x] Modify `routes/web.php` (update invoices routes, add sync and sync-status routes)
+- [x] Add `invoices()` relationship to `User` model
+- [x] Add `user()` relationship to `Invoice` model
+- [x] Write feature test for `GET /invoices` (listing, empty state, syncing state)
+- [x] Write feature test for `POST /invoices/sync` (dispatch, duplicate prevention, auth required)
+- [x] Write feature test for `GET /invoices/sync-status` (returns correct JSON)
+- [x] Run `vendor/bin/pint --dirty --format agent`
 
 ## Out of Scope
 

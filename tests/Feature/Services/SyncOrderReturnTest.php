@@ -82,6 +82,12 @@ function setupDaftraMockForCreditNote(): MockInterface
         ->with('/api2/products', Mockery::any())
         ->andReturn(mockReturnHttpResponse(successful: true, status: 202, json: ['id' => 999]));
 
+    $mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes/55555')
+        ->andReturn(mockReturnHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 55555, 'total' => 10.0]],
+        ]));
+
     return $mockClient;
 }
 
@@ -170,6 +176,13 @@ it('reuses existing Daftra credit note id on retry', function () {
     $mockClient = Mockery::mock(DaftraApiClient::class);
     $mockClient->shouldNotReceive('post');
 
+    $mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes/777')
+        ->once()
+        ->andReturn(mockReturnHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 777, 'total' => 10.0]],
+        ]));
+
     $this->app->instance(DaftraApiClient::class, $mockClient);
     $this->app->instance(FoodicsApiClient::class, Mockery::mock(FoodicsApiClient::class));
 
@@ -190,6 +203,13 @@ it('finds an existing Daftra credit note by Foodics custom field before creating
         ]));
 
     $mockClient->shouldNotReceive('post');
+
+    $mockClient->shouldReceive('get')
+        ->with('/api2/credit_notes/888')
+        ->once()
+        ->andReturn(mockReturnHttpResponse(successful: true, status: 200, json: [
+            'data' => ['Invoice' => ['id' => 888, 'total' => 10.0]],
+        ]));
 
     $this->app->instance(DaftraApiClient::class, $mockClient);
     $this->app->instance(FoodicsApiClient::class, Mockery::mock(FoodicsApiClient::class));

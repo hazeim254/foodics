@@ -271,16 +271,16 @@ vendor/bin/pint --dirty --format agent
 
 ## Tasks
 
-- [ ] Confirm `welcome.blade.php` has no active references.
-- [ ] Update `DashboardController` to pass invoice stats, product stats, and default settings.
-- [ ] Add total counts and success rate calculations.
-- [ ] Add 7-day sync over time data.
-- [ ] Replace the dashboard placeholder UI.
-- [ ] Remove `resources/views/welcome.blade.php` if unreferenced.
-- [ ] Add Arabic translations for new user-facing strings.
-- [ ] Create `tests/Feature/DashboardTest.php`.
-- [ ] Run `php artisan test --compact tests/Feature/DashboardTest.php`.
-- [ ] Run `vendor/bin/pint --dirty --format agent`.
+- [x] Confirm `welcome.blade.php` has no active references.
+- [x] Update `DashboardController` to pass invoice stats, product stats, and default settings.
+- [x] Add total counts and success rate calculations.
+- [x] Add 7-day sync over time data.
+- [x] Replace the dashboard placeholder UI.
+- [x] Remove `resources/views/welcome.blade.php` if unreferenced.
+- [x] Add Arabic translations for new user-facing strings.
+- [x] Create `tests/Feature/DashboardTest.php`.
+- [x] Run `php artisan test --compact tests/Feature/DashboardTest.php`.
+- [x] Run `vendor/bin/pint --dirty --format agent`.
 
 ## Out of Scope
 

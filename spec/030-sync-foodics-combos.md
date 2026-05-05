@@ -176,17 +176,17 @@ Add a test that a tax appearing only on a combo product is resolved before invoi
 
 ## Tasks
 
-- [ ] Add `combos.products.product` to `OrderService::ORDER_INCLUDES`.
-- [ ] Add `BuildsInvoiceItems::getOrderProductLines(array $order): array`.
-- [ ] Update `SyncOrder::resolveDaftraInvoiceId()` to pass flattened product lines to `getInvoiceItems()`.
-- [ ] Update `SyncCreditNote::resolveDaftraCreditNoteId()` to pass flattened product lines to `getInvoiceItems()`.
-- [ ] Update `BuildsInvoiceItems::resolveUniqueTaxes()` to resolve taxes from normal product lines, normal product options, combo product lines, and charges.
-- [ ] Update `OrderServiceTest` include assertions.
-- [ ] Add combo invoice item tests in `SyncOrderTest`.
-- [ ] Add combo credit note item coverage in `SyncCreditNoteTest`.
-- [ ] Add combo product tax resolution coverage in `SyncOrderTaxTest`.
-- [ ] Run `php artisan test --compact tests/Feature/Services/Foodics/OrderServiceTest.php tests/Feature/Services/SyncOrderTest.php tests/Feature/Services/SyncCreditNoteTest.php tests/Feature/Services/SyncOrderTaxTest.php`.
-- [ ] Run `vendor/bin/pint --dirty --format agent`.
+- [x] Add `combos.products.product` to `OrderService::ORDER_INCLUDES`.
+- [x] Add `BuildsInvoiceItems::getOrderProductLines(array $order): array`.
+- [x] Update `SyncOrder::resolveDaftraInvoiceId()` to pass flattened product lines to `getInvoiceItems()`.
+- [x] Update `SyncCreditNote::resolveDaftraCreditNoteId()` to pass flattened product lines to `getInvoiceItems()`.
+- [x] Update `BuildsInvoiceItems::resolveUniqueTaxes()` to resolve taxes from normal product lines, normal product options, combo product lines, and charges.
+- [x] Update `OrderServiceTest` include assertions.
+- [x] Add combo invoice item tests in `SyncOrderTest`.
+- [x] Add combo credit note item coverage in `SyncCreditNoteTest`.
+- [x] Add combo product tax resolution coverage in `SyncOrderTaxTest`.
+- [x] Run `php artisan test --compact tests/Feature/Services/Foodics/OrderServiceTest.php tests/Feature/Services/SyncOrderTest.php tests/Feature/Services/SyncCreditNoteTest.php tests/Feature/Services/SyncOrderTaxTest.php`.
+- [x] Run `vendor/bin/pint --dirty --format agent`.
 
 ## References
 
