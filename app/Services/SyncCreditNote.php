@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\InvoiceSyncStatus;
 use App\Enums\InvoiceType;
+use App\Enums\SalesReconciliationStatus;
 use App\Exceptions\InvalidOrderLineException;
 use App\Exceptions\OriginalInvoiceNotSyncedException;
 use App\Models\Invoice;
@@ -12,6 +13,7 @@ use App\Services\Daftra\ClientService;
 use App\Services\Daftra\InvoiceService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
+use App\Services\Reconciliation\SalesReconciliationService;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -25,6 +27,7 @@ class SyncCreditNote
         protected ProductService $productService,
         protected ClientService $clientService,
         protected TaxService $taxService,
+        protected SalesReconciliationService $reconciliationService,
     ) {}
 
     public function handle(array $order): void
@@ -59,7 +62,9 @@ class SyncCreditNote
             $this->taxMap = [];
             $this->resolveUniqueTaxes($order);
 
-            $daftraCreditNoteId = $this->resolveDaftraCreditNoteId($order, $creditNoteRow, $original);
+            $daftraPayload = null;
+
+            $daftraCreditNoteId = $this->resolveDaftraCreditNoteId($order, $creditNoteRow, $original, $daftraPayload);
 
             if ($creditNoteRow->daftra_id !== $daftraCreditNoteId) {
                 $creditNoteRow->update(['daftra_id' => $daftraCreditNoteId]);
@@ -72,6 +77,14 @@ class SyncCreditNote
                 ]);
             }
 
+            $daftraDocument = null;
+            $daftraCreditNote = $this->invoiceService->getCreditNoteById($daftraCreditNoteId);
+            if ($daftraCreditNote !== null) {
+                $daftraDocument = $daftraCreditNote;
+            }
+
+            $this->persistReconciliation($order, $creditNoteRow, $daftraPayload, $daftraDocument);
+
             $creditNoteRow->update(['status' => InvoiceSyncStatus::Synced]);
         } catch (Throwable $e) {
             $creditNoteRow->update(['status' => InvoiceSyncStatus::Failed]);
@@ -82,7 +95,7 @@ class SyncCreditNote
         }
     }
 
-    protected function resolveDaftraCreditNoteId(array $order, Invoice $row, Invoice $original): int
+    protected function resolveDaftraCreditNoteId(array $order, Invoice $row, Invoice $original, ?array &$daftraPayload = null): int
     {
         if ($row->daftra_id !== null) {
             return (int) $row->daftra_id;
@@ -93,6 +106,18 @@ class SyncCreditNote
             return (int) $existing['id'];
         }
 
+        $daftraPayload = $this->buildDaftraCreditNotePayload($order, $original);
+
+        return $this->invoiceService->createCreditNote($daftraPayload);
+    }
+
+    /**
+     * Build the Daftra credit-note payload from a Foodics return order.
+     *
+     * @return array{CreditNote: array<string, mixed>, InvoiceItem: array<int, array<string, mixed>>}
+     */
+    public function buildDaftraCreditNotePayload(array $order, Invoice $original): array
+    {
         $invoiceItems = $this->getInvoiceItems($this->getOrderProductLines($order));
         $invoiceItems = $this->addChargeInvoiceItems($invoiceItems, $order['charges'] ?? []);
 
@@ -109,7 +134,7 @@ class SyncCreditNote
             $clientId = $this->resolveDefaultClientId();
         }
 
-        $payload = [
+        return [
             'CreditNote' => [
                 'po_number' => $order['id'],
                 'client_id' => $clientId,
@@ -120,8 +145,50 @@ class SyncCreditNote
             ],
             'InvoiceItem' => $invoiceItems,
         ];
+    }
 
-        return $this->invoiceService->createCreditNote($payload);
+    protected function buildMinimalCreditNotePayload(array $order): array
+    {
+        return [
+            'CreditNote' => [
+                'discount_amount' => $order['discount_amount'] ?? 0,
+            ],
+            'InvoiceItem' => [],
+        ];
+    }
+
+    protected function persistReconciliation(array $order, Invoice $invoice, ?array $daftraPayload = null, ?array $daftraDocument = null): void
+    {
+        try {
+            if ($daftraPayload === null) {
+                $daftraPayload = $this->buildMinimalCreditNotePayload($order);
+            }
+
+            $result = $this->reconciliationService->compare($order, $daftraPayload, $daftraDocument);
+
+            $invoice->update([
+                'foodics_metadata' => array_merge(
+                    $invoice->foodics_metadata ?? [],
+                    ['sales_reconciliation' => $result->toArray()],
+                ),
+            ]);
+
+            if ($result->status === SalesReconciliationStatus::Mismatch) {
+                Log::warning('Sales reconciliation mismatch', [
+                    'order_id' => $order['id'],
+                    'invoice_id' => $invoice->id,
+                    'invoice_type' => 'credit_note',
+                    'status' => $result->status->value,
+                    'differences' => array_map(fn ($d) => $d->toArray(), $result->differences),
+                ]);
+            }
+        } catch (Throwable $e) {
+            Log::error('Reconciliation failed after sync', [
+                'order_id' => $order['id'],
+                'invoice_id' => $invoice->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     protected function createPendingCreditNote(array $order, Invoice $original): Invoice

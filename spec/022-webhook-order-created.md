@@ -283,15 +283,15 @@ public function byUser(int $userId): self
 
 ## Tasks
 
-- [ ] Create migration to add `user_id` to `webhook_logs` table
-- [ ] Update `app/Models/WebhookLog.php` — add `user_id` to `$fillable`, add `user()` relationship
-- [ ] Update `app/Models/Builders/WebhookLogQueryBuilder.php` — add `byUser()` scope
-- [ ] Update `app/Services/WebhookLogService.php` — resolve user, store `user_id`
-- [ ] Update `app/Jobs/ProcessWebhookLogJob.php` — set user context
-- [ ] Update `app/Webhooks/Handlers/OrderCreatedHandler.php` — implement real logic
-- [ ] Write feature tests
-- [ ] Run `vendor/bin/pint --dirty --format agent`
-- [ ] Run tests to verify everything passes
+- [x] Create migration to add `user_id` to `webhook_logs` table
+- [x] Update `app/Models/WebhookLog.php` — add `user_id` to `$fillable`, add `user()` relationship
+- [x] Update `app/Models/Builders/WebhookLogQueryBuilder.php` — add `byUser()` scope
+- [x] Update `app/Services/WebhookLogService.php` — resolve user, store `user_id`
+- [x] Update `app/Jobs/ProcessWebhookLogJob.php` — set user context
+- [x] Update `app/Webhooks/Handlers/OrderCreatedHandler.php` — implement real logic
+- [x] Write feature tests
+- [x] Run `vendor/bin/pint --dirty --format agent`
+- [x] Run tests to verify everything passes
 
 ## Out of Scope
 

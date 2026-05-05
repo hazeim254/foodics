@@ -393,7 +393,7 @@ These are flagged for clarification before or during implementation:
 - [x] Extend `tests/Feature/Services/Daftra/InvoiceServiceTest.php` with credit-note method coverage.
 - [x] Run `php artisan test --compact tests/Feature/Services/SyncOrderReturnTest.php tests/Feature/Services/SyncOrderTest.php tests/Feature/Services/Foodics/OrderServiceTest.php tests/Feature/Services/Daftra/InvoiceServiceTest.php`.
 - [x] Run `vendor/bin/pint --dirty --format agent`.
-- [ ] Resolve open questions 1–4 with a sandbox call before merging.
+- [x] Resolve open questions 1–4 with a sandbox call before merging.
 
 ## References
 
