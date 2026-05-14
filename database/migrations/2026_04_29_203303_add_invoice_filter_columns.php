@@ -14,17 +14,23 @@ return new class extends Migration
             $table->string('daftra_no', 50)->nullable()->after('total_price');
         });
 
-        DB::statement("
-            UPDATE invoices
-            SET total_price = CAST(json_extract(foodics_metadata, '$.total_price') AS REAL)
-            WHERE foodics_metadata IS NOT NULL
-        ");
+        $driver = DB::connection()->getDriverName();
 
-        DB::statement("
-            UPDATE invoices
-            SET daftra_no = json_extract(daftra_metadata, '$.no')
-            WHERE daftra_metadata IS NOT NULL
-        ");
+        $totalPriceSql = match ($driver) {
+            'pgsql' => "UPDATE invoices SET total_price = CAST(foodics_metadata->>'total_price' AS NUMERIC(10,2)) WHERE foodics_metadata IS NOT NULL",
+            'sqlite' => "UPDATE invoices SET total_price = CAST(json_extract(foodics_metadata, '$.total_price') AS REAL) WHERE foodics_metadata IS NOT NULL",
+            default => "UPDATE invoices SET total_price = CAST(json_extract(foodics_metadata, '$.total_price') AS DECIMAL(10,2)) WHERE foodics_metadata IS NOT NULL",
+        };
+
+        DB::statement($totalPriceSql);
+
+        $daftraNoSql = match ($driver) {
+            'pgsql' => "UPDATE invoices SET daftra_no = daftra_metadata->>'no' WHERE daftra_metadata IS NOT NULL",
+            'mysql' => "UPDATE invoices SET daftra_no = json_unquote(json_extract(daftra_metadata, '$.no')) WHERE daftra_metadata IS NOT NULL",
+            default => "UPDATE invoices SET daftra_no = json_extract(daftra_metadata, '$.no') WHERE daftra_metadata IS NOT NULL",
+        };
+
+        DB::statement($daftraNoSql);
 
         Schema::table('invoices', function (Blueprint $table) {
             $table->index('total_price');

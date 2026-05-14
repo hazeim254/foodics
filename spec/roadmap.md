@@ -12,7 +12,7 @@ Since Foodics does not provide webhook signature verification, secure the endpoi
 The `order.updated` and `order.cancelled` handlers currently only log and do nothing.
 
 - [ ] **Implement `order.updated` handler** — Re-fetch the order from Foodics, find the existing local invoice by `foodics_reference`, and re-sync it (update invoice in Daftra or create credit note if status changed to returned).
-- [ ] **Implement `order.cancelled` handler** — Find the existing local invoice, void/cancel it in Daftra if supported, and update local status to `cancelled`.
+- [x] **Implement `order.cancelled` handler** — Find the existing local invoice, void/cancel it in Daftra if supported, and update local status to `cancelled`.
 - [ ] **Write tests for both handlers** — Cover happy path, missing invoice, and API failure cases.
 
 ## 3. Inventory Sync

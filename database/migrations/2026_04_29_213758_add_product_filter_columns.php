@@ -13,11 +13,15 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable()->after('daftra_id');
         });
 
-        DB::statement("
-            UPDATE products
-            SET price = CAST(json_extract(foodics_metadata, '$.price') AS REAL)
-            WHERE foodics_metadata IS NOT NULL
-        ");
+        $driver = DB::connection()->getDriverName();
+
+        $priceSql = match ($driver) {
+            'pgsql' => "UPDATE products SET price = CAST(foodics_metadata->>'price' AS NUMERIC(10,2)) WHERE foodics_metadata IS NOT NULL",
+            'sqlite' => "UPDATE products SET price = CAST(json_extract(foodics_metadata, '$.price') AS REAL) WHERE foodics_metadata IS NOT NULL",
+            default => "UPDATE products SET price = CAST(json_extract(foodics_metadata, '$.price') AS DECIMAL(10,2)) WHERE foodics_metadata IS NOT NULL",
+        };
+
+        DB::statement($priceSql);
 
         Schema::table('products', function (Blueprint $table) {
             $table->index('price');
