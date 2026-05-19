@@ -51,16 +51,16 @@ it('redirects to home when both providers are in session', function () {
         ->assertRedirect(route('dashboard'));
 });
 
-it('redirects unauthenticated users from home to login', function () {
-    $this->get('/')
+it('redirects unauthenticated users from dashboard to login', function () {
+    $this->get('/dashboard')
         ->assertRedirect('/login');
 });
 
-it('allows authenticated users to access home', function () {
+it('allows authenticated users to access the dashboard', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk();
 });
 

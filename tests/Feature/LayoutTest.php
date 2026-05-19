@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('redirects unauthenticated users from dashboard to login', function () {
-    $this->get('/')->assertRedirect('/login');
+    $this->get('/dashboard')->assertRedirect('/login');
 });
 
 it('redirects unauthenticated users from invoices to login', function () {
@@ -26,7 +26,7 @@ it('allows authenticated users to access dashboard', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertViewIs('dashboard');
 });
@@ -66,7 +66,7 @@ it('dashboard shows sidebar with navigation links', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('Dashboard')
         ->assertSee('Invoices')
@@ -79,7 +79,7 @@ it('dashboard shows connection status for daftra when in session', function () {
 
     $this->actingAs($user)
         ->withSession(['daftra_account' => ['subdomain' => 'myshop', 'site_id' => 1]])
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('Daftra');
 });
@@ -89,7 +89,7 @@ it('dashboard shows connection status for foodics when in session', function () 
 
     $this->actingAs($user)
         ->withSession(['foodics_account' => ['business_name' => 'My Restaurant', 'business_id' => 'abc']])
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('Foodics');
 });
@@ -98,7 +98,7 @@ it('dashboard shows disconnected status when no providers in session', function 
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('Daftra')
         ->assertSee('Foodics');
@@ -120,7 +120,7 @@ it('shows connected indicator and daftra metadata from database when token exist
     ]);
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('bg-indicator-on')
         ->assertSee('myshop')
@@ -143,7 +143,7 @@ it('shows connected indicator and foodics metadata from database when token exis
     ]);
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('bg-indicator-on')
         ->assertSee('My Foodics Business');
@@ -153,7 +153,7 @@ it('shows muted indicator dots when no provider tokens exist and no session data
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('bg-indicator-off');
 });
@@ -193,7 +193,7 @@ it('active navigation link is highlighted on dashboard', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk();
 });
 
@@ -201,7 +201,7 @@ it('authenticated pages use the app layout', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('Foodics');
 });
@@ -210,7 +210,7 @@ it('app layout uses ltr direction for english locale', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('dir="ltr"', false);
 });
@@ -221,7 +221,7 @@ it('app layout uses rtl direction for arabic locale', function () {
     app()->setLocale('ar');
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('dir="rtl"', false);
 });

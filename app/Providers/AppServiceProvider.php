@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
             return $request ? CurlCommandBuilder::build($request) : '';
         });
 
-        View::composer(['layouts.app', 'login'], function ($view) {
+        View::composer(['layouts.app', 'login', 'landing'], function ($view) {
             $fontMap = [
                 'en' => ['inter' => 'Inter', 'instrument-sans' => 'Instrument Sans', 'noto' => 'Noto Sans'],
                 'ar' => ['cairo' => 'Cairo', 'ibm-plex-arabic' => 'IBM Plex Sans Arabic', 'noto-arabic' => 'Noto Sans Arabic'],

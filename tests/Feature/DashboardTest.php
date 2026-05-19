@@ -11,14 +11,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('redirects guests to login', function () {
-    $this->get('/')->assertRedirect('/login');
+    $this->get('/dashboard')->assertRedirect('/login');
 });
 
 it('shows the dashboard view to authenticated users', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertViewIs('dashboard');
 });
@@ -29,7 +29,7 @@ it('shows invoice counts for synced, failed, and pending statuses', function () 
     Invoice::factory()->count(2)->create(['user_id' => $user->id, 'status' => InvoiceSyncStatus::Failed]);
     Invoice::factory()->count(1)->create(['user_id' => $user->id, 'status' => InvoiceSyncStatus::Pending]);
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertOk();
     $invoiceStats = $response->viewData('invoiceStats');
@@ -45,7 +45,7 @@ it('shows product counts for synced, failed, and pending statuses', function () 
     Product::factory()->count(1)->create(['user_id' => $user->id, 'status' => ProductSyncStatus::Failed]);
     Product::factory()->count(2)->create(['user_id' => $user->id, 'status' => ProductSyncStatus::Pending]);
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertOk();
     $productStats = $response->viewData('productStats');
@@ -60,7 +60,7 @@ it('shows total invoice and product counts', function () {
     Invoice::factory()->count(5)->create(['user_id' => $user->id]);
     Product::factory()->count(3)->create(['user_id' => $user->id]);
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertOk();
     $invoiceStats = $response->viewData('invoiceStats');
@@ -77,7 +77,7 @@ it('shows invoice and product success rates', function () {
     Product::factory()->count(2)->create(['user_id' => $user->id, 'status' => ProductSyncStatus::Synced]);
     Product::factory()->count(2)->create(['user_id' => $user->id, 'status' => ProductSyncStatus::Failed]);
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertOk();
     $invoiceStats = $response->viewData('invoiceStats');
@@ -90,7 +90,7 @@ it('shows invoice and product success rates', function () {
 it('shows zero percent success rate when user has no records', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertOk();
     $invoiceStats = $response->viewData('invoiceStats');
@@ -105,7 +105,7 @@ it('shows sync over time chart data for the authenticated user', function () {
     Invoice::factory()->create(['user_id' => $user->id, 'status' => InvoiceSyncStatus::Synced, 'created_at' => now()]);
     Product::factory()->create(['user_id' => $user->id, 'status' => ProductSyncStatus::Failed, 'created_at' => now()]);
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertOk();
     $syncOverTime = $response->viewData('syncOverTime');
@@ -133,7 +133,7 @@ it('only counts records belonging to the authenticated user', function () {
     Product::factory()->count(2)->create(['user_id' => $user->id, 'status' => ProductSyncStatus::Synced]);
     Product::factory()->count(4)->create(['user_id' => $otherUser->id, 'status' => ProductSyncStatus::Synced]);
 
-    $response = $this->actingAs($user)->get('/');
+    $response = $this->actingAs($user)->get('/dashboard');
 
     $response->assertOk();
     $invoiceStats = $response->viewData('invoiceStats');
@@ -151,7 +151,7 @@ it('shows configured default client and default branch', function () {
     $user->setSetting(SettingKey::DaftraDefaultBranchId, '5');
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('42')
         ->assertSee('5');
@@ -161,7 +161,7 @@ it('shows fallback text when default client and branch are not configured', func
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('Not configured')
         ->assertSee('Default branch (1)');
@@ -171,7 +171,7 @@ it('includes a link to the settings page', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee(route('settings'));
 });

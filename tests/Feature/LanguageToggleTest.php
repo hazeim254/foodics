@@ -84,7 +84,7 @@ it('shows language toggle button on dashboard layout', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('/language')
         ->assertSee('العربية');
@@ -95,7 +95,7 @@ it('shows english toggle button when locale is arabic on dashboard', function ()
 
     $this->actingAs($user)
         ->withSession(['locale' => 'ar'])
-        ->get('/')
+        ->get('/dashboard')
         ->assertOk()
         ->assertSee('English');
 });

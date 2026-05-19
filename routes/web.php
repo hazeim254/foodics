@@ -4,6 +4,7 @@ use App\Http\AuthController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingController;
@@ -12,6 +13,7 @@ use App\Http\Middleware\FoodicsWebhook;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', LandingController::class)->name('landing');
 Route::post('/language', [LanguageController::class, 'switch'])->name('language.switch');
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
 Route::get('daftra/auth', [AuthController::class, 'daftraRedirect'])->name('daftra.auth');
@@ -20,7 +22,7 @@ Route::get('foodics/auth', [AuthController::class, 'foodicsRedirect'])->name('fo
 Route::get('foodics/auth/callback', [AuthController::class, 'foodicsCallback'])->name('foodics.callback');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
     Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices');
     Route::post('/invoices/sync', [InvoiceController::class, 'sync'])->name('invoices.sync');
     Route::get('/invoices/sync-status', [InvoiceController::class, 'syncStatus'])->name('invoices.sync-status');
