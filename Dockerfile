@@ -19,7 +19,7 @@ WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./
 
-RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --autoload-classmap
+RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --classmap-authoritative
 
 COPY . .
 
