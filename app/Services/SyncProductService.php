@@ -6,13 +6,13 @@ use App\Enums\ProductSyncStatus;
 use App\Exceptions\ProductAlreadyExistsException;
 use App\Models\Product;
 use App\Services\Daftra\ProductService as DaftraProductService;
-use Illuminate\Support\Facades\Context;
 use Throwable;
 
 class SyncProductService
 {
     public function __construct(
         protected DaftraProductService $daftraProductService,
+        protected UserContext $userContext,
     ) {}
 
     public function handle(array $foodicsProduct): void
@@ -39,7 +39,7 @@ class SyncProductService
      */
     protected function skipIfAlreadySynced(string $foodicsId): void
     {
-        $userId = Context::get('user')?->id;
+        $userId = $this->userContext->id();
 
         $blocking = Product::query()
             ->where('user_id', $userId)
@@ -52,7 +52,7 @@ class SyncProductService
 
     protected function createOrUpdatePending(array $foodicsProduct): Product
     {
-        $userId = Context::get('user')?->id;
+        $userId = $this->userContext->id();
         $foodicsId = (string) $foodicsProduct['id'];
 
         $product = Product::query()

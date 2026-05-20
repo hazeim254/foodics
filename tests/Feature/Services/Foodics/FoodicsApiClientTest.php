@@ -3,10 +3,10 @@
 use App\Models\ProviderToken;
 use App\Models\User;
 use App\Services\Foodics\FoodicsApiClient;
+use App\Services\UserContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Context;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    Context::add('user', $this->user);
+    app(UserContext::class)->set($this->user);
 
     $this->providerToken = ProviderToken::create([
         'user_id' => $this->user->id,

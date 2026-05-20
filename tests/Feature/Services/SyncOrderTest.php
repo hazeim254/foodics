@@ -11,15 +11,15 @@ use App\Services\Daftra\DaftraApiClient;
 use App\Services\Daftra\ProductService;
 use App\Services\Foodics\FoodicsApiClient;
 use App\Services\SyncOrder;
+use App\Services\UserContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    Context::add('user', $this->user);
+    app(UserContext::class)->set($this->user);
 
     $this->order = json_decode(file_get_contents(base_path('json-stubs/foodics/get-order.json')), true)['order'];
 });

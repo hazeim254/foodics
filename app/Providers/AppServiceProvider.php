@@ -2,9 +2,8 @@
 
 namespace App\Providers;
 
-use App\Services\Daftra\DaftraApiClient;
-use App\Services\Foodics\FoodicsApiClient;
 use App\Services\Http\CurlCommandBuilder;
+use App\Services\UserContext;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(UserContext::class);
     }
 
     /**
@@ -24,24 +23,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->app->bind(DaftraApiClient::class, function ($app) {
-            $user = \Context::get('user') ?? auth()->user();
-            if (! $user) {
-                throw new \Exception('User not found in context');
-            }
-
-            return new DaftraApiClient($user);
-        });
-
-        $this->app->bind(FoodicsApiClient::class, function ($app) {
-            $user = \Context::get('user');
-            if (! $user) {
-                throw new \Exception('User not found in context');
-            }
-
-            return new FoodicsApiClient($user);
-        });
-
         Response::macro('toCurl', function (): string {
             /** @var Response $this */
             $request = $this->transferStats?->getRequest();

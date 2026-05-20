@@ -12,7 +12,6 @@ use App\Services\Daftra\ClientService;
 use App\Services\Daftra\InvoiceService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -25,6 +24,7 @@ class SyncCreditNote
         protected ProductService $productService,
         protected ClientService $clientService,
         protected TaxService $taxService,
+        protected UserContext $userContext,
     ) {}
 
     public function handle(array $order): void
@@ -38,7 +38,7 @@ class SyncCreditNote
         }
 
         $original = Invoice::query()
-            ->where('user_id', Context::get('user')?->id)
+            ->where('user_id', $this->userContext->id())
             ->where('foodics_id', $originalFoodicsId)
             ->where('type', InvoiceType::Invoice)
             ->first();
@@ -126,7 +126,7 @@ class SyncCreditNote
 
     protected function createPendingCreditNote(array $order, Invoice $original): Invoice
     {
-        $userId = Context::get('user')?->id;
+        $userId = $this->userContext->id();
 
         $creditNote = Invoice::query()
             ->where('user_id', $userId)

@@ -9,8 +9,8 @@ use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
 use App\Services\Foodics\FoodicsApiClient;
 use App\Services\SyncOrder;
+use App\Services\UserContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 use Mockery\MockInterface;
 
@@ -18,7 +18,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    Context::add('user', $this->user);
+    app(UserContext::class)->set($this->user);
 
     $this->originalFoodicsId = 'original-order-uuid-001';
     $this->returnFoodicsId = 'return-order-uuid-001';

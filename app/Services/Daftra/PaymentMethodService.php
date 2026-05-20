@@ -3,7 +3,7 @@
 namespace App\Services\Daftra;
 
 use App\Models\EntityMapping;
-use Illuminate\Support\Facades\Context;
+use App\Services\UserContext;
 use Illuminate\Support\Str;
 
 class PaymentMethodService
@@ -11,7 +11,7 @@ class PaymentMethodService
     /** @var array<string, array{id: int, slug: string}>|null */
     private ?array $prefetchedGatewaysBySlug = null;
 
-    public function __construct(protected DaftraApiClient $daftraClient) {}
+    public function __construct(protected DaftraApiClient $daftraClient, protected UserContext $userContext) {}
 
     /**
      * Load Daftra payment gateways once for the current order sync. Call before resolving
@@ -58,7 +58,7 @@ class PaymentMethodService
     public function resolvePaymentMethod(array $foodicsPaymentMethod): string
     {
         $foodicsId = (string) $foodicsPaymentMethod['id'];
-        $userId = Context::get('user')->id;
+        $userId = $this->userContext->id();
         $canonicalSlug = $this->paymentGatewaySlug($foodicsPaymentMethod);
 
         $local = EntityMapping::query()

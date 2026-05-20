@@ -5,12 +5,12 @@ namespace App\Jobs;
 use App\Models\User;
 use App\Services\Foodics\OrderService;
 use App\Services\SyncOrder;
+use App\Services\UserContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 
 class SyncInvoicesJob implements ShouldBeUnique, ShouldQueue
@@ -28,9 +28,9 @@ class SyncInvoicesJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(): void
     {
-        try {
-            Context::add('user', $this->user);
+        app(UserContext::class)->set($this->user);
 
+        try {
             if (! $this->user->getFoodicsToken()) {
                 Log::warning("SyncInvoicesJob: User #{$this->user->id} has no Foodics token.");
 

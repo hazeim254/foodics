@@ -7,9 +7,9 @@ use App\Models\ProviderToken;
 use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
 use App\Services\Foodics\FoodicsApiClient;
+use App\Services\UserContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Context;
 
 uses(RefreshDatabase::class);
 
@@ -75,7 +75,7 @@ function createUserWithFoodicsToken(): User
 
 it('syncs products from Foodics and creates local rows', function () {
     $user = createUserWithFoodicsToken();
-    Context::add('user', $user);
+    app(UserContext::class)->set($user);
 
     $mockProducts = [
         ['id' => 'foodics-prod-1', 'name' => 'Product One', 'sku' => 'SKU001', 'price' => 10.00, 'is_active' => true],
@@ -107,7 +107,7 @@ it('syncs products from Foodics and creates local rows', function () {
 
 it('skips products that are already synced', function () {
     $user = createUserWithFoodicsToken();
-    Context::add('user', $user);
+    app(UserContext::class)->set($user);
 
     Product::factory()->create([
         'user_id' => $user->id,
@@ -141,7 +141,7 @@ it('skips products that are already synced', function () {
 
 it('clears cache key in finally block even when exception occurs', function () {
     $user = createUserWithFoodicsToken();
-    Context::add('user', $user);
+    app(UserContext::class)->set($user);
 
     $foodicsClient = Mockery::mock(FoodicsApiClient::class);
     $foodicsClient->shouldReceive('get')
@@ -179,7 +179,7 @@ it('is ShouldBeUnique per user', function () {
 
 it('sets product to Failed when Daftra sync throws', function () {
     $user = createUserWithFoodicsToken();
-    Context::add('user', $user);
+    app(UserContext::class)->set($user);
 
     $mockProducts = [
         ['id' => 'fail-prod', 'name' => 'Fail Product', 'sku' => 'FAIL', 'price' => 10.00, 'is_active' => true],

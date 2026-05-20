@@ -6,9 +6,9 @@ use App\Models\User;
 use App\Models\WebhookLog;
 use App\Services\Foodics\OrderService;
 use App\Services\SyncOrder;
+use App\Services\UserContext;
 use App\Webhooks\Handlers\OrderCancelledHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Context;
 
 uses(RefreshDatabase::class);
 
@@ -92,9 +92,9 @@ it('OrderCancelledHandler throws when Foodics API returns empty order', function
 
     $orderServiceMock = Mockery::mock(OrderService::class);
     $orderServiceMock->shouldReceive('getOrder')->with('ret-456')->andReturn([]);
+    app()->instance(OrderService::class, $orderServiceMock);
 
-    $handler = Mockery::mock(OrderCancelledHandler::class)->makePartial()->shouldAllowMockingProtectedMethods();
-    $handler->shouldReceive('resolveOrderService')->andReturn($orderServiceMock);
+    $handler = new OrderCancelledHandler;
 
     expect(fn () => $handler->handle($webhookLog, $webhookLog->payload))
         ->toThrow(RuntimeException::class, 'Failed to fetch order ret-456 from Foodics API');
@@ -135,17 +135,17 @@ it('OrderCancelledHandler fetches return order and delegates to SyncOrder', func
 
     $orderServiceMock = Mockery::mock(OrderService::class);
     $orderServiceMock->shouldReceive('getOrder')->with('ret-456')->andReturn($returnOrderData);
+    app()->instance(OrderService::class, $orderServiceMock);
 
     $syncOrderMock = Mockery::mock(SyncOrder::class);
     $syncOrderMock->shouldReceive('handle')->with($returnOrderData)->once();
     app()->instance(SyncOrder::class, $syncOrderMock);
 
-    $handler = Mockery::mock(OrderCancelledHandler::class)->makePartial()->shouldAllowMockingProtectedMethods();
-    $handler->shouldReceive('resolveOrderService')->andReturn($orderServiceMock);
+    $handler = new OrderCancelledHandler;
 
     $handler->handle($webhookLog, $webhookLog->payload);
 
-    expect(Context::get('user')->id)->toBe($user->id);
+    expect(app(UserContext::class)->get()->id)->toBe($user->id);
 });
 
 it('OrderCancelledHandler sets user context before fetching order', function () {
@@ -183,21 +183,21 @@ it('OrderCancelledHandler sets user context before fetching order', function () 
 
     $orderServiceMock = Mockery::mock(OrderService::class);
     $orderServiceMock->shouldReceive('getOrder')->with('ret-789')->andReturn($returnOrderData);
+    app()->instance(OrderService::class, $orderServiceMock);
 
     $syncOrderMock = Mockery::mock(SyncOrder::class);
     $syncOrderMock->shouldReceive('handle')->once();
     app()->instance(SyncOrder::class, $syncOrderMock);
 
-    $handler = Mockery::mock(OrderCancelledHandler::class)->makePartial()->shouldAllowMockingProtectedMethods();
-    $handler->shouldReceive('resolveOrderService')->andReturn($orderServiceMock);
+    $handler = new OrderCancelledHandler;
 
     $handler->handle($webhookLog, $webhookLog->payload);
 
-    expect(Context::get('user'))->not->toBeNull();
-    expect(Context::get('user')->id)->toBe($user->id);
+    expect(app(UserContext::class)->get())->not->toBeNull();
+    expect(app(UserContext::class)->get()->id)->toBe($user->id);
 });
 
 afterEach(function () {
-    Context::forget('user');
+    app(UserContext::class)->flush();
     Mockery::close();
 });

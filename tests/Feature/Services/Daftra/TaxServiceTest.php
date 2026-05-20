@@ -4,14 +4,14 @@ use App\Models\EntityMapping;
 use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
 use App\Services\Daftra\TaxService;
+use App\Services\UserContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Context;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    Context::add('user', $this->user);
+    app(UserContext::class)->set($this->user);
 });
 
 it('returns null when Daftra returns no rows for the name', function () {

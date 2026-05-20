@@ -2,12 +2,10 @@
 
 namespace App\Webhooks\Handlers;
 
-use App\Models\User;
 use App\Models\WebhookLog;
-use App\Services\Foodics\FoodicsApiClient;
 use App\Services\Foodics\OrderService;
 use App\Services\SyncOrder;
-use Illuminate\Support\Facades\Context;
+use App\Services\UserContext;
 use Illuminate\Support\Facades\Log;
 
 class OrderCancelledHandler implements WebhookHandlerInterface
@@ -44,19 +42,14 @@ class OrderCancelledHandler implements WebhookHandlerInterface
             return;
         }
 
-        Context::add('user', $user);
+        app(UserContext::class)->set($user);
 
-        $order = $this->resolveOrderService($user)->getOrder($orderId);
+        $order = app(OrderService::class)->getOrder($orderId);
 
         if (empty($order)) {
             throw new \RuntimeException("Failed to fetch order {$orderId} from Foodics API");
         }
 
         app(SyncOrder::class)->handle($order);
-    }
-
-    protected function resolveOrderService(User $user): OrderService
-    {
-        return new OrderService(new FoodicsApiClient($user));
     }
 }

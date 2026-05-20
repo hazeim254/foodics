@@ -12,7 +12,6 @@ use App\Services\Daftra\InvoiceService;
 use App\Services\Daftra\PaymentMethodService;
 use App\Services\Daftra\ProductService;
 use App\Services\Daftra\TaxService;
-use Illuminate\Support\Facades\Context;
 use Throwable;
 
 class SyncOrder
@@ -26,6 +25,7 @@ class SyncOrder
         protected TaxService $taxService,
         protected PaymentMethodService $paymentMethodService,
         protected SyncCreditNote $syncCreditNote,
+        protected UserContext $userContext,
     ) {}
 
     /** @var array<string, string> */
@@ -192,7 +192,7 @@ class SyncOrder
      */
     protected function skipIfAlreadySynced(string $foodicsId, string $foodicsReference): void
     {
-        $userId = Context::get('user')?->id;
+        $userId = $this->userContext->id();
 
         $blocking = Invoice::query()
             ->where('user_id', $userId)
@@ -216,7 +216,7 @@ class SyncOrder
      */
     protected function createPendingInvoice(array $order): Invoice
     {
-        $userId = Context::get('user')?->id;
+        $userId = $this->userContext->id();
 
         $invoice = Invoice::query()
             ->where('user_id', $userId)

@@ -7,9 +7,9 @@ use App\Models\User;
 use App\Models\WebhookLog;
 use App\Services\Foodics\OrderService;
 use App\Services\SyncOrder;
+use App\Services\UserContext;
 use App\Webhooks\Handlers\OrderCreatedHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
@@ -165,9 +165,9 @@ it('OrderCreatedHandler throws when Foodics API returns empty order', function (
 
     $orderServiceMock = Mockery::mock(OrderService::class);
     $orderServiceMock->shouldReceive('getOrder')->with('order-123')->andReturn([]);
+    app()->instance(OrderService::class, $orderServiceMock);
 
-    $handler = Mockery::mock(OrderCreatedHandler::class)->makePartial()->shouldAllowMockingProtectedMethods();
-    $handler->shouldReceive('resolveOrderService')->andReturn($orderServiceMock);
+    $handler = new OrderCreatedHandler;
 
     expect(fn () => $handler->handle($webhookLog, $webhookLog->payload))
         ->toThrow(RuntimeException::class, 'Failed to fetch order order-123 from Foodics API');
@@ -206,17 +206,17 @@ it('OrderCreatedHandler fetches order and delegates to SyncOrder', function () {
 
     $orderServiceMock = Mockery::mock(OrderService::class);
     $orderServiceMock->shouldReceive('getOrder')->with('order-123')->andReturn($orderData);
+    app()->instance(OrderService::class, $orderServiceMock);
 
     $syncOrderMock = Mockery::mock(SyncOrder::class);
     $syncOrderMock->shouldReceive('handle')->with($orderData)->once();
     app()->instance(SyncOrder::class, $syncOrderMock);
 
-    $handler = Mockery::mock(OrderCreatedHandler::class)->makePartial()->shouldAllowMockingProtectedMethods();
-    $handler->shouldReceive('resolveOrderService')->andReturn($orderServiceMock);
+    $handler = new OrderCreatedHandler;
 
     $handler->handle($webhookLog, $webhookLog->payload);
 
-    expect(Context::get('user')->id)->toBe($user->id);
+    expect(app(UserContext::class)->get()->id)->toBe($user->id);
 });
 
 it('ProcessWebhookLogJob sets user context before processing', function () {
@@ -241,18 +241,15 @@ it('ProcessWebhookLogJob sets user context before processing', function () {
 
     $orderServiceMock = Mockery::mock(OrderService::class);
     $orderServiceMock->shouldReceive('getOrder')->andReturn(['id' => 'order-123', 'reference' => '00292', 'business_date' => '2019-11-28', 'total_price' => 0, 'products' => [], 'payments' => [], 'charges' => []]);
+    app()->instance(OrderService::class, $orderServiceMock);
 
     $syncOrderMock = Mockery::mock(SyncOrder::class);
     $syncOrderMock->shouldReceive('handle')->once();
     app()->instance(SyncOrder::class, $syncOrderMock);
 
-    $handler = Mockery::mock(OrderCreatedHandler::class)->makePartial()->shouldAllowMockingProtectedMethods();
-    $handler->shouldReceive('resolveOrderService')->andReturn($orderServiceMock);
-    app()->instance(OrderCreatedHandler::class, $handler);
-
     (new ProcessWebhookLogJob($webhookLog->id))->handle();
 
-    expect(Context::get('user')->id)->toBe($user->id);
+    expect(app(UserContext::class)->get()->id)->toBe($user->id);
 
     $webhookLog->refresh();
     expect($webhookLog->status)->toBe(WebhookStatus::Processed);
@@ -281,14 +278,11 @@ it('marks webhook as processed after successful handling', function () {
 
     $orderServiceMock = Mockery::mock(OrderService::class);
     $orderServiceMock->shouldReceive('getOrder')->andReturn(['id' => 'order-123', 'reference' => '00292', 'business_date' => '2019-11-28', 'total_price' => 0, 'products' => [], 'payments' => [], 'charges' => []]);
+    app()->instance(OrderService::class, $orderServiceMock);
 
     $syncOrderMock = Mockery::mock(SyncOrder::class);
     $syncOrderMock->shouldReceive('handle')->once();
     app()->instance(SyncOrder::class, $syncOrderMock);
-
-    $handler = Mockery::mock(OrderCreatedHandler::class)->makePartial()->shouldAllowMockingProtectedMethods();
-    $handler->shouldReceive('resolveOrderService')->andReturn($orderServiceMock);
-    app()->instance(OrderCreatedHandler::class, $handler);
 
     (new ProcessWebhookLogJob($webhookLog->id))->handle();
 
@@ -346,6 +340,6 @@ it('does not re-process an already processed webhook', function () {
 });
 
 afterEach(function () {
-    Context::forget('user');
+    app(UserContext::class)->flush();
     Mockery::close();
 });

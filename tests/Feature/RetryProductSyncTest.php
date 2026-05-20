@@ -7,8 +7,8 @@ use App\Models\ProviderToken;
 use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
 use App\Services\Foodics\FoodicsApiClient;
+use App\Services\UserContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Context;
 
 uses(RefreshDatabase::class);
 
@@ -74,7 +74,7 @@ function createRetryTestUser(): User
 
 it('re-syncs a single product from Foodics', function () {
     $user = createRetryTestUser();
-    Context::add('user', $user);
+    app(UserContext::class)->set($user);
 
     $product = Product::factory()->create([
         'user_id' => $user->id,

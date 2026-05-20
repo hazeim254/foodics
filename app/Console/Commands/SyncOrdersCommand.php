@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use App\Models\User;
 use App\Services\Foodics\OrderService;
 use App\Services\SyncOrder;
+use App\Services\UserContext;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Context;
 
 class SyncOrdersCommand extends Command
 {
@@ -30,7 +30,7 @@ class SyncOrdersCommand extends Command
             return self::FAILURE;
         }
 
-        Context::add('user', $user);
+        app(UserContext::class)->set($user);
 
         $this->info("Fetching new orders for user #{$user->id}...");
 

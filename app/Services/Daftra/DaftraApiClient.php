@@ -3,7 +3,7 @@
 namespace App\Services\Daftra;
 
 use App\Enums\SettingKey;
-use App\Models\User;
+use App\Services\UserContext;
 use Illuminate\Http\Client\PendingRequest;
 
 /**
@@ -11,37 +11,31 @@ use Illuminate\Http\Client\PendingRequest;
  */
 class DaftraApiClient
 {
-    private PendingRequest $client;
+    private ?PendingRequest $client = null;
 
     private ?string $branchId = null;
 
-    public function __construct(protected User $user)
-    {
-        $this->branchId = $user->setting(SettingKey::DaftraDefaultBranchId);
-        $this->client = \Http::asJson()
-            ->acceptJson()
-            ->baseUrl(config('services.daftra.base_url'))
-            ->withToken($user->getDaftraToken()->token)
-            ->withHeaders([
-                'Site-Id' => $user->daftra_id,
-            ]);
+    public function __construct(
+        protected UserContext $userContext,
+    ) {
+        $this->branchId = $userContext->get()->setting(SettingKey::DaftraDefaultBranchId);
     }
 
     public function __call($name, $arguments)
     {
         if (! in_array($name, ['get', 'post', 'put', 'patch', 'delete'])) {
-            return $this->client->$name(...$arguments);
+            return $this->client()->$name(...$arguments);
         }
 
         if (isset($arguments[0])) {
             $arguments[0] = $this->appendBranchIdToUrl($arguments[0]);
         }
 
-        $response = $this->client->$name(...$arguments);
+        $response = $this->client()->$name(...$arguments);
 
         if ($response->status() === 401) {
             $this->refreshToken();
-            $response = $this->client->$name(...$arguments);
+            $response = $this->client()->$name(...$arguments);
         }
 
         return $response;
@@ -89,6 +83,20 @@ class DaftraApiClient
         }
     }
 
+    private function client(): PendingRequest
+    {
+        if ($this->client === null) {
+            $user = $this->userContext->get();
+            $this->client = \Http::asJson()
+                ->acceptJson()
+                ->baseUrl(config('services.daftra.base_url'))
+                ->withToken($user->getDaftraToken()->token)
+                ->withHeaders(['Site-Id' => $user->daftra_id]);
+        }
+
+        return $this->client;
+    }
+
     private function appendBranchIdToUrl(string $url): string
     {
         if ((string) $this->branchId === '' || (string) $this->branchId === '1') {
@@ -106,23 +114,26 @@ class DaftraApiClient
 
     private function refreshToken(): void
     {
-        $response = $this->client->post('/oauth/token', [
-            'refresh_token' => $this->user->getDaftraToken()->refresh_token,
+        $user = $this->userContext->get();
+
+        $response = $this->client()->post('/oauth/token', [
+            'refresh_token' => $user->getDaftraToken()->refresh_token,
             'grant_type' => 'refresh_token',
             'client_id' => config('services.daftra.client_id'),
             'client_secret' => config('services.daftra.client_secret'),
         ]);
 
         if ($response->failed()) {
-            throw new \Exception('Failed to refresh Daftra token for user: '.$this->user->id);
+            throw new \Exception('Failed to refresh Daftra token for user: '.$user->id);
         }
 
         $result = $response->json();
-        $this->user->getDaftraToken()->update([
+        $user->getDaftraToken()->update([
             'token' => $result['access_token'],
             'expires_at' => now()->addSeconds($result['expires_in']),
         ]);
 
-        $this->client->withToken($response['access_token']);
+        $this->client = null;
+        $this->client()->withToken($result['access_token']);
     }
 }

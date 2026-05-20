@@ -3,16 +3,16 @@
 use App\Models\User;
 use App\Services\Foodics\FoodicsApiClient;
 use App\Services\Foodics\ProductService;
+use App\Services\UserContext;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\RequestException;
-use Illuminate\Support\Facades\Context;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    Context::add('user', $this->user);
+    app(UserContext::class)->set($this->user);
 });
 
 it('fetches a product by id', function () {

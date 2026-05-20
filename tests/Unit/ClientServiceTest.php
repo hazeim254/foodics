@@ -3,8 +3,8 @@
 use App\Models\ProviderToken;
 use App\Models\User;
 use App\Services\Daftra\ClientService;
+use App\Services\UserContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
@@ -18,7 +18,7 @@ beforeEach(function () {
         'refresh_token' => 'fake-refresh',
         'expires_at' => now()->addHour(),
     ]);
-    Context::add('user', $this->user);
+    app(UserContext::class)->set($this->user);
 });
 
 it('searchClients returns array from Daftra API response', function () {

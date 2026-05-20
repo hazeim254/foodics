@@ -6,14 +6,14 @@ use App\Exceptions\DaftraPaymentCreationFailedException;
 use App\Models\User;
 use App\Services\Daftra\DaftraApiClient;
 use App\Services\Daftra\InvoiceService;
+use App\Services\UserContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Context;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    Context::add('user', $this->user);
+    app(UserContext::class)->set($this->user);
 
     $this->mockClient = Mockery::mock(DaftraApiClient::class);
     $this->service = new InvoiceService($this->mockClient);

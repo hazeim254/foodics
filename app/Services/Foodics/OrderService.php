@@ -5,7 +5,7 @@ namespace App\Services\Foodics;
 use App\Enums\InvoiceSyncStatus;
 use App\Models\Invoice;
 use App\Models\User;
-use Illuminate\Support\Facades\Context;
+use App\Services\UserContext;
 
 /**
  * Service to fetch new orders from Foodics API using cursor-based pagination.
@@ -33,7 +33,7 @@ class OrderService
         'original_order',
     ];
 
-    public function __construct(protected FoodicsApiClient $client) {}
+    public function __construct(protected FoodicsApiClient $client, protected UserContext $userContext) {}
 
     /**
      * Fetch all new orders for the current user.
@@ -41,7 +41,7 @@ class OrderService
     public function fetchNewOrders(): array
     {
         /** @var User $user */
-        $user = Context::get('user');
+        $user = $this->userContext->get();
 
         $referenceAfter = Invoice::where('user_id', $user->id)
             ->where('status', InvoiceSyncStatus::Synced)

@@ -3,16 +3,16 @@
 namespace App\Services\Daftra;
 
 use App\Models\EntityMapping;
-use Illuminate\Support\Facades\Context;
+use App\Services\UserContext;
 
 class TaxService
 {
-    public function __construct(protected DaftraApiClient $daftraClient) {}
+    public function __construct(protected DaftraApiClient $daftraClient, protected UserContext $userContext) {}
 
     public function resolveTaxId(array $foodicsTax): int
     {
         $foodicsId = (string) $foodicsTax['id'];
-        $userId = Context::get('user')->id;
+        $userId = $this->userContext->id();
 
         $local = EntityMapping::query()
             ->where('user_id', $userId)

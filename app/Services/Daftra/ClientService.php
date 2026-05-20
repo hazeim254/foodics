@@ -4,12 +4,13 @@ namespace App\Services\Daftra;
 
 use App\Exceptions\DaftraClientCreationFailedException;
 use App\Models\Client;
+use App\Services\UserContext;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 class ClientService
 {
-    public function __construct(protected DaftraApiClient $daftraClient) {}
+    public function __construct(protected DaftraApiClient $daftraClient, protected UserContext $userContext) {}
 
     /**
      * Look up an existing client in Daftra using Foodics customer data (`client_number` is the Foodics customer `id`).
@@ -119,7 +120,7 @@ class ClientService
     public function getClientUsingFoodicsData(array $foodicsCustomer): int
     {
         $foodicsId = (string) $foodicsCustomer['id'];
-        $userId = \Context::get('user')->id;
+        $userId = $this->userContext->id();
 
         $local = Client::query()
             ->where('user_id', $userId)

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\WebhookStatus;
 use App\Models\WebhookLog;
+use App\Services\UserContext;
 use App\Webhooks\Handlers\OrderCancelledHandler;
 use App\Webhooks\Handlers\OrderCreatedHandler;
 use App\Webhooks\Handlers\OrderUpdatedHandler;
@@ -14,7 +15,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -73,7 +73,7 @@ class ProcessWebhookLogJob implements ShouldQueue
             }
 
             if ($webhookLog->user) {
-                Context::add('user', $webhookLog->user);
+                app(UserContext::class)->set($webhookLog->user);
             }
 
             try {

@@ -2,6 +2,7 @@
 
 use App\Exceptions\LoggableException;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\SetUserContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo('/login');
         $middleware->trustProxies(at: '*');
         $middleware->appendToGroup('web', SetLocale::class);
+        $middleware->appendToGroup('web', SetUserContext::class);
+        $middleware->appendToGroup('api', SetUserContext::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->reportable(function (LoggableException $e) {

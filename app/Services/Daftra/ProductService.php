@@ -4,11 +4,11 @@ namespace App\Services\Daftra;
 
 use App\Exceptions\DaftraProductCreationFailedException;
 use App\Models\Product;
-use Illuminate\Support\Facades\Context;
+use App\Services\UserContext;
 
 class ProductService
 {
-    public function __construct(protected DaftraApiClient $daftraClient) {}
+    public function __construct(protected DaftraApiClient $daftraClient, protected UserContext $userContext) {}
 
     /**
      * @param  array<string, mixed>  $foodicsProduct
@@ -19,7 +19,7 @@ class ProductService
     public function getProductByFoodicsData(array $foodicsProduct): int
     {
         $foodicsId = (string) $foodicsProduct['id'];
-        $userId = Context::get('user')->id;
+        $userId = $this->userContext->id();
 
         $local = Product::query()
             ->where('user_id', $userId)

@@ -6,10 +6,10 @@ use App\Enums\InvoiceSyncStatus;
 use App\Models\Invoice;
 use App\Services\Foodics\OrderService;
 use App\Services\SyncOrder;
+use App\Services\UserContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 
 class RetryInvoiceSyncJob implements ShouldQueue
@@ -23,7 +23,7 @@ class RetryInvoiceSyncJob implements ShouldQueue
     public function handle(): void
     {
         $user = $this->invoice->user;
-        Context::add('user', $user);
+        app(UserContext::class)->set($user);
 
         if (! $user->getFoodicsToken()) {
             Log::warning("RetryInvoiceSyncJob: User #{$user->id} has no Foodics token.");

@@ -6,7 +6,6 @@ use App\Enums\DaftraDiscountType;
 use App\Enums\SettingKey;
 use App\Exceptions\InvalidOrderLineException;
 use App\Models\User;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 
 trait BuildsInvoiceItems
@@ -209,7 +208,7 @@ trait BuildsInvoiceItems
 
     protected function resolveDefaultClientId(): ?int
     {
-        $user = Context::get('user');
+        $user = $this->userContext->get();
         if (! $user instanceof User) {
             return null;
         }
