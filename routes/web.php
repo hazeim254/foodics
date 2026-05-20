@@ -10,7 +10,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\WebhooksController;
 use App\Http\Middleware\FoodicsWebhook;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('landing');
@@ -42,5 +42,5 @@ Route::middleware('auth')->group(function () {
 
 Route::post('webhooks/foodics', WebhooksController::class)
     ->middleware(FoodicsWebhook::class)
-    ->withoutMiddleware(VerifyCsrfToken::class)
+    ->withoutMiddleware(PreventRequestForgery::class)
     ->name('webhooks');
