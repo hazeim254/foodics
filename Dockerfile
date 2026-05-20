@@ -41,9 +41,14 @@ FROM base AS production
 
 COPY --from=build /var/www/html/public/build /var/www/html/public/build
 
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views \
     && chown -R www-data:www-data storage bootstrap/cache \
     && php artisan storage:link --relative 2>/dev/null || true
+
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 EXPOSE 8000
 
