@@ -39,6 +39,9 @@ services:
       FOODICS_CLIENT_ID: "${FOODICS_CLIENT_ID}"
       FOODICS_CLIENT_SECRET: "${FOODICS_CLIENT_SECRET}"
       FOODICS_REDIRECT_URI: "${FOODICS_REDIRECT_URI}"
+      OCTANE_SERVER: "${OCTANE_SERVER:-swoole}"
+      OCTANE_MAX_REQUESTS: "${OCTANE_MAX_REQUESTS:-500}"
+      OCTANE_TASK_WORKERS: "${OCTANE_TASK_WORKERS:-0}"
     volumes:
       - app-storage:/var/www/html/storage
     depends_on:
