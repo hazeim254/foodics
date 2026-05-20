@@ -16,6 +16,7 @@ use Laravel\Octane\Listeners\DisconnectFromDatabases;
 use Laravel\Octane\Listeners\FlushOnce;
 use Laravel\Octane\Listeners\StopWorkerIfNecessary;
 use Laravel\Octane\Listeners\WarmConfigCache;
+use Laravel\Octane\Octane;
 
 return [
 
