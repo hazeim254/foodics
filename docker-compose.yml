@@ -41,6 +41,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
+    env_file: .env.docker
     environment:
       POSTGRES_DB: "${DB_DATABASE:-daftrics}"
       POSTGRES_USER: "${DB_USERNAME:-daftrics}"
