@@ -82,8 +82,8 @@ services:
     volumes:
       - app-storage:/var/www/html/storage
     depends_on:
-      postgres:
-        condition: service_healthy
+      app:
+        condition: service_started
     command: php artisan queue:work --tries=3 --max-time=3600
     restart: unless-stopped
 
