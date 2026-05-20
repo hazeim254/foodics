@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Daftra\DaftraApiClient;
+use App\Services\Foodics\FoodicsApiClient;
 use App\Services\Http\CurlCommandBuilder;
 use App\Services\UserContext;
 use Illuminate\Http\Client\Response;
@@ -16,6 +18,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(UserContext::class);
+        $this->app->scoped(DaftraApiClient::class);
+        $this->app->scoped(FoodicsApiClient::class);
     }
 
     /**
