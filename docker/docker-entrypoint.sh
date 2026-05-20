@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
-php artisan migrate --force
+if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
+    php artisan migrate --force
+fi
 
 exec "$@"
