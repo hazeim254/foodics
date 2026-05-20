@@ -87,6 +87,44 @@ services:
     command: php artisan queue:work --tries=3 --max-time=3600
     restart: unless-stopped
 
+  queue-webhooks:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: "${APP_ENV:-local}"
+      APP_DEBUG: "${APP_DEBUG:-true}"
+      APP_KEY: "${APP_KEY}"
+      APP_URL: "${APP_URL:-http://localhost}"
+      LOG_CHANNEL: "${LOG_CHANNEL:-stack}"
+      LOG_STACK: "${LOG_STACK:-daily}"
+      LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: "${DB_DATABASE:-daftrics}"
+      DB_USERNAME: "${DB_USERNAME:-daftrics}"
+      DB_PASSWORD: "${DB_PASSWORD:-secret}"
+      CACHE_STORE: "${CACHE_STORE:-database}"
+      QUEUE_CONNECTION: "${QUEUE_CONNECTION:-database}"
+      DAFTRA_OAUTH_URL: "${DAFTRA_OAUTH_URL}"
+      DAFTRA_BASE_URL: "${DAFTRA_BASE_URL}"
+      DAFTRA_APP_ID: "${DAFTRA_APP_ID}"
+      DAFTRA_APP_SECRET: "${DAFTRA_APP_SECRET}"
+      DAFTRA_REDIRECT_URI: "${DAFTRA_REDIRECT_URI}"
+      FOODICS_OAUTH_URL: "${FOODICS_OAUTH_URL}"
+      FOODICS_BASE_URL: "${FOODICS_BASE_URL}"
+      FOODICS_CLIENT_ID: "${FOODICS_CLIENT_ID}"
+      FOODICS_CLIENT_SECRET: "${FOODICS_CLIENT_SECRET}"
+      FOODICS_REDIRECT_URI: "${FOODICS_REDIRECT_URI}"
+    volumes:
+      - app-storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_started
+    command: php artisan queue:work --queue=webhooks --tries=3 --max-time=3600
+    restart: unless-stopped
+
   postgres:
     image: postgres:17-alpine
     environment:
