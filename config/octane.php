@@ -1,5 +1,6 @@
 <?php
 
+use Laravel\Octane\Contracts\OperationTerminated;
 use Laravel\Octane\Events\RequestHandled;
 use Laravel\Octane\Events\RequestReceived;
 use Laravel\Octane\Events\RequestTerminated;
@@ -13,9 +14,12 @@ use Laravel\Octane\Events\WorkerStopping;
 use Laravel\Octane\Listeners\CloseMonologHandlers;
 use Laravel\Octane\Listeners\CollectGarbage;
 use Laravel\Octane\Listeners\DisconnectFromDatabases;
+use Laravel\Octane\Listeners\EnsureUploadedFilesAreValid;
+use Laravel\Octane\Listeners\EnsureUploadedFilesCanBeMoved;
 use Laravel\Octane\Listeners\FlushOnce;
+use Laravel\Octane\Listeners\FlushTemporaryContainerInstances;
+use Laravel\Octane\Listeners\ReportException;
 use Laravel\Octane\Listeners\StopWorkerIfNecessary;
-use Laravel\Octane\Listeners\WarmConfigCache;
 use Laravel\Octane\Octane;
 
 return [
@@ -26,7 +30,8 @@ return [
 
     'listeners' => [
         WorkerStarting::class => [
-            WarmConfigCache::class,
+            EnsureUploadedFilesAreValid::class,
+            EnsureUploadedFilesCanBeMoved::class,
         ],
 
         RequestReceived::class => [
@@ -34,12 +39,12 @@ return [
             ...Octane::prepareApplicationForNextRequest(),
         ],
 
-        RequestHandled::class => [],
+        RequestHandled::class => [
+            //
+        ],
 
         RequestTerminated::class => [
-            CollectGarbage::class,
-            DisconnectFromDatabases::class,
-            FlushOnce::class,
+            //
         ],
 
         TaskReceived::class => [
@@ -47,9 +52,7 @@ return [
         ],
 
         TaskTerminated::class => [
-            CollectGarbage::class,
-            DisconnectFromDatabases::class,
-            FlushOnce::class,
+            //
         ],
 
         TickReceived::class => [
@@ -57,12 +60,18 @@ return [
         ],
 
         TickTerminated::class => [
-            CollectGarbage::class,
-            DisconnectFromDatabases::class,
+            //
+        ],
+
+        OperationTerminated::class => [
             FlushOnce::class,
+            FlushTemporaryContainerInstances::class,
+            DisconnectFromDatabases::class,
+            CollectGarbage::class,
         ],
 
         WorkerErrorOccurred::class => [
+            ReportException::class,
             StopWorkerIfNecessary::class,
         ],
 
@@ -79,18 +88,14 @@ return [
         //
     ],
 
-    'swoole' => [
-        'max_request' => (int) env('OCTANE_MAX_REQUESTS', 500),
-        'task_worker_num' => (int) env('OCTANE_TASK_WORKERS', 0),
-        'task_max_request' => (int) env('OCTANE_TASK_MAX_REQUESTS', 500),
+    'tables' => [
+        //
     ],
 
     'cache' => [
         'rows' => (int) env('OCTANE_CACHE_ROWS', 1000),
         'bytes' => (int) env('OCTANE_CACHE_BYTES', 10000),
     ],
-
-    'tick_interval' => (int) env('OCTANE_TICK_INTERVAL', 5),
 
     'watch' => [
         'app',
@@ -100,6 +105,8 @@ return [
         'routes',
     ],
 
-    'garbage_collection_threshold' => (int) env('OCTANE_GC_THRESHOLD', 50),
+    'garbage' => (int) env('OCTANE_GC_THRESHOLD', 50),
+
+    'max_execution_time' => env('OCTANE_MAX_EXECUTION_TIME', 30),
 
 ];
